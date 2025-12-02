@@ -8,7 +8,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-![VibeWork](https://github.com/samuelfaj/vibework/blob/main/docs/assets/logo.png?raw=true)
+![VibeWork](https://github.com/samuelfaj/VibeWork/blob/main/logo.png?raw=true)
 
 ## 📚 Documentation
 
