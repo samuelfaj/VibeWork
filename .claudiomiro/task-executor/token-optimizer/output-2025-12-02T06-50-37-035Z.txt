@@ -1,0 +1,89 @@
+# Token Optimizer Output
+## Command
+```
+cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && npx vitest run modules/notifications/services/__tests__/notification-publisher.test.ts
+```
+
+## Output
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend[39m
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould publish notification to correct topic
+[22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould serialize notification correctly
+[22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Processing email notification: msg-123
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Message acknowledged: msg-123
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Ignoring in-app notification: msg-456
+[NotificationSubscriber] Message acknowledged: msg-456
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Processing email notification: msg-789
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+ [32m✓[39m modules/notifications/services/__tests__/notification-publisher.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 03:50:00
+[2m   Duration [22m 343ms[2m (transform 128ms, setup 0ms, import 118ms, tests 61ms, environment 0ms)[22m
+
+[90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Error processing message msg-789: Error: Email send failed
+    at [90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/[39mmodules/notifications/services/__tests__/notification-publisher.test.ts:206:43
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+    at trace (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+    at runTest (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+
+[90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Invalid payload, acking to prevent retry: msg-invalid
+
+
