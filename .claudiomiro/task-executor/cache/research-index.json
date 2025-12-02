@@ -1,21 +1,22 @@
 {
   "version": "1.0.0",
   "created": "2025-12-02T04:37:30.956Z",
-  "lastUpdated": "2025-12-02T05:14:33.334Z",
+  "lastUpdated": "2025-12-02T05:24:47.471Z",
   "patterns": {
-    "api": ["TASK0", "TASK1", "TASK9.1", "TASK9.2"],
-    "database": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2"],
-    "testing": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2"],
-    "config": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2"],
-    "component": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2"],
-    "validation": ["TASK0", "TASK1", "TASK9.1"],
-    "logging": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.2"],
-    "cache": ["TASK0", "TASK2", "TASK1", "TASK9.2"],
-    "file": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2"],
-    "authentication": ["TASK1", "TASK9.2"],
+    "api": ["TASK0", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "database": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "testing": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "config": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "component": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "validation": ["TASK0", "TASK1", "TASK9.1", "TASK5.1"],
+    "logging": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.2", "TASK5.1"],
+    "cache": ["TASK0", "TASK2", "TASK1", "TASK9.2", "TASK5.1"],
+    "file": ["TASK0", "TASK4", "TASK2", "TASK1", "TASK9.1", "TASK9.2", "TASK5.1"],
+    "authentication": ["TASK1", "TASK9.2", "TASK5.1"],
     "service": ["TASK1"],
     "security": ["TASK1"],
-    "error": ["TASK9.2"]
+    "error": ["TASK9.2", "TASK5.1"],
+    "controller": ["TASK5.1"]
   },
   "taskResearch": {
     "TASK0": {
@@ -81,6 +82,24 @@
       ],
       "researchPath": "/Users/samuelfajreldines/Desenvolvimento/VibeWork/.claudiomiro/task-executor/TASK9.2/RESEARCH.md",
       "indexedAt": "2025-12-02T05:14:33.334Z"
+    },
+    "TASK5.1": {
+      "topics": [
+        "authentication",
+        "api",
+        "database",
+        "testing",
+        "config",
+        "controller",
+        "component",
+        "validation",
+        "error",
+        "logging",
+        "cache",
+        "file"
+      ],
+      "researchPath": "/Users/samuelfajreldines/Desenvolvimento/VibeWork/.claudiomiro/task-executor/TASK5.1/RESEARCH.md",
+      "indexedAt": "2025-12-02T05:24:47.471Z"
     }
   }
 }
