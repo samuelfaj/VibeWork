@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-02T07:14:01.944Z",
+  "lastUpdated": "2025-12-02T07:26:00.405Z",
   "curatedInsights": {
     "patterns": [
       {
@@ -884,6 +884,21 @@
         "category": "patterns",
         "actionable": false,
         "evidence": "Decision",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "1a20b3da-84cb-4fae-b038-8dd4086086f8",
+        "insight": "Coding conventions and patterns",
+        "description": "Coding conventions and patterns",
+        "learnedFrom": "TASK13",
+        "addedAt": "2025-12-02T07:26:00.389Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "patterns",
+        "actionable": false,
+        "evidence": "Context Reference",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null
@@ -5795,6 +5810,66 @@
         "category": "testing",
         "actionable": false,
         "evidence": "Phase 4: Test Results",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "d023b54e-555a-47ba-a52a-1dbc22cdd1ee",
+        "insight": "**Tests:**",
+        "description": "**Tests:**",
+        "learnedFrom": "TASK13",
+        "addedAt": "2025-12-02T07:26:00.393Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Implementation Plan",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "471d5c9e-8909-4ab8-b0bb-e67be5d1c5ec",
+        "insight": "[x] Quick start guide commands are accurate and testable",
+        "description": "[x] Quick start guide commands are accurate and testable",
+        "learnedFrom": "TASK13",
+        "addedAt": "2025-12-02T07:26:00.398Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Acceptance Criteria",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "dd5b6fad-9753-4710-bed6-9cf8d40513a5",
+        "insight": "**Test Framework:** vitest",
+        "description": "**Test Framework:** vitest",
+        "learnedFrom": "TASK13",
+        "addedAt": "2025-12-02T07:26:00.401Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "fd386e33-7c8f-40c1-9c68-1c25c91081d2",
+        "insight": "**Test Naming:** file.test.ext",
+        "description": "**Test Naming:** file.test.ext",
+        "learnedFrom": "TASK13",
+        "addedAt": "2025-12-02T07:26:00.404Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null

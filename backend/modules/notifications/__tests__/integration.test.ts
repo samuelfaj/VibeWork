@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
 import mongoose from 'mongoose'
