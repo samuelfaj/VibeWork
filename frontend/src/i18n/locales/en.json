@@ -9,6 +9,10 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "errors": {
+      "emailRequired": "Please enter your email",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Please enter your password",
+      "confirmPasswordRequired": "Please confirm your password",
       "invalidEmail": "Invalid email format",
       "passwordTooShort": "Password must be at least 8 characters",
       "passwordMismatch": "Passwords do not match",

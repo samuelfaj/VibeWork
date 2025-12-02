@@ -9,6 +9,10 @@
     "noAccount": "Não tem uma conta?",
     "hasAccount": "Já tem uma conta?",
     "errors": {
+      "emailRequired": "Por favor, insira seu email",
+      "emailInvalid": "Por favor, insira um email válido",
+      "passwordRequired": "Por favor, insira sua senha",
+      "confirmPasswordRequired": "Por favor, confirme sua senha",
       "invalidEmail": "Formato de email inválido",
       "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
       "passwordMismatch": "As senhas não coincidem",

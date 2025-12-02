@@ -19,7 +19,9 @@
     "i18next": "^23.0.0",
     "i18next-browser-languagedetector": "^7.0.0",
     "@vibe-code/contract": "workspace:*",
-    "@vibe/ui": "workspace:*"
+    "@vibe/ui": "workspace:*",
+    "antd": "^5.22.0",
+    "@ant-design/icons": "^5.5.0"
   },
   "devDependencies": {
     "vite": "^5.0.0",

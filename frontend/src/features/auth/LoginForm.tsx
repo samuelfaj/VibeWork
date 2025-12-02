@@ -1,62 +1,71 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Form, Input, Button, Alert, Typography } from 'antd'
+import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import { useLogin } from './hooks'
+
+const { Text, Link } = Typography
 
 interface LoginFormProps {
   onSwitchToSignup?: () => void
 }
 
+interface LoginFormValues {
+  email: string
+  password: string
+}
+
 export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
   const { t } = useTranslation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const login = useLogin()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    login.mutate({ email, password })
+  const handleSubmit = (values: LoginFormValues) => {
+    login.mutate(values)
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>{t('auth.login')}</h2>
+    <Form<LoginFormValues>
+      name="login"
+      onFinish={handleSubmit}
+      layout="vertical"
+      requiredMark={false}
+    >
+      <Form.Item
+        name="email"
+        label={t('auth.email')}
+        rules={[
+          { required: true, message: t('auth.errors.emailRequired') },
+          { type: 'email', message: t('auth.errors.emailInvalid') },
+        ]}
+      >
+        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} />
+      </Form.Item>
 
-      <div>
-        <label htmlFor="login-email">{t('auth.email')}</label>
-        <input
-          id="login-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
+      <Form.Item
+        name="password"
+        label={t('auth.password')}
+        rules={[{ required: true, message: t('auth.errors.passwordRequired') }]}
+      >
+        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.password')} />
+      </Form.Item>
 
-      <div>
-        <label htmlFor="login-password">{t('auth.password')}</label>
-        <input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
+      {login.isError && (
+        <Form.Item>
+          <Alert message={t('auth.errors.loginFailed')} type="error" showIcon />
+        </Form.Item>
+      )}
 
-      {login.isError && <div role="alert">{t('auth.errors.loginFailed')}</div>}
-
-      <button type="submit" disabled={login.isPending}>
-        {login.isPending ? t('common.loading') : t('auth.submit')}
-      </button>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" loading={login.isPending} block>
+          {t('auth.submit')}
+        </Button>
+      </Form.Item>
 
       {onSwitchToSignup && (
-        <p>
-          {t('auth.noAccount')}{' '}
-          <button type="button" onClick={onSwitchToSignup}>
-            {t('auth.signup')}
-          </button>
-        </p>
+        <div style={{ textAlign: 'center' }}>
+          <Text>{t('auth.noAccount')} </Text>
+          <Link onClick={onSwitchToSignup}>{t('auth.signup')}</Link>
+        </div>
       )}
-    </form>
+    </Form>
   )
 }

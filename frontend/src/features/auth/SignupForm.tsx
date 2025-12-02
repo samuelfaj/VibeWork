@@ -1,92 +1,94 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Form, Input, Button, Alert, Typography } from 'antd'
+import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import { useSignup } from './hooks'
+
+const { Text, Link } = Typography
 
 interface SignupFormProps {
   onSwitchToLogin?: () => void
 }
 
+interface SignupFormValues {
+  email: string
+  password: string
+  confirmPassword: string
+}
+
 export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
   const { t } = useTranslation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [validationError, setValidationError] = useState<string | null>(null)
   const signup = useSignup()
 
-  const validate = (): boolean => {
-    if (password.length < 8) {
-      setValidationError(t('auth.errors.passwordTooShort'))
-      return false
-    }
-    if (password !== confirmPassword) {
-      setValidationError(t('auth.errors.passwordMismatch'))
-      return false
-    }
-    setValidationError(null)
-    return true
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validate()) return
-    signup.mutate({ email, password })
+  const handleSubmit = (values: SignupFormValues) => {
+    signup.mutate({ email: values.email, password: values.password })
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>{t('auth.signup')}</h2>
+    <Form<SignupFormValues>
+      name="signup"
+      onFinish={handleSubmit}
+      layout="vertical"
+      requiredMark={false}
+    >
+      <Form.Item
+        name="email"
+        label={t('auth.email')}
+        rules={[
+          { required: true, message: t('auth.errors.emailRequired') },
+          { type: 'email', message: t('auth.errors.emailInvalid') },
+        ]}
+      >
+        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} />
+      </Form.Item>
 
-      <div>
-        <label htmlFor="signup-email">{t('auth.email')}</label>
-        <input
-          id="signup-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
+      <Form.Item
+        name="password"
+        label={t('auth.password')}
+        rules={[
+          { required: true, message: t('auth.errors.passwordRequired') },
+          { min: 8, message: t('auth.errors.passwordTooShort') },
+        ]}
+      >
+        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.password')} />
+      </Form.Item>
 
-      <div>
-        <label htmlFor="signup-password">{t('auth.password')}</label>
-        <input
-          id="signup-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-        />
-      </div>
+      <Form.Item
+        name="confirmPassword"
+        label={t('auth.confirmPassword')}
+        dependencies={['password']}
+        rules={[
+          { required: true, message: t('auth.errors.confirmPasswordRequired') },
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              if (!value || getFieldValue('password') === value) {
+                return Promise.resolve()
+              }
+              return Promise.reject(new Error(t('auth.errors.passwordMismatch')))
+            },
+          }),
+        ]}
+      >
+        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.confirmPassword')} />
+      </Form.Item>
 
-      <div>
-        <label htmlFor="signup-confirm-password">{t('auth.confirmPassword')}</label>
-        <input
-          id="signup-confirm-password"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-      </div>
-
-      {(validationError || signup.isError) && (
-        <div role="alert">{validationError || t('auth.errors.signupFailed')}</div>
+      {signup.isError && (
+        <Form.Item>
+          <Alert message={t('auth.errors.signupFailed')} type="error" showIcon />
+        </Form.Item>
       )}
 
-      <button type="submit" disabled={signup.isPending}>
-        {signup.isPending ? t('common.loading') : t('auth.submit')}
-      </button>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" loading={signup.isPending} block>
+          {t('auth.submit')}
+        </Button>
+      </Form.Item>
 
       {onSwitchToLogin && (
-        <p>
-          {t('auth.hasAccount')}{' '}
-          <button type="button" onClick={onSwitchToLogin}>
-            {t('auth.login')}
-          </button>
-        </p>
+        <div style={{ textAlign: 'center' }}>
+          <Text>{t('auth.hasAccount')} </Text>
+          <Link onClick={onSwitchToLogin}>{t('auth.login')}</Link>
+        </div>
       )}
-    </form>
+    </Form>
   )
 }
