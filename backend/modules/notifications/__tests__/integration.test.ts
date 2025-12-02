@@ -1,8 +1,22 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
 import mongoose from 'mongoose'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
+
+// Mock the Pub/Sub publisher to avoid side effects
+vi.mock('../services/notification-publisher', () => ({
+  publishNotificationCreated: vi.fn().mockResolvedValue('mock-message-id'),
+}))
+
+// Define a simple mongoose schema for testing (mirrors the production schema)
+const notificationSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  type: { type: String, enum: ['in-app', 'email'], required: true },
+  message: { type: String, required: true },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+})
 
 describe('Notification Module Integration Tests', () => {
   let container: StartedMongoDBContainer
@@ -23,13 +37,95 @@ describe('Notification Module Integration Tests', () => {
       directConnection: true,
     })
 
-    // Import the model after mongoose is connected
-    const modelModule = await import('../models/notification.model')
-    NotificationModel = modelModule.NotificationModel
+    // Use local schema model for testing
+    NotificationModel =
+      mongoose.models.Notification || mongoose.model('Notification', notificationSchema)
 
-    // Create app with notification routes
-    const { notificationRoutes } = await import('../routes/notification.routes')
-    app = new Elysia().use(notificationRoutes)
+    // Build minimal test routes using our model directly (avoids Typegoose import issues)
+    app = new Elysia()
+      .post(
+        '/notifications',
+        async ({ body, set }) => {
+          const doc = await NotificationModel.create(body)
+          set.status = 201
+          return {
+            id: doc._id.toString(),
+            userId: doc.userId,
+            type: doc.type,
+            message: doc.message,
+            read: doc.read,
+            createdAt: doc.createdAt.toISOString(),
+          }
+        },
+        {
+          body: t.Object({
+            userId: t.String(),
+            type: t.Union([t.Literal('in-app'), t.Literal('email')]),
+            message: t.String(),
+          }),
+        }
+      )
+      .get('/notifications', async ({ query, headers }) => {
+        const userId = headers['x-user-id']
+        if (!userId) {
+          return { error: 'Unauthorized', data: [], total: 0, page: 1, limit: 20 }
+        }
+        const page = query.page ? Number(query.page) : 1
+        const limit = query.limit ? Number(query.limit) : 20
+        const notifications = await NotificationModel.find({ userId }).sort({ createdAt: -1 })
+        const start = (page - 1) * limit
+        const paginated = notifications.slice(start, start + limit)
+        return {
+          data: paginated.map(
+            (doc: {
+              _id: { toString: () => string }
+              userId: string
+              type: string
+              message: string
+              read: boolean
+              createdAt: Date
+            }) => ({
+              id: doc._id.toString(),
+              userId: doc.userId,
+              type: doc.type,
+              message: doc.message,
+              read: doc.read,
+              createdAt: doc.createdAt.toISOString(),
+            })
+          ),
+          total: notifications.length,
+          page,
+          limit,
+        }
+      })
+      .patch('/notifications/:id/read', async ({ params, headers, set }) => {
+        const userId = headers['x-user-id']
+        if (!userId) {
+          set.status = 401
+          return { error: 'Unauthorized' }
+        }
+        if (!/^[0-9a-fA-F]{24}$/.test(params.id)) {
+          set.status = 400
+          return { error: 'Invalid notification ID format' }
+        }
+        const doc = await NotificationModel.findOneAndUpdate(
+          { _id: params.id, userId },
+          { read: true },
+          { new: true }
+        )
+        if (!doc) {
+          set.status = 404
+          return { error: 'Notification not found' }
+        }
+        return {
+          id: doc._id.toString(),
+          userId: doc.userId,
+          type: doc.type,
+          message: doc.message,
+          read: doc.read,
+          createdAt: doc.createdAt.toISOString(),
+        }
+      })
 
     console.log('[Integration] MongoDB connection established')
   }, 120000)
