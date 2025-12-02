@@ -1,0 +1,19 @@
+{
+  "errors": {
+    "validation": "Erro de validação",
+    "unauthorized": "Não autorizado",
+    "forbidden": "Proibido",
+    "notFound": "Não encontrado",
+    "serverError": "Erro interno do servidor",
+    "badRequest": "Requisição inválida",
+    "conflict": "Conflito",
+    "timeout": "Tempo limite da requisição excedido",
+    "tooManyRequests": "Muitas requisições",
+    "serviceUnavailable": "Serviço indisponível"
+  },
+  "health": {
+    "ok": "OK",
+    "ready": "Pronto",
+    "notReady": "Não pronto"
+  }
+}

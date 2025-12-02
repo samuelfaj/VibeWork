@@ -1,8 +1,17 @@
+import { useState } from 'react'
+import { LoginForm, SignupForm } from './features/auth'
+
 function App() {
+  const [showLogin, setShowLogin] = useState(true)
+
   return (
     <div>
       <h1>Vibe Code</h1>
-      {/* Auth forms will be added here */}
+      {showLogin ? (
+        <LoginForm onSwitchToSignup={() => setShowLogin(false)} />
+      ) : (
+        <SignupForm onSwitchToLogin={() => setShowLogin(true)} />
+      )}
     </div>
   )
 }

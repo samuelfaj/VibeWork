@@ -1,0 +1,26 @@
+# Token Optimizer Output
+## Command
+```
+bun test backend/src/i18n
+```
+
+## Output
+bun test v1.2.8 (adab0f64)
+
+backend/src/i18n/__tests__/i18n.test.ts:
+(pass) i18n > t() > returns English string by default [3.36ms]
+(pass) i18n > t() > returns Portuguese string with lng: pt-BR [3.61ms]
+(pass) i18n > t() > falls back to English for unknown language [0.84ms]
+(pass) i18n > getLanguageFromHeader() > returns en for null/undefined
+(pass) i18n > getLanguageFromHeader() > returns en for empty string [0.03ms]
+(pass) i18n > getLanguageFromHeader() > parses simple language header [0.42ms]
+(pass) i18n > getLanguageFromHeader() > parses pt language and returns pt-BR [0.04ms]
+(pass) i18n > getLanguageFromHeader() > parses complex header with quality values [0.06ms]
+(pass) i18n > getLanguageFromHeader() > respects quality values ordering [0.03ms]
+(pass) i18n > getLanguageFromHeader() > returns en for unknown languages [0.03ms]
+
+ 10 pass
+ 0 fail
+ 16 expect() calls
+Ran 10 tests across 1 files. [131.00ms]
+

@@ -1,0 +1,12 @@
+# Token Optimizer Output
+## Command
+```
+cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/frontend && bun run typecheck
+```
+
+## Output
+src/features/auth/hooks.ts(17,34): error TS2339: Property 'signup' does not exist on type '{}'.
+src/features/auth/hooks.ts(29,34): error TS2339: Property 'login' does not exist on type '{}'.
+src/features/auth/hooks.ts(42,34): error TS2339: Property 'users' does not exist on type '{}'.
+$ tsc --noEmit
+
