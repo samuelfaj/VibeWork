@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-02T05:38:23.850Z",
+  "lastUpdated": "2025-12-02T05:52:43.937Z",
   "curatedInsights": {
     "patterns": [
       {
@@ -1593,6 +1593,21 @@
         "category": "projectSpecific",
         "actionable": false,
         "evidence": "Phase 3: Analysis Results",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "6fb634db-d900-4fb5-90a1-448ff1dfba93",
+        "insight": "[x] SignupForm validates password match",
+        "description": "[x] SignupForm validates password match",
+        "learnedFrom": "TASK9.4",
+        "addedAt": "2025-12-02T05:52:43.928Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "projectSpecific",
+        "actionable": false,
+        "evidence": "Acceptance Criteria",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null
@@ -3320,6 +3335,51 @@
         "category": "testing",
         "actionable": false,
         "evidence": "Phase 4: Test Results",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "b2107ddf-c03d-4c7b-a3aa-055d649e557c",
+        "insight": "**Test Framework:** vitest",
+        "description": "**Test Framework:** vitest",
+        "learnedFrom": "TASK9.4",
+        "addedAt": "2025-12-02T05:52:43.931Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "a89c6473-1946-4012-a4d8-e1c5ba46f1cd",
+        "insight": "**Test Naming:** file.test.ext",
+        "description": "**Test Naming:** file.test.ext",
+        "learnedFrom": "TASK9.4",
+        "addedAt": "2025-12-02T05:52:43.934Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "f60c2f89-95bd-4fc5-a390-a92c675d2d41",
+        "insight": "No test files created (not required by task acceptance criteria)",
+        "description": "No test files created (not required by task acceptance criteria)",
+        "learnedFrom": "TASK9.4",
+        "addedAt": "2025-12-02T05:52:43.936Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Phase 3: Analysis Results",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null
