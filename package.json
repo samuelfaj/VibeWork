@@ -3,21 +3,39 @@
   "private": true,
   "type": "module",
   "packageManager": "bun@1.2.8",
-  "workspaces": ["backend", "frontend", "packages/*", "e2e"],
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*",
+    "e2e"
+  ],
   "scripts": {
+    "prepare": "husky || true",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
+    "lint:fix": "eslint . --fix --cache",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck",
     "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run test:e2e"
   },
   "devDependencies": {
-    "typescript": "latest",
-    "vitest": "latest",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/js": "^9.39.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "eslint": "latest",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "latest",
-    "turbo": "latest"
+    "turbo": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "latest"
   }
 }

@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Test files
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__
+tests
+test
+coverage
+
+# Development files
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Build artifacts (we build inside Docker)
+dist
+
+# Documentation
+*.md
+docs
+
+# Docker files
+Dockerfile*
+.dockerignore
+docker-compose*.yml

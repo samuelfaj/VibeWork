@@ -27,6 +27,14 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "infra:lint": {
+      "cache": false,
+      "outputs": []
+    },
+    "infra:security": {
+      "cache": false,
+      "outputs": []
     }
   }
 }
