@@ -22,8 +22,16 @@ export async function initI18n(): Promise<void> {
   initialized = true
 }
 
-export function t(key: string, options?: { lng?: string }): string {
+export function t(key: string, options?: Record<string, unknown>): string {
   return i18next.t(key, options)
+}
+
+export function getTranslation(
+  key: string,
+  locale: string,
+  options?: Record<string, unknown>
+): string {
+  return i18next.t(key, { lng: locale, ...options })
 }
 
 export function getLanguageFromHeader(acceptLanguage: string | null | undefined): string {
@@ -47,3 +55,5 @@ export function getLanguageFromHeader(acceptLanguage: string | null | undefined)
 
   return 'en'
 }
+
+export { i18nMiddleware } from './middleware'

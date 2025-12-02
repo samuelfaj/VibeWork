@@ -1,0 +1,40 @@
+# Token Optimizer Output
+## Command
+```
+cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && bun test src/i18n/ --silent
+```
+
+## Output
+bun test v1.2.8 (adab0f64)
+
+src/i18n/__tests__/middleware.test.ts:
+(pass) parseAcceptLanguage > returns "en" for Accept-Language "en" [0.57ms]
+(pass) parseAcceptLanguage > returns "pt-BR" for Accept-Language "pt-BR" [0.02ms]
+(pass) parseAcceptLanguage > returns "pt-BR" for Accept-Language "pt-BR,pt;q=0.9,en;q=0.8"
+(pass) parseAcceptLanguage > returns "en" for unsupported locales "fr,de"
+(pass) parseAcceptLanguage > returns "en" for null header
+(pass) parseAcceptLanguage > returns "en" for wildcard "*"
+(pass) parseAcceptLanguage > returns "en" for malformed header
+(pass) parseAcceptLanguage > returns "pt-BR" for quality value "en;q=0.5,pt-BR;q=0.9" [2.40ms]
+(pass) parseAcceptLanguage > returns "pt-BR" for "pt" language code [0.11ms]
+(pass) parseAcceptLanguage > returns "en" for "en-US" language code [0.06ms]
+(pass) SUPPORTED_LOCALES > contains en and pt-BR [0.02ms]
+(pass) DEFAULT_LOCALE > is "en"
+
+src/i18n/__tests__/i18n.test.ts:
+(pass) i18n > t() > returns English string by default [2.69ms]
+(pass) i18n > t() > returns Portuguese string with lng: pt-BR [0.33ms]
+(pass) i18n > t() > falls back to English for unknown language [0.16ms]
+(pass) i18n > getLanguageFromHeader() > returns en for null/undefined
+(pass) i18n > getLanguageFromHeader() > returns en for empty string [0.10ms]
+(pass) i18n > getLanguageFromHeader() > parses simple language header
+(pass) i18n > getLanguageFromHeader() > parses pt language and returns pt-BR
+(pass) i18n > getLanguageFromHeader() > parses complex header with quality values
+(pass) i18n > getLanguageFromHeader() > respects quality values ordering
+(pass) i18n > getLanguageFromHeader() > returns en for unknown languages
+
+ 22 pass
+ 0 fail
+ 29 expect() calls
+Ran 22 tests across 2 files. [59.00ms]
+

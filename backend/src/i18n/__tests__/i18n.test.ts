@@ -8,18 +8,18 @@ describe('i18n', () => {
 
   describe('t()', () => {
     it('returns English string by default', () => {
-      expect(t('errors.validation')).toBe('Validation error')
+      expect(t('errors.generic.serverError')).toBe('Internal server error')
       expect(t('health.ok')).toBe('OK')
     })
 
     it('returns Portuguese string with lng: pt-BR', () => {
-      expect(t('errors.validation', { lng: 'pt-BR' })).toBe('Erro de validação')
+      expect(t('errors.generic.serverError', { lng: 'pt-BR' })).toBe('Erro interno do servidor')
       expect(t('health.ok', { lng: 'pt-BR' })).toBe('OK')
     })
 
     it('falls back to English for unknown language', () => {
-      expect(t('errors.validation', { lng: 'de' })).toBe('Validation error')
-      expect(t('errors.validation', { lng: 'fr' })).toBe('Validation error')
+      expect(t('errors.generic.serverError', { lng: 'de' })).toBe('Internal server error')
+      expect(t('errors.generic.serverError', { lng: 'fr' })).toBe('Internal server error')
     })
   })
 

@@ -1,15 +1,34 @@
 {
   "errors": {
-    "validation": "Validation error",
-    "unauthorized": "Unauthorized",
-    "forbidden": "Forbidden",
-    "notFound": "Not found",
-    "serverError": "Internal server error",
-    "badRequest": "Bad request",
-    "conflict": "Conflict",
-    "timeout": "Request timeout",
-    "tooManyRequests": "Too many requests",
-    "serviceUnavailable": "Service unavailable"
+    "auth": {
+      "invalidCredentials": "Invalid email or password",
+      "userExists": "A user with this email already exists",
+      "sessionExpired": "Your session has expired, please log in again",
+      "unauthorized": "You are not authorized to perform this action",
+      "tokenExpired": "Your authentication token has expired"
+    },
+    "validation": {
+      "invalidEmail": "Please enter a valid email address",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "requiredField": "This field is required",
+      "invalidFormat": "Invalid format"
+    },
+    "notification": {
+      "notFound": "Notification not found",
+      "unauthorized": "You are not authorized to access this notification",
+      "createFailed": "Failed to create notification",
+      "updateFailed": "Failed to update notification"
+    },
+    "generic": {
+      "serverError": "Internal server error",
+      "notFound": "Resource not found",
+      "badRequest": "Bad request",
+      "forbidden": "Access forbidden",
+      "conflict": "Conflict",
+      "timeout": "Request timeout",
+      "tooManyRequests": "Too many requests",
+      "serviceUnavailable": "Service unavailable"
+    }
   },
   "health": {
     "ok": "OK",

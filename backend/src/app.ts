@@ -1,28 +1,36 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-import { initI18n, t, getLanguageFromHeader } from './i18n'
+import { initI18n, getTranslation, getLanguageFromHeader, i18nMiddleware } from './i18n'
 import { healthRoutes } from './routes/health'
+import { usersModule } from '../modules/users'
 
 await initI18n()
 
 export const app = new Elysia()
   .use(swagger({ path: '/swagger' }))
   .use(cors())
+  .use(i18nMiddleware)
   .onError(({ error, code, request }) => {
     const lang = getLanguageFromHeader(request.headers.get('accept-language'))
     console.error(`[backend] Error: ${code}`, error)
 
     const errorMessages: Record<string, string> = {
-      VALIDATION: t('errors.validation', { lng: lang }),
-      NOT_FOUND: t('errors.notFound', { lng: lang }),
-      INTERNAL_SERVER_ERROR: t('errors.serverError', { lng: lang }),
-      INVALID_COOKIE_SIGNATURE: t('errors.unauthorized', { lng: lang }),
+      VALIDATION: getTranslation('errors.validation.invalidFormat', lang),
+      NOT_FOUND: getTranslation('errors.generic.notFound', lang),
+      INTERNAL_SERVER_ERROR: getTranslation('errors.generic.serverError', lang),
+      INVALID_COOKIE_SIGNATURE: getTranslation('errors.auth.unauthorized', lang),
     }
 
-    return { error: errorMessages[code] || t('errors.serverError', { lng: lang }) }
+    return {
+      error: {
+        code,
+        message: errorMessages[code] || getTranslation('errors.generic.serverError', lang),
+      },
+    }
   })
   .use(healthRoutes)
+  .use(usersModule)
   .get('/', () => ({ status: 'ok' }))
 
 export type App = typeof app

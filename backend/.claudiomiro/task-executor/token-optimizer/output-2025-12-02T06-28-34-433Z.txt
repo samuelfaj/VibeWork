@@ -1,0 +1,23 @@
+# Token Optimizer Output
+## Command
+```
+bun run typecheck
+```
+
+## Output
+modules/users/index.ts(2,28): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/routes/auth.routes.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+modules/users/index.ts(3,28): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/routes/user.routes.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+modules/users/index.ts(8,15): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/schema/auth.schema.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+modules/users/index.ts(10,15): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/core/password.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+modules/users/routes/user.routes.ts(3,29): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/services/user.service.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../services/user.service' from file '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/routes/user.routes.ts'
+    Imported via './services/user.service' from file '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/index.ts'
+modules/users/services/user.service.ts(3,48): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/schema/user.schema.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '../schema/user.schema' from file '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/services/user.service.ts'
+    Imported via './schema/user.schema' from file '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/index.ts'
+    Imported via './user.schema' from file '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/schema/auth.schema.ts'
+src/app.ts(6,29): error TS6059: File '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/index.ts' is not under 'rootDir' '/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src'. 'rootDir' is expected to contain all source files.
+$ tsc --noEmit
+

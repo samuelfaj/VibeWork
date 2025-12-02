@@ -1,15 +1,34 @@
 {
   "errors": {
-    "validation": "Erro de validação",
-    "unauthorized": "Não autorizado",
-    "forbidden": "Proibido",
-    "notFound": "Não encontrado",
-    "serverError": "Erro interno do servidor",
-    "badRequest": "Requisição inválida",
-    "conflict": "Conflito",
-    "timeout": "Tempo limite da requisição excedido",
-    "tooManyRequests": "Muitas requisições",
-    "serviceUnavailable": "Serviço indisponível"
+    "auth": {
+      "invalidCredentials": "Email ou senha inválidos",
+      "userExists": "Um usuário com este email já existe",
+      "sessionExpired": "Sua sessão expirou, por favor faça login novamente",
+      "unauthorized": "Você não está autorizado a realizar esta ação",
+      "tokenExpired": "Seu token de autenticação expirou"
+    },
+    "validation": {
+      "invalidEmail": "Por favor, insira um endereço de email válido",
+      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
+      "requiredField": "Este campo é obrigatório",
+      "invalidFormat": "Formato inválido"
+    },
+    "notification": {
+      "notFound": "Notificação não encontrada",
+      "unauthorized": "Você não está autorizado a acessar esta notificação",
+      "createFailed": "Falha ao criar notificação",
+      "updateFailed": "Falha ao atualizar notificação"
+    },
+    "generic": {
+      "serverError": "Erro interno do servidor",
+      "notFound": "Recurso não encontrado",
+      "badRequest": "Requisição inválida",
+      "forbidden": "Acesso proibido",
+      "conflict": "Conflito",
+      "timeout": "Tempo limite da requisição excedido",
+      "tooManyRequests": "Muitas requisições",
+      "serviceUnavailable": "Serviço indisponível"
+    }
   },
   "health": {
     "ok": "OK",

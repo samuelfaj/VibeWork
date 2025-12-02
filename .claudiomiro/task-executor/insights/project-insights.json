@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-02T06:11:35.152Z",
+  "lastUpdated": "2025-12-02T06:21:36.691Z",
   "curatedInsights": {
     "patterns": [
       {
@@ -4205,6 +4205,51 @@
         "category": "testing",
         "actionable": false,
         "evidence": "Phase 3: Analysis Results",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "e101bc69-8420-4863-b8cf-7b8715669c2c",
+        "insight": "**Test Framework:** vitest",
+        "description": "**Test Framework:** vitest",
+        "learnedFrom": "TASK5.5",
+        "addedAt": "2025-12-02T06:21:36.685Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "47da7d62-b04f-4d14-a08a-7e84700d0edf",
+        "insight": "**Test Naming:** file.test.ext",
+        "description": "**Test Naming:** file.test.ext",
+        "learnedFrom": "TASK5.5",
+        "addedAt": "2025-12-02T06:21:36.688Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "bc0b9cc2-ce54-4d51-aa8d-3e28cd818f52",
+        "insight": "Directory structure accurate with test files included",
+        "description": "Directory structure accurate with test files included",
+        "learnedFrom": "TASK5.5",
+        "addedAt": "2025-12-02T06:21:36.690Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Decision",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null

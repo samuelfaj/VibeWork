@@ -2,15 +2,16 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@infra/*": ["./infra/*"]
+      "@infra/*": ["./src/infra/*"],
+      "@modules/*": ["./modules/*"]
     }
   },
-  "include": ["src/**/*", "infra/**/*"],
+  "include": ["src/**/*", "modules/**/*"],
   "exclude": ["node_modules", "dist"]
 }

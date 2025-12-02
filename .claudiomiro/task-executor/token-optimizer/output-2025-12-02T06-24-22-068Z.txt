@@ -1,0 +1,79 @@
+# Token Optimizer Output
+## Command
+```
+cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && bun test src/i18n/ --silent
+```
+
+## Output
+bun test v1.2.8 (adab0f64)
+
+src/i18n/__tests__/middleware.test.ts:
+(pass) parseAcceptLanguage > returns "en" for Accept-Language "en" [2.28ms]
+(pass) parseAcceptLanguage > returns "pt-BR" for Accept-Language "pt-BR"
+(pass) parseAcceptLanguage > returns "pt-BR" for Accept-Language "pt-BR,pt;q=0.9,en;q=0.8"
+(pass) parseAcceptLanguage > returns "en" for unsupported locales "fr,de"
+(pass) parseAcceptLanguage > returns "en" for null header
+(pass) parseAcceptLanguage > returns "en" for wildcard "*"
+(pass) parseAcceptLanguage > returns "en" for malformed header
+(pass) parseAcceptLanguage > returns "pt-BR" for quality value "en;q=0.5,pt-BR;q=0.9"
+(pass) parseAcceptLanguage > returns "pt-BR" for "pt" language code
+(pass) parseAcceptLanguage > returns "en" for "en-US" language code
+(pass) SUPPORTED_LOCALES > contains en and pt-BR [0.34ms]
+(pass) DEFAULT_LOCALE > is "en"
+
+src/i18n/__tests__/i18n.test.ts:
+ 6 |     await initI18n()
+ 7 |   })
+ 8 | 
+ 9 |   describe('t()', () => {
+10 |     it('returns English string by default', () => {
+11 |       expect(t('errors.validation')).toBe('Validation error')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "Validation error"
+Received: "key 'errors.validation (en)' returned an object instead of string."
+
+      at <anonymous> (/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src/i18n/__tests__/i18n.test.ts:11:38)
+(fail) i18n > t() > returns English string by default [3.00ms]
+11 |       expect(t('errors.validation')).toBe('Validation error')
+12 |       expect(t('health.ok')).toBe('OK')
+13 |     })
+14 | 
+15 |     it('returns Portuguese string with lng: pt-BR', () => {
+16 |       expect(t('errors.validation', { lng: 'pt-BR' })).toBe('Erro de validação')
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "Erro de validação"
+Received: "key 'errors.validation (en)' returned an object instead of string."
+
+      at <anonymous> (/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src/i18n/__tests__/i18n.test.ts:16:56)
+(fail) i18n > t() > returns Portuguese string with lng: pt-BR [0.40ms]
+16 |       expect(t('errors.validation', { lng: 'pt-BR' })).toBe('Erro de validação')
+17 |       expect(t('health.ok', { lng: 'pt-BR' })).toBe('OK')
+18 |     })
+19 | 
+20 |     it('falls back to English for unknown language', () => {
+21 |       expect(t('errors.validation', { lng: 'de' })).toBe('Validation error')
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "Validation error"
+Received: "key 'errors.validation (en)' returned an object instead of string."
+
+      at <anonymous> (/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/src/i18n/__tests__/i18n.test.ts:21:53)
+(fail) i18n > t() > falls back to English for unknown language
+(pass) i18n > getLanguageFromHeader() > returns en for null/undefined
+(pass) i18n > getLanguageFromHeader() > returns en for empty string
+(pass) i18n > getLanguageFromHeader() > parses simple language header
+(pass) i18n > getLanguageFromHeader() > parses pt language and returns pt-BR
+(pass) i18n > getLanguageFromHeader() > parses complex header with quality values
+(pass) i18n > getLanguageFromHeader() > respects quality values ordering
+(pass) i18n > getLanguageFromHeader() > returns en for unknown languages [0.05ms]
+
+ 19 pass
+ 3 fail
+ 26 expect() calls
+Ran 22 tests across 2 files. [111.00ms]
+

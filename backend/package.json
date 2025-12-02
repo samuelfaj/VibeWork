@@ -10,24 +10,31 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "test": "vitest run",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:migrate": "bunx drizzle-kit migrate",
+    "db:push": "bunx drizzle-kit push"
   },
   "dependencies": {
-    "elysia": "latest",
-    "@elysiajs/swagger": "latest",
+    "@aws-sdk/client-ses": "^3.940.0",
     "@elysiajs/cors": "latest",
-    "drizzle-orm": "latest",
-    "mysql2": "latest",
-    "mongoose": "latest",
-    "@typegoose/typegoose": "latest",
-    "reflect-metadata": "latest",
-    "ioredis": "latest",
+    "@elysiajs/swagger": "latest",
     "@google-cloud/pubsub": "latest",
-    "i18next": "latest"
+    "@node-rs/argon2": "latest",
+    "@typegoose/typegoose": "latest",
+    "better-auth": "latest",
+    "drizzle-orm": "latest",
+    "elysia": "latest",
+    "i18next": "latest",
+    "ioredis": "latest",
+    "mongoose": "latest",
+    "mysql2": "latest",
+    "reflect-metadata": "latest"
   },
   "devDependencies": {
     "typescript": "latest",
     "@types/node": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "drizzle-kit": "latest"
   }
 }
