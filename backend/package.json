@@ -19,6 +19,7 @@
     "db:push": "bunx drizzle-kit push"
   },
   "dependencies": {
+    "@vibe-code/contract": "workspace:*",
     "@aws-sdk/client-ses": "^3.940.0",
     "@elysiajs/cors": "latest",
     "@elysiajs/swagger": "latest",

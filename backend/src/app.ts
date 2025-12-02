@@ -5,8 +5,10 @@ import { initI18n, getTranslation, getLanguageFromHeader, i18nMiddleware } from 
 import { healthRoutes } from './routes/health'
 import { usersModule } from '../modules/users'
 import { notificationsModule } from '../modules/notifications'
+import { connectMongo } from './infra'
 
 await initI18n()
+await connectMongo()
 
 export const app = new Elysia()
   .use(swagger({ path: '/swagger' }))

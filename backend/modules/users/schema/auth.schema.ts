@@ -1,7 +1,7 @@
 import { mysqlTable, varchar, text, timestamp } from 'drizzle-orm/mysql-core'
-import { users } from './user.schema'
+import { user } from './user.schema'
 
-export const sessions = mysqlTable('session', {
+export const session = mysqlTable('session', {
   id: varchar('id', { length: 36 }).primaryKey(),
   expiresAt: timestamp('expires_at', { fsp: 3 }).notNull(),
   token: varchar('token', { length: 255 }).notNull().unique(),
@@ -14,16 +14,16 @@ export const sessions = mysqlTable('session', {
   userAgent: text('user_agent'),
   userId: varchar('user_id', { length: 36 })
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
 })
 
-export const accounts = mysqlTable('account', {
+export const account = mysqlTable('account', {
   id: varchar('id', { length: 36 }).primaryKey(),
   accountId: varchar('account_id', { length: 255 }).notNull(),
   providerId: varchar('provider_id', { length: 255 }).notNull(),
   userId: varchar('user_id', { length: 36 })
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),
@@ -38,7 +38,7 @@ export const accounts = mysqlTable('account', {
     .notNull(),
 })
 
-export const verifications = mysqlTable('verification', {
+export const verification = mysqlTable('verification', {
   id: varchar('id', { length: 36 }).primaryKey(),
   identifier: varchar('identifier', { length: 255 }).notNull(),
   value: varchar('value', { length: 255 }).notNull(),
@@ -49,9 +49,14 @@ export const verifications = mysqlTable('verification', {
     .$onUpdate(() => new Date()),
 })
 
-export type Session = typeof sessions.$inferSelect
-export type NewSession = typeof sessions.$inferInsert
-export type Account = typeof accounts.$inferSelect
-export type NewAccount = typeof accounts.$inferInsert
-export type Verification = typeof verifications.$inferSelect
-export type NewVerification = typeof verifications.$inferInsert
+// Aliases for backward compatibility
+export const sessions = session
+export const accounts = account
+export const verifications = verification
+
+export type Session = typeof session.$inferSelect
+export type NewSession = typeof session.$inferInsert
+export type Account = typeof account.$inferSelect
+export type NewAccount = typeof account.$inferInsert
+export type Verification = typeof verification.$inferSelect
+export type NewVerification = typeof verification.$inferInsert

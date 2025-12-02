@@ -1,0 +1,166 @@
+# Token Optimizer Output
+## Command
+```
+bun run test 2>&1
+```
+
+## Output
+$ turbo run test
+turbo 2.6.1
+
+• Packages in scope: @vibe-code/contract, @vibe/e2e, @vibe/frontend, @vibe/ui, @vibework/backend
+• Running test in 5 packages
+• Remote caching disabled
+@vibework/backend:test: cache bypass, force executing a3ce788120366cea
+@vibe/e2e:test: cache bypass, force executing 84342f3cc1272f60
+@vibe-code/contract:test: cache bypass, force executing edb0331e3fe8ee0a
+@vibework/backend:test: $ vitest run
+@vibe/e2e:test: $ playwright test
+@vibe-code/contract:test: $ vitest run
+@vibe-code/contract:test: 
+@vibe-code/contract:test: [1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/packages/contract[39m
+@vibe-code/contract:test: 
+@vibework/backend:test: 
+@vibework/backend:test: [1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend[39m
+@vibework/backend:test: 
+@vibe-code/contract:test:  [32m✓[39m src/__tests__/user.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | src/infra/__tests__/mongodb.test.ts[2m > [22m[2mMongoDB Infrastructure[2m > [22m[2mshould connect to MongoDB
+@vibework/backend:test: [22m[39m[MongoDB] Connected
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | src/infra/__tests__/mongodb.test.ts[2m > [22m[2mMongoDB Infrastructure[2m > [22m[2mshould close connection
+@vibework/backend:test: [22m[39m[MongoDB] Connection closed
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m src/infra/__tests__/mongodb.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 120[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | src/infra/__tests__/mysql.test.ts[2m > [22m[2mMySQL Infrastructure[2m > [22m[2mshould close connection
+@vibework/backend:test: [22m[39m[MySQL] Connection pool closed
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m src/infra/__tests__/mysql.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould publish notification to correct topic
+@vibework/backend:test: [22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould serialize notification correctly
+@vibework/backend:test: [22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/email.service.test.ts[2m > [22m[2mMockEmailService[2m > [22m[2mresolves without error
+@vibework/backend:test: [22m[39mMock email to test@example.com: Subject
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m modules/notifications/services/__tests__/email.service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+@vibe-code/contract:test:  [32m✓[39m src/__tests__/notification.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+@vibe-code/contract:test: 
+@vibe-code/contract:test: [2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+@vibe-code/contract:test: [2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+@vibe-code/contract:test: [2m   Start at [22m 05:34:35
+@vibe-code/contract:test: [2m   Duration [22m 968ms[2m (transform 226ms, setup 0ms, import 1.03s, tests 25ms, environment 0ms)[22m
+@vibe-code/contract:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Processing email notification: msg-123
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Message acknowledged: msg-123
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Ignoring in-app notification: msg-456
+@vibework/backend:test: [NotificationSubscriber] Message acknowledged: msg-456
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Processing email notification: msg-789
+@vibework/backend:test: 
+@vibework/backend:test: [90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Error processing message msg-789: Error: Email send failed
+@vibework/backend:test:     at [90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/[39mmodules/notifications/services/__tests__/notification-publisher.test.ts:208:43
+@vibework/backend:test:     at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+@vibework/backend:test:     at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+@vibework/backend:test:     at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+@vibework/backend:test:     at new Promise (<anonymous>)
+@vibework/backend:test:     at runWithTimeout (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+@vibework/backend:test:     at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+@vibework/backend:test:     at Traces.$ (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+@vibework/backend:test:     at trace (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+@vibework/backend:test:     at runTest (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Invalid payload, acking to prevent retry: msg-invalid
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Listening on notification-created-sub
+@vibework/backend:test: 
+@vibework/backend:test: [90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+@vibework/backend:test: [22m[39m[NotificationSubscriber] Subscriber stopped
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m modules/notifications/services/__tests__/notification-publisher.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 242[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | src/infra/__tests__/cache.test.ts[2m > [22m[2mRedis Cache Infrastructure[2m > [22m[2mshould close connection
+@vibework/backend:test: [22m[39m[Redis] Connection closed
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m src/infra/__tests__/cache.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 293[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | src/infra/__tests__/pubsub.test.ts[2m > [22m[2mPubSub Infrastructure[2m > [22m[2mshould close connection
+@vibework/backend:test: [22m[39m[PubSub] Connection closed
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m src/infra/__tests__/pubsub.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m modules/notifications/__tests__/notification.routes.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 637[2mms[22m[39m
+@vibework/backend:test:        [33m[2m✓[22m[39m should create notification and return 201 [33m 538[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m src/i18n/__tests__/middleware.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m src/i18n/__tests__/i18n.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m modules/notifications/core/__tests__/notification.formatter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m modules/users/core/__tests__/password.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1578[2mms[22m[39m
+@vibework/backend:test:      [33m[2m✓[22m[39m hashPassword returns a string starting with $argon2 [33m 367[2mms[22m[39m
+@vibework/backend:test:      [33m[2m✓[22m[39m verifyPassword returns true for correct password [33m 404[2mms[22m[39m
+@vibework/backend:test:      [33m[2m✓[22m[39m verifyPassword returns false for incorrect password [33m 354[2mms[22m[39m
+@vibework/backend:test: [90mstdout[2m | src/__tests__/app.test.ts
+@vibework/backend:test: [22m[39m[MongoDB] Connected
+@vibework/backend:test: 
+@vibework/backend:test:  [32m✓[39m src/__tests__/app.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+@vibework/backend:test:  [32m✓[39m src/routes/__tests__/health.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 5096[2mms[22m[39m
+@vibework/backend:test:        [33m[2m✓[22m[39m should handle timeout errors [33m 5001[2mms[22m[39m
+@vibework/backend:test: 
+@vibework/backend:test: [2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+@vibework/backend:test: [2m      Tests [22m [1m[32m83 passed[39m[22m[90m (83)[39m
+@vibework/backend:test: [2m   Start at [22m 05:34:35
+@vibework/backend:test: [2m   Duration [22m 6.29s[2m (transform 2.23s, setup 610ms, import 5.13s, tests 8.25s, environment 1ms)[22m
+@vibework/backend:test: 
+@vibe/e2e:test: [1A[2K[2m[WebServer] [22m[0m[2m[35m$[0m [2m[1mvite[0m
+@vibe/e2e:test: 
+@vibe/e2e:test: Error: Timed out waiting 30000ms from config.webServer.
+@vibe/e2e:test: 
+@vibe/e2e:test: [1A[2K
+@vibe/e2e:test: error: script "test" exited with code 1
+@vibe/e2e:test: ERROR: command finished with error: command (/Users/samuelfajreldines/Desenvolvimento/VibeWork/e2e) /Users/samuelfajreldines/.bun/bin/bun run test exited (1)
+@vibe/e2e#test: command (/Users/samuelfajreldines/Desenvolvimento/VibeWork/e2e) /Users/samuelfajreldines/.bun/bin/bun run test exited (1)
+
+ Tasks:    2 successful, 3 total
+Cached:    0 cached, 3 total
+  Time:    1m47.808s 
+Failed:    @vibe/e2e#test
+
+ ERROR  run failed: command  exited (1)
+error: script "test" exited with code 1
+

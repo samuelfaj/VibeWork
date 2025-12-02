@@ -73,10 +73,18 @@ export async function signIn(page: Page, user: TestUser): Promise<void> {
  * Sign out the current user
  */
 export async function signOut(page: Page): Promise<void> {
-  // Clear cookies and local storage to sign out
+  // Clear cookies to sign out (main session mechanism)
   await page.context().clearCookies()
-  await page.evaluate(() => {
-    localStorage.clear()
-    sessionStorage.clear()
-  })
+  // Only clear storage if we're on a valid page (not about:blank)
+  try {
+    const url = page.url()
+    if (url && !url.startsWith('about:')) {
+      await page.evaluate(() => {
+        localStorage.clear()
+        sessionStorage.clear()
+      })
+    }
+  } catch {
+    // Ignore storage errors - cookies are cleared, session will be invalidated
+  }
 }

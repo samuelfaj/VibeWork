@@ -1,0 +1,145 @@
+# Token Optimizer Output
+## Command
+```
+bun run test 2>&1
+```
+
+## Output
+$ vitest run
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend[39m
+
+[90mstdout[2m | src/infra/__tests__/mongodb.test.ts[2m > [22m[2mMongoDB Infrastructure[2m > [22m[2mshould connect to MongoDB
+[22m[39m[MongoDB] Connected
+
+[90mstdout[2m | src/infra/__tests__/cache.test.ts[2m > [22m[2mRedis Cache Infrastructure[2m > [22m[2mshould close connection
+[22m[39m[Redis] Connection closed
+
+[90mstdout[2m | src/infra/__tests__/mongodb.test.ts[2m > [22m[2mMongoDB Infrastructure[2m > [22m[2mshould close connection
+[22m[39m[MongoDB] Connection closed
+
+ [32m✓[39m src/infra/__tests__/cache.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/infra/__tests__/mongodb.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould publish notification to correct topic
+[22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Publisher[2m > [22m[2mshould serialize notification correctly
+[22m[39m[NotificationPublisher] Published message message-id-123 to notification-created
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Processing email notification: msg-123
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Message acknowledged: msg-123
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould process email type and call EmailService
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Ignoring in-app notification: msg-456
+[NotificationSubscriber] Message acknowledged: msg-456
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ignore in-app type and acknowledge
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Processing email notification: msg-789
+
+[90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Error processing message msg-789: Error: Email send failed
+    at [90m/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/[39mmodules/notifications/services/__tests__/notification-publisher.test.ts:208:43
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+    at file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+    at trace (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+    at runTest (file:///Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould nack on EmailService error
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstderr[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Invalid payload, acking to prevent retry: msg-invalid
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mhandleMessage[2m > [22m[2mshould ack invalid payload to prevent retry
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstartNotificationSubscriber[2m > [22m[2mshould start subscriber and listen on subscription
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+[22m[39m[NotificationSubscriber] Listening on notification-created-sub
+
+[90mstdout[2m | modules/notifications/services/__tests__/notification-publisher.test.ts[2m > [22m[2mNotification Subscriber[2m > [22m[2mstopNotificationSubscriber[2m > [22m[2mshould stop subscriber and cleanup
+[22m[39m[NotificationSubscriber] Subscriber stopped
+
+ [32m✓[39m modules/notifications/services/__tests__/notification-publisher.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 240[2mms[22m[39m
+[90mstdout[2m | src/infra/__tests__/mysql.test.ts[2m > [22m[2mMySQL Infrastructure[2m > [22m[2mshould close connection
+[22m[39m[MySQL] Connection pool closed
+
+ [32m✓[39m src/infra/__tests__/mysql.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 410[2mms[22m[39m
+     [33m[2m✓[22m[39m should export db instance [33m 406[2mms[22m[39m
+[90mstdout[2m | src/infra/__tests__/pubsub.test.ts[2m > [22m[2mPubSub Infrastructure[2m > [22m[2mshould close connection
+[22m[39m[PubSub] Connection closed
+
+ [32m✓[39m src/infra/__tests__/pubsub.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+[90mstdout[2m | modules/notifications/services/__tests__/email.service.test.ts[2m > [22m[2mMockEmailService[2m > [22m[2mresolves without error
+[22m[39mMock email to test@example.com: Subject
+
+ [32m✓[39m modules/notifications/services/__tests__/email.service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m modules/notifications/core/__tests__/notification.formatter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m modules/notifications/__tests__/notification.routes.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 867[2mms[22m[39m
+       [33m[2m✓[22m[39m should create notification and return 201 [33m 755[2mms[22m[39m
+ [32m✓[39m src/i18n/__tests__/i18n.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/i18n/__tests__/middleware.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m modules/users/core/__tests__/password.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1473[2mms[22m[39m
+     [33m[2m✓[22m[39m verifyPassword returns true for correct password [33m 303[2mms[22m[39m
+     [33m[2m✓[22m[39m verifyPassword returns false for incorrect password [33m 368[2mms[22m[39m
+     [33m[2m✓[22m[39m hashPassword produces different hashes for same input (salting) [33m 391[2mms[22m[39m
+ [32m✓[39m src/routes/__tests__/health.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 5079[2mms[22m[39m
+       [33m[2m✓[22m[39m should handle timeout errors [33m 5002[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/app.test.ts[2m [ src/__tests__/app.test.ts ][22m
+[31m[1mError[22m: "Notification.userId"'s Type is invalid! Type is: "undefined" [E009][39m
+[90m [2m❯[22m processProp ../node_modules/@typegoose/typegoose/lib/internal/processProp.js:[2m214:15[22m[39m
+[90m [2m❯[22m _buildSchema ../node_modules/@typegoose/typegoose/lib/internal/schema.js:[2m36:43[22m[39m
+[90m [2m❯[22m buildSchema ../node_modules/@typegoose/typegoose/lib/typegoose.js:[2m153:37[22m[39m
+[90m [2m❯[22m getModelForClass ../node_modules/@typegoose/typegoose/lib/typegoose.js:[2m78:41[22m[39m
+[36m [2m❯[22m modules/notifications/models/notification.model.ts:[2m21:34[22m[39m
+    [90m 19| [39m}
+    [90m 20| [39m
+    [90m 21| [39m[35mexport[39m [35mconst[39m [33mNotificationModel[39m [33m=[39m [34mgetModelForClass[39m([33mNotification[39m)
+    [90m   | [39m                                 [31m^[39m
+    [90m 22| [39m
+[90m [2m❯[22m modules/notifications/services/notification.service.ts:[2m1:1[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m12 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m80 passed[39m[22m[90m (80)[39m
+[2m   Start at [22m 05:04:33
+[2m   Duration [22m 5.88s[2m (transform 2.21s, setup 633ms, import 2.46s, tests 8.24s, environment 1ms)[22m
+
+error: script "test" exited with code 1
+

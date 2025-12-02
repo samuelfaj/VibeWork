@@ -1,0 +1,23 @@
+# Token Optimizer Output
+## Command
+```
+bun run lint
+```
+
+## Output
+• Packages in scope: @vibe-code/contract, @vibe/e2e, @vibe/frontend, @vibe/ui, @vibework/backend
+• Running lint in 5 packages
+• Remote caching disabled
+@vibework/backend:lint: cache miss, executing 1c9dd6f8f700b145
+@vibe/frontend:lint: cache hit, replaying logs af360bc1c6af0555
+@vibe/frontend:lint: $ eslint src --ext .ts,.tsx
+@vibework/backend:lint: $ eslint src/
+
+ Tasks:    2 successful, 2 total
+Cached:    1 cached, 2 total
+  Time:    1.237s 
+
+$ turbo run lint
+turbo 2.6.1
+
+

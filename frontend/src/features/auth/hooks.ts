@@ -1,48 +1,81 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { api } from '../../lib/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 interface AuthCredentials {
   email: string
   password: string
+  name?: string
 }
 
 interface User {
   id: string
   email: string
+  name: string
+  emailVerified: boolean
+  image: string | null
+  createdAt: string
+  updatedAt: string
 }
 
-// Type-safe API client will be available once backend exports App type
-// For now, use dynamic access with type assertions
-const typedApi = api as unknown as {
-  signup: {
-    post: (body: AuthCredentials) => Promise<{ data?: unknown; error?: { value: unknown } }>
-  }
-  login: {
-    post: (body: AuthCredentials) => Promise<{ data?: unknown; error?: { value: unknown } }>
-  }
-  users: { me: { get: () => Promise<{ data?: unknown; error?: { value: unknown } }> } }
+interface AuthResponse {
+  token: string
+  user: User
 }
 
 export function useSignup() {
+  const queryClient = useQueryClient()
+
   return useMutation({
-    mutationFn: async (credentials: AuthCredentials) => {
-      const response = await typedApi.signup.post(credentials)
-      if (response.error) {
-        throw new Error(response.error.value as string)
+    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> => {
+      const response = await fetch(`${API_BASE}/api/auth/sign-up/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+          name: credentials.name || credentials.email.split('@')[0],
+        }),
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || 'Signup failed')
       }
-      return response.data
+
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
     },
   })
 }
 
 export function useLogin() {
+  const queryClient = useQueryClient()
+
   return useMutation({
-    mutationFn: async (credentials: AuthCredentials) => {
-      const response = await typedApi.login.post(credentials)
-      if (response.error) {
-        throw new Error(response.error.value as string)
+    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> => {
+      const response = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }),
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || 'Login failed')
       }
-      return response.data
+
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
     },
   })
 }
@@ -51,11 +84,16 @@ export function useCurrentUser() {
   return useQuery<User | null>({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const response = await typedApi.users.me.get()
-      if (response.error) {
+      const response = await fetch(`${API_BASE}/api/auth/get-session`, {
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
         return null
       }
-      return response.data as User
+
+      const data = await response.json()
+      return data.user || null
     },
     retry: false,
   })

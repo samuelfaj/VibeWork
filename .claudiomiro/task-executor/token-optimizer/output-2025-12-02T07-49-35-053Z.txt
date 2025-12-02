@@ -1,0 +1,13 @@
+# Token Optimizer Output
+## Command
+```
+bun install
+```
+
+## Output
+bun install v1.2.8 (adab0f64)
+
+Checked 977 installs across 1137 packages (no changes) [300.00ms]
+
+$ husky || true
+

@@ -2,10 +2,11 @@ import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
 
 const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
+  host: process.env.MYSQL_HOST || '127.0.0.1',
+  port: process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : 3307,
+  user: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || 'password123',
+  database: process.env.MYSQL_DATABASE || 'vibe_db',
   connectionLimit: 10,
   connectTimeout: 5000,
 })
@@ -24,8 +25,11 @@ export async function checkMySqlConnection(): Promise<boolean> {
       return true
     }
     return await Promise.race([checkPromise(), timeoutPromise])
-  } catch {
-    console.error('[MySQL] Connection check failed')
+  } catch (error) {
+    console.error(
+      '[MySQL] Connection check failed:',
+      error instanceof Error ? error.message : error
+    )
     return false
   }
 }

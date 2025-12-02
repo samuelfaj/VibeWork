@@ -1,0 +1,32 @@
+# Node modules (will be installed in container)
+**/node_modules
+
+# Build outputs
+**/dist
+**/.turbo
+
+# Development files
+**/.env
+**/.env.local
+**/.git
+**/.gitignore
+
+# IDE/Editor
+**/.vscode
+**/.idea
+
+# Testing
+**/coverage
+**/.nyc_output
+
+# Logs
+**/*.log
+**/npm-debug.log*
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Docker (avoid recursion)
+**/Dockerfile*
+**/.dockerignore

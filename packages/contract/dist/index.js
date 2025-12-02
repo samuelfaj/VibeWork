@@ -10547,89 +10547,90 @@ var require_fast_decode_uri_component = __commonJS2((exports, module) => {
 });
 var require_dist = __commonJS2((exports) => {
   Object.defineProperty(exports, "__esModule", { value: true });
-  exports.parse = parse2;
-  exports.serialize = serialize;
-  var cookieNameRegExp = /^[\u0021-\u003A\u003C\u003E-\u007E]+$/, cookieValueRegExp = /^[\u0021-\u003A\u003C-\u007E]*$/, domainValueRegExp = /^([.]?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)([.][a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i, pathValueRegExp = /^[\u0020-\u003A\u003D-\u007E]*$/, __toString = Object.prototype.toString, NullObject = (() => {
+  exports.parseCookie = parseCookie;
+  exports.parse = parseCookie;
+  exports.stringifyCookie = stringifyCookie;
+  exports.stringifySetCookie = stringifySetCookie;
+  exports.serialize = stringifySetCookie;
+  exports.parseSetCookie = parseSetCookie;
+  exports.stringifySetCookie = stringifySetCookie;
+  exports.serialize = stringifySetCookie;
+  var cookieNameRegExp = /^[\u0021-\u003A\u003C\u003E-\u007E]+$/, cookieValueRegExp = /^[\u0021-\u003A\u003C-\u007E]*$/, domainValueRegExp = /^([.]?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)([.][a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i, pathValueRegExp = /^[\u0020-\u003A\u003D-\u007E]*$/, maxAgeRegExp = /^-?\d+$/, __toString = Object.prototype.toString, NullObject = (() => {
     let C = function() {};
     return C.prototype = Object.create(null), C;
   })();
-  function parse2(str, options) {
+  function parseCookie(str, options) {
     let obj = new NullObject, len = str.length;
     if (len < 2)
       return obj;
     let dec = options?.decode || decode2, index = 0;
     do {
-      let eqIdx = str.indexOf("=", index);
+      let eqIdx = eqIndex(str, index, len);
       if (eqIdx === -1)
         break;
-      let colonIdx = str.indexOf(";", index), endIdx = colonIdx === -1 ? len : colonIdx;
+      let endIdx = endIndex(str, index, len);
       if (eqIdx > endIdx) {
         index = str.lastIndexOf(";", eqIdx - 1) + 1;
         continue;
       }
-      let keyStartIdx = startIndex(str, index, eqIdx), keyEndIdx = endIndex(str, eqIdx, keyStartIdx), key = str.slice(keyStartIdx, keyEndIdx);
-      if (obj[key] === undefined) {
-        let valStartIdx = startIndex(str, eqIdx + 1, endIdx), valEndIdx = endIndex(str, endIdx, valStartIdx), value = dec(str.slice(valStartIdx, valEndIdx));
-        obj[key] = value;
-      }
+      let key = valueSlice(str, index, eqIdx);
+      if (obj[key] === undefined)
+        obj[key] = dec(valueSlice(str, eqIdx + 1, endIdx));
       index = endIdx + 1;
     } while (index < len);
     return obj;
   }
-  function startIndex(str, index, max) {
-    do {
-      let code = str.charCodeAt(index);
-      if (code !== 32 && code !== 9)
-        return index;
-    } while (++index < max);
-    return max;
-  }
-  function endIndex(str, index, min) {
-    while (index > min) {
-      let code = str.charCodeAt(--index);
-      if (code !== 32 && code !== 9)
-        return index + 1;
+  function stringifyCookie(cookie, options) {
+    let enc = options?.encode || encodeURIComponent, cookieStrings = [];
+    for (let name of Object.keys(cookie)) {
+      let val = cookie[name];
+      if (val === undefined)
+        continue;
+      if (!cookieNameRegExp.test(name))
+        throw TypeError(`cookie name is invalid: ${name}`);
+      let value = enc(val);
+      if (!cookieValueRegExp.test(value))
+        throw TypeError(`cookie val is invalid: ${val}`);
+      cookieStrings.push(`${name}=${value}`);
     }
-    return min;
+    return cookieStrings.join("; ");
   }
-  function serialize(name, val, options) {
-    let enc = options?.encode || encodeURIComponent;
-    if (!cookieNameRegExp.test(name))
-      throw TypeError(`argument name is invalid: ${name}`);
-    let value = enc(val);
+  function stringifySetCookie(_name, _val, _opts) {
+    let cookie = typeof _name === "object" ? _name : { ..._opts, name: _name, value: String(_val) }, enc = (typeof _val === "object" ? _val : _opts)?.encode || encodeURIComponent;
+    if (!cookieNameRegExp.test(cookie.name))
+      throw TypeError(`argument name is invalid: ${cookie.name}`);
+    let value = cookie.value ? enc(cookie.value) : "";
     if (!cookieValueRegExp.test(value))
-      throw TypeError(`argument val is invalid: ${val}`);
-    let str = name + "=" + value;
-    if (!options)
-      return str;
-    if (options.maxAge !== undefined) {
-      if (!Number.isInteger(options.maxAge))
-        throw TypeError(`option maxAge is invalid: ${options.maxAge}`);
-      str += "; Max-Age=" + options.maxAge;
+      throw TypeError(`argument val is invalid: ${cookie.value}`);
+    let str = cookie.name + "=" + value;
+    if (cookie.maxAge !== undefined) {
+      if (!Number.isInteger(cookie.maxAge))
+        throw TypeError(`option maxAge is invalid: ${cookie.maxAge}`);
+      str += "; Max-Age=" + cookie.maxAge;
     }
-    if (options.domain) {
-      if (!domainValueRegExp.test(options.domain))
-        throw TypeError(`option domain is invalid: ${options.domain}`);
-      str += "; Domain=" + options.domain;
+    if (cookie.domain) {
+      if (!domainValueRegExp.test(cookie.domain))
+        throw TypeError(`option domain is invalid: ${cookie.domain}`);
+      str += "; Domain=" + cookie.domain;
     }
-    if (options.path) {
-      if (!pathValueRegExp.test(options.path))
-        throw TypeError(`option path is invalid: ${options.path}`);
-      str += "; Path=" + options.path;
+    if (cookie.path) {
+      if (!pathValueRegExp.test(cookie.path))
+        throw TypeError(`option path is invalid: ${cookie.path}`);
+      str += "; Path=" + cookie.path;
     }
-    if (options.expires) {
-      if (!isDate(options.expires) || !Number.isFinite(options.expires.valueOf()))
-        throw TypeError(`option expires is invalid: ${options.expires}`);
-      str += "; Expires=" + options.expires.toUTCString();
+    if (cookie.expires) {
+      if (!isDate(cookie.expires) || !Number.isFinite(cookie.expires.valueOf()))
+        throw TypeError(`option expires is invalid: ${cookie.expires}`);
+      str += "; Expires=" + cookie.expires.toUTCString();
     }
-    if (options.httpOnly)
+    if (cookie.httpOnly)
       str += "; HttpOnly";
-    if (options.secure)
+    if (cookie.secure)
       str += "; Secure";
-    if (options.partitioned)
+    if (cookie.partitioned)
       str += "; Partitioned";
-    if (options.priority)
-      switch (typeof options.priority === "string" ? options.priority.toLowerCase() : undefined) {
+    if (cookie.priority)
+      switch (typeof cookie.priority === "string" ? cookie.priority.toLowerCase() : undefined) {
         case "low":
           str += "; Priority=Low";
           break;
@@ -10640,10 +10641,10 @@ var require_dist = __commonJS2((exports) => {
           str += "; Priority=High";
           break;
         default:
-          throw TypeError(`option priority is invalid: ${options.priority}`);
+          throw TypeError(`option priority is invalid: ${cookie.priority}`);
       }
-    if (options.sameSite)
-      switch (typeof options.sameSite === "string" ? options.sameSite.toLowerCase() : options.sameSite) {
+    if (cookie.sameSite)
+      switch (typeof cookie.sameSite === "string" ? cookie.sameSite.toLowerCase() : cookie.sameSite) {
         case true:
         case "strict":
           str += "; SameSite=Strict";
@@ -10655,9 +10656,82 @@ var require_dist = __commonJS2((exports) => {
           str += "; SameSite=None";
           break;
         default:
-          throw TypeError(`option sameSite is invalid: ${options.sameSite}`);
+          throw TypeError(`option sameSite is invalid: ${cookie.sameSite}`);
       }
     return str;
+  }
+  function parseSetCookie(str, options) {
+    let dec = options?.decode || decode2, len = str.length, endIdx = endIndex(str, 0, len), eqIdx = eqIndex(str, 0, endIdx), setCookie = eqIdx === -1 ? { name: "", value: dec(valueSlice(str, 0, endIdx)) } : { name: valueSlice(str, 0, eqIdx), value: dec(valueSlice(str, eqIdx + 1, endIdx)) }, index = endIdx + 1;
+    while (index < len) {
+      let endIdx2 = endIndex(str, index, len), eqIdx2 = eqIndex(str, index, endIdx2), attr = eqIdx2 === -1 ? valueSlice(str, index, endIdx2) : valueSlice(str, index, eqIdx2), val = eqIdx2 === -1 ? undefined : valueSlice(str, eqIdx2 + 1, endIdx2);
+      switch (attr.toLowerCase()) {
+        case "httponly":
+          setCookie.httpOnly = true;
+          break;
+        case "secure":
+          setCookie.secure = true;
+          break;
+        case "partitioned":
+          setCookie.partitioned = true;
+          break;
+        case "domain":
+          setCookie.domain = val;
+          break;
+        case "path":
+          setCookie.path = val;
+          break;
+        case "max-age":
+          if (val && maxAgeRegExp.test(val))
+            setCookie.maxAge = Number(val);
+          break;
+        case "expires":
+          if (!val)
+            break;
+          let date2 = new Date(val);
+          if (Number.isFinite(date2.valueOf()))
+            setCookie.expires = date2;
+          break;
+        case "priority":
+          if (!val)
+            break;
+          let priority = val.toLowerCase();
+          if (priority === "low" || priority === "medium" || priority === "high")
+            setCookie.priority = priority;
+          break;
+        case "samesite":
+          if (!val)
+            break;
+          let sameSite = val.toLowerCase();
+          if (sameSite === "lax" || sameSite === "strict" || sameSite === "none")
+            setCookie.sameSite = sameSite;
+          break;
+      }
+      index = endIdx2 + 1;
+    }
+    return setCookie;
+  }
+  function endIndex(str, min, len) {
+    let index = str.indexOf(";", min);
+    return index === -1 ? len : index;
+  }
+  function eqIndex(str, min, max) {
+    let index = str.indexOf("=", min);
+    return index < max ? index : -1;
+  }
+  function valueSlice(str, min, max) {
+    let start = min, end = max;
+    do {
+      let code = str.charCodeAt(start);
+      if (code !== 32 && code !== 9)
+        break;
+    } while (++start < end);
+    while (end > start) {
+      let code = str.charCodeAt(end - 1);
+      if (code !== 32 && code !== 9)
+        break;
+      end--;
+    }
+    return str.slice(start, end);
   }
   function decode2(str) {
     if (str.indexOf("%") === -1)
@@ -10951,7 +11025,7 @@ var mergeDeep = (target, source, options) => {
   if (!isObject(target) || !isObject(source))
     return target;
   for (let [key, value] of Object.entries(source)) {
-    if (skipKeys?.includes(key))
+    if (skipKeys?.includes(key) || ["__proto__", "constructor", "prototype"].includes(key))
       continue;
     if (mergeArray && Array.isArray(value)) {
       target[key] = Array.isArray(target[key]) ? [...target[key], ...value] : target[key] = value;
@@ -12027,11 +12101,18 @@ t.ArrayBuffer = ElysiaType.ArrayBuffer;
 t.Uint8Array = ElysiaType.Uint8Array;
 var import_cookie = __toESM2(require_dist(), 1);
 var import_fast_decode_uri_component = __toESM2(require_fast_decode_uri_component(), 1);
+var hashString = (str) => {
+  let hash2 = 2166136261, len = str.length;
+  for (let i = 0;i < len; i++)
+    hash2 ^= str.charCodeAt(i), hash2 = Math.imul(hash2, 16777619);
+  return hash2 >>> 0;
+};
 
 class Cookie {
   name;
   jar;
   initial;
+  valueHash;
   constructor(name, jar, initial = {}) {
     this.name = name;
     this.jar = jar;
@@ -12043,7 +12124,7 @@ class Cookie {
   set cookie(jar) {
     if (!(this.name in this.jar))
       this.jar[this.name] = this.initial;
-    this.jar[this.name] = jar;
+    this.jar[this.name] = jar, this.valueHash = undefined;
   }
   get setCookie() {
     if (!(this.name in this.jar))
@@ -12057,7 +12138,25 @@ class Cookie {
     return this.cookie.value;
   }
   set value(value) {
-    this.setCookie.value = value;
+    let current = this.cookie.value;
+    if (current === value)
+      return;
+    if (typeof current === "object" && current !== null && typeof value === "object" && value !== null)
+      try {
+        let valueStr = JSON.stringify(value), newHash = hashString(valueStr);
+        if (this.valueHash !== undefined && this.valueHash !== newHash)
+          this.valueHash = newHash;
+        else {
+          if (JSON.stringify(current) === valueStr) {
+            this.valueHash = newHash;
+            return;
+          }
+          this.valueHash = newHash;
+        }
+      } catch {}
+    if (!(this.name in this.jar))
+      this.jar[this.name] = { ...this.initial };
+    this.jar[this.name].value = value;
   }
   get expires() {
     return this.cookie.expires;
@@ -12768,7 +12867,7 @@ return `;
   return findDynamicRoute += "}", { declare: hasErrorHook ? "" : `const error404Message=notFound.message.toString()
 const error404=new Response(error404Message,{status:404})
 `, code: findDynamicRoute };
-} }, composeError: { mapResponseContext: "", validationError: "return new Response(error.message,{headers:Object.assign({'content-type':'application/json'},set.headers),status:set.status})", unknownError: "return new Response(error.message,{headers:set.headers,status:error.status??set.status??500})" }, listen() {
+} }, composeError: { mapResponseContext: "", validationError: "set.headers['content-type']='application/json';return mapResponse(error.message,set)", unknownError: "set.status=error.status??set.status??500;return mapResponse(error.message,set)" }, listen() {
   return () => {
     throw Error("WebStandard does not support listen, you might want to export default Elysia.fetch instead");
   };
@@ -13457,9 +13556,9 @@ function parseQueryFromURL(input, startIndex = 0, array, object) {
       finalValue = valueSlice;
     }
     let currentValue = result[finalKey];
-    if (array?.[finalKey])
+    if (array && array?.[finalKey])
       if (finalValue.charCodeAt(0) === 91) {
-        if (object?.[finalKey])
+        if (object && object?.[finalKey])
           finalValue = JSON.parse(finalValue);
         else
           finalValue = finalValue.slice(1, -1).split(",");
@@ -13788,7 +13887,7 @@ var handleUnion = (schemas, property, instruction) => {
       else
         return instruction.modules.Import(type.$ref);
     return type;
-  };
+  }, cleanThenCheck = "";
   for (let i = 0;i < schemas.length; i++) {
     let type = unwrapRef(schemas[i]);
     if (Array.isArray(type.anyOf))
@@ -13801,9 +13900,13 @@ var handleUnion = (schemas, property, instruction) => {
       else
         type.items = unwrapRef(type.items);
     typeChecks.push(TypeCompiler.Compile(type)), v += `if(d.unions[${ui}][${i}].Check(${property})){return ${mirror(type, property, { ...instruction, recursion: instruction.recursion + 1, parentIsOptional: true })}}
+`, cleanThenCheck += (i ? "" : "let ") + "tmp=" + mirror(type, property, { ...instruction, recursion: instruction.recursion + 1, parentIsOptional: true }) + `
+if(d.unions[${ui}][${i}].Check(tmp))return tmp
 `;
   }
-  return v += `return ${instruction.removeUnknownUnionType ? "undefined" : property}})()`, v;
+  if (cleanThenCheck)
+    v += cleanThenCheck;
+  return v += `return ${instruction.removeUnknownUnionType ? "undefined" : property}`, v + "})()";
 };
 var mirror = (schema, property, instruction) => {
   if (!schema)
@@ -13858,18 +13961,19 @@ var mirror = (schema, property, instruction) => {
       v += "}";
       break;
     case "array":
-      if (schema.items.type !== "object" && schema.items.type !== "array")
+      if (schema.items.type !== "object" && schema.items.type !== "array") {
         if (Array.isArray(schema.items)) {
           v = handleTuple(schema.items, property, instruction);
           break;
-        } else if (isRoot)
+        } else if (isRoot && !Array.isArray(schema.items.anyOf))
           return "return v";
         else if (Kind3 in schema.items && schema.items.$ref && (schema.items[Kind3] === "Ref" || schema.items[Kind3] === "This"))
           v = mirror(deepClone(instruction.definitions[schema.items.$ref]), property, { ...instruction, parentIsOptional: true, recursion: instruction.recursion + 1 });
-        else {
+        else if (!Array.isArray(schema.items.anyOf)) {
           v = property;
           break;
         }
+      }
       let i = instruction.array;
       instruction.array++;
       let reference = property;
@@ -14655,6 +14759,8 @@ var getCookieValidator = ({ validator, modules, defaultConfig = {}, config, dyna
 };
 var unwrapImportSchema = (schema) => schema && schema[Kind] === "Import" && schema.$defs[schema.$ref][Kind] === "Object" ? schema.$defs[schema.$ref] : schema;
 var allocateIf = (value, condition) => condition ? value : "";
+var overrideUnsafeQuote = (value) => "`" + value.replace(/`/g, "\\`").replace(/\${/g, "$\\{") + "`";
+var overrideUnsafeQuoteArrayValue = (value) => value.replace(/`/g, "\\`").replace(/\${/g, "$\\{");
 var defaultParsers = ["json", "text", "urlencoded", "arrayBuffer", "formdata", "application/json", "text/plain", "application/x-www-form-urlencoded", "application/octet-stream", "multipart/form-data"];
 var createReport = ({ context = "c", trace = [], addFn }) => {
   if (!trace.length)
@@ -14839,11 +14945,14 @@ return function(){return a}`)(handler);
       let secret = !cookieMeta.secrets ? undefined : typeof cookieMeta.secrets === "string" ? cookieMeta.secrets : cookieMeta.secrets[0];
       if (_encodeCookie += `const _setCookie = c.set.cookie
 if(_setCookie){`, cookieMeta.sign === true)
-        _encodeCookie += `for(const [key, cookie] of Object.entries(_setCookie)){c.set.cookie[key].value=await signCookie(cookie.value,'${secret}')}`;
-      else
+        _encodeCookie += `for(const [key, cookie] of Object.entries(_setCookie)){c.set.cookie[key].value=await signCookie(cookie.value,${!secret ? "undefined" : overrideUnsafeQuote(secret)})}`;
+      else {
+        if (typeof cookieMeta.sign === "string")
+          cookieMeta.sign = [cookieMeta.sign];
         for (let name of cookieMeta.sign)
-          _encodeCookie += `if(_setCookie['${name}']?.value)c.set.cookie['${name}'].value=await signCookie(_setCookie['${name}'].value,'${secret}')
+          _encodeCookie += `if(_setCookie[${overrideUnsafeQuote(name)}]?.value)c.set.cookie[${overrideUnsafeQuote(name)}].value=await signCookie(_setCookie[${overrideUnsafeQuote(name)}].value,${!secret ? "undefined" : overrideUnsafeQuote(secret)})
 `;
+      }
       _encodeCookie += `}
 `;
     }
@@ -14860,14 +14969,16 @@ if(_setCookie){`, cookieMeta.sign === true)
   if (fnLiteral += "try{", hasCookie) {
     let get = (name, defaultValue) => {
       let value = cookieMeta?.[name] ?? defaultValue;
+      if (value === undefined)
+        return "";
       if (!value)
         return typeof defaultValue === "string" ? `${name}:"${defaultValue}",` : `${name}:${defaultValue},`;
       if (typeof value === "string")
-        return `${name}:'${value}',`;
+        return `${name}:${overrideUnsafeQuote(value)},`;
       if (value instanceof Date)
         return `${name}: new Date(${value.getTime()}),`;
       return `${name}:${value},`;
-    }, options = cookieMeta ? `{secrets:${cookieMeta.secrets !== undefined ? typeof cookieMeta.secrets === "string" ? `'${cookieMeta.secrets}'` : "[" + cookieMeta.secrets.reduce((a, b) => a + `'${b}',`, "") + "]" : "undefined"},sign:${cookieMeta.sign === true ? true : cookieMeta.sign !== undefined ? "[" + cookieMeta.sign.reduce((a, b) => a + `'${b}',`, "") + "]" : "undefined"},` + get("domain") + get("expires") + get("httpOnly") + get("maxAge") + get("path", "/") + get("priority") + get("sameSite") + get("secure") + "}" : "undefined";
+    }, options = cookieMeta ? `{secrets:${cookieMeta.secrets !== undefined ? typeof cookieMeta.secrets === "string" ? overrideUnsafeQuote(cookieMeta.secrets) : "[" + cookieMeta.secrets.map(overrideUnsafeQuoteArrayValue).reduce((a, b) => a + `'${b}',`, "") + "]" : "undefined"},sign:${cookieMeta.sign === true ? true : cookieMeta.sign !== undefined ? typeof cookieMeta.sign === "string" ? overrideUnsafeQuote(cookieMeta.sign) : "[" + cookieMeta.sign.map(overrideUnsafeQuoteArrayValue).reduce((a, b) => a + `'${b}',`, "") + "]" : "undefined"},` + get("domain") + get("expires") + get("httpOnly") + get("maxAge") + get("path", "/") + get("priority") + get("sameSite") + get("secure") + "}" : "undefined";
     if (hasHeaders)
       fnLiteral += `
 c.cookie=await parseCookie(c.set,c.headers.cookie,${options})
@@ -14884,12 +14995,12 @@ c.cookie=await parseCookie(c.set,c.request.headers.get('cookie'),${options})
       if (Kind in schema && schema.properties)
         for (let [key, value] of Object.entries(schema.properties)) {
           if (hasElysiaMeta("ArrayQuery", value))
-            arrayProperties[key] = 1, hasArrayProperty = true;
+            arrayProperties[key] = true, hasArrayProperty = true;
           if (hasElysiaMeta("ObjectString", value))
-            objectProperties[key] = 1, hasObjectProperty = true;
+            objectProperties[key] = true, hasObjectProperty = true;
         }
     }
-    fnLiteral += `if(c.qi===-1){c.query=Object.create(null)}else{c.query=parseQueryFromURL(c.url,c.qi+1,${hasArrayProperty ? JSON.stringify(arrayProperties) : undefined},${hasObjectProperty ? JSON.stringify(objectProperties) : undefined})}`;
+    fnLiteral += `if(c.qi===-1){c.query=Object.create(null)}else{c.query=parseQueryFromURL(c.url,c.qi+1${hasArrayProperty ? "," + JSON.stringify(arrayProperties) : hasObjectProperty ? ",undefined" : ""}${hasObjectProperty ? "," + JSON.stringify(objectProperties) : ""})}`;
   }
   let isAsyncHandler = typeof handler === "function" && isAsync(handler), saveResponse = hasTrace || hooks.afterResponse?.length ? "c.response=c.responseValue= " : "", responseKeys = Object.keys(validator.response ?? {}), hasMultipleResponses = responseKeys.length > 1, hasSingle200 = responseKeys.length === 0 || responseKeys.length === 1 && responseKeys[0] === "200", maybeAsync = hasCookie || hasBody || isAsyncHandler || !!hooks.parse?.length || !!hooks.afterHandle?.some(isAsync) || !!hooks.beforeHandle?.some(isAsync) || !!hooks.transform?.some(isAsync) || !!hooks.mapResponse?.some(isAsync) || validator.body?.provider === "standard" || validator.headers?.provider === "standard" || validator.query?.provider === "standard" || validator.params?.provider === "standard" || validator.cookie?.provider === "standard" || Object.values(validator.response ?? {}).find((x) => x.provider === "standard"), maybeStream = (typeof handler === "function" ? isGenerator(handler) : false) || !!hooks.beforeHandle?.some(isGenerator) || !!hooks.afterHandle?.some(isGenerator) || !!hooks.transform?.some(isGenerator), hasSet = inference.cookie || inference.set || hasHeaders || hasTrace || hasMultipleResponses || !hasSingle200 || isHandleFn && hasDefaultHeaders || maybeStream, _afterResponse, afterResponse = (hasStream = true) => {
     if (_afterResponse !== undefined)
@@ -14920,7 +15031,7 @@ ${prefix}e.afterResponse[${i}](c)
     if (!after)
       return `return ${response}`;
     return `const _res=${response}` + after + "return _res";
-  }, mapResponseContext = maybeStream || adapter.mapResponseContext ? `,${adapter.mapResponseContext}` : "";
+  }, mapResponseContext = maybeStream && adapter.mapResponseContext ? `,${adapter.mapResponseContext}` : "";
   if (hasTrace || inference.route)
     fnLiteral += `c.route=\`${path}\`
 `;
@@ -15289,7 +15400,7 @@ if(vac.issues){` + validation.validate("cookie", undefined, "vac.issues") + `}el
 `;
       else if (validator.body?.schema?.noValidate !== true) {
         if (fnLiteral += "if(validator.cookie.Check(cookieValue)===false){" + validation.validate("cookie", "cookieValue") + "}", validator.cookie.hasTransform)
-          fnLiteral += coerceTransformDecodeError("for(const [key,value] of Object.entries(validator.cookie.Decode(cookieValue))){c.cookie[key].value=value}", "cookie", allowUnsafeValidationDetails);
+          fnLiteral += coerceTransformDecodeError("for(const [key,value] of Object.entries(validator.cookie.Decode(cookieValue))){c.cookie[key].cookie.value = value}", "cookie", allowUnsafeValidationDetails);
       }
       if (validator.cookie.isOptional)
         fnLiteral += "}";
@@ -15550,7 +15661,7 @@ c.defs=definitions
   fnLiteral = init + fnLiteral + "}", init = "";
   try {
     return Function("hooks", `"use strict";
-` + fnLiteral)({ handler, hooks: lifeCycleToFn(hooks), validator: hasValidation ? validator : undefined, handleError: app.handleError, mapResponse: adapterHandler.mapResponse, mapCompactResponse: adapterHandler.mapCompactResponse, mapEarlyResponse: adapterHandler.mapEarlyResponse, isNotEmpty, utils: { parseQuery: hasBody ? parseQuery : undefined, parseQueryFromURL: hasQuery ? validator.query?.provider === "standard" ? parseQueryStandardSchema : parseQueryFromURL : undefined }, error: { ValidationError: hasValidation ? ValidationError : undefined, ParseError: hasBody ? ParseError2 : undefined }, fileType, schema: app.router.history, definitions: app.definitions.type, tee, ERROR_CODE, parseCookie: hasCookie ? parseCookie : undefined, signCookie: hasCookie ? signCookie : undefined, decodeURIComponent: hasQuery ? import_fast_decode_uri_component3.default : undefined, ElysiaCustomStatusResponse, ELYSIA_TRACE: hasTrace ? ELYSIA_TRACE : undefined, ELYSIA_REQUEST_ID: hasTrace ? ELYSIA_REQUEST_ID : undefined, getServer: inference.server ? () => app.getServer() : undefined, fileUnions: fileUnions.length ? fileUnions : undefined, TypeBoxError: hasValidation ? TypeBoxError : undefined, parser: app["~parser"], ...adapter.inject });
+` + fnLiteral)({ handler, hooks: lifeCycleToFn(hooks), validator: hasValidation ? validator : undefined, handleError: app.handleError, mapResponse: adapterHandler.mapResponse, mapCompactResponse: adapterHandler.mapCompactResponse, mapEarlyResponse: adapterHandler.mapEarlyResponse, isNotEmpty, utils: { parseQuery: hasBody ? parseQuery : undefined, parseQueryFromURL: hasQuery ? validator.query?.provider === "standard" ? parseQueryStandardSchema : parseQueryFromURL : undefined }, error: { ValidationError: hasValidation ? ValidationError : undefined, ParseError: hasBody ? ParseError2 : undefined }, fileType, schema: app.router.history, definitions: app.definitions.type, tee, ERROR_CODE, parseCookie: hasCookie ? parseCookie : undefined, signCookie: hasCookie ? signCookie : undefined, Cookie: hasCookie ? Cookie : undefined, decodeURIComponent: hasQuery ? import_fast_decode_uri_component3.default : undefined, ElysiaCustomStatusResponse, ELYSIA_TRACE: hasTrace ? ELYSIA_TRACE : undefined, ELYSIA_REQUEST_ID: hasTrace ? ELYSIA_REQUEST_ID : undefined, getServer: inference.server ? () => app.getServer() : undefined, fileUnions: fileUnions.length ? fileUnions : undefined, TypeBoxError: hasValidation ? TypeBoxError : undefined, parser: app["~parser"], ...adapter.inject });
   } catch (error) {
     let debugHooks = lifeCycleToFn(hooks);
     console.log("[Composer] failed to generate optimized handler"), console.log("---"), console.log({ handler: typeof handler === "function" ? handler.toString() : handler, instruction: fnLiteral, hooks: { ...debugHooks, transform: debugHooks?.transform?.map?.((x) => x.toString()), resolve: debugHooks?.resolve?.map?.((x) => x.toString()), beforeHandle: debugHooks?.beforeHandle?.map?.((x) => x.toString()), afterHandle: debugHooks?.afterHandle?.map?.((x) => x.toString()), mapResponse: debugHooks?.mapResponse?.map?.((x) => x.toString()), parse: debugHooks?.parse?.map?.((x) => x.toString()), error: debugHooks?.error?.map?.((x) => x.toString()), afterResponse: debugHooks?.afterResponse?.map?.((x) => x.toString()), stop: debugHooks?.stop?.map?.((x) => x.toString()) }, validator, definitions: app.definitions.type, error }), console.log("---"), process.exit(1);
@@ -15592,12 +15703,7 @@ var composeGeneralHandler = (app) => {
   if (findDynamicRoute += router.http.root.ALL ? `??router.find('ALL',p)
 ` : `
 `, isWebstandard)
-    findDynamicRoute += `if(r.method==='HEAD'){const route=router.find('GET',p)
-if(route){c.params=route.params
-const _res=route.store.handler?route.store.handler(c):route.store.compile()(c)
-if(_res)return getResponseLength(_res).then((length)=>{_res.headers.set('content-length', length)
-return new Response(null,{status:_res.status,statusText:_res.statusText,headers:_res.headers})
-})}}`;
+    findDynamicRoute += 'if(r.method==="HEAD"){const route=router.find("GET",p);if(route){c.params=route.params;const _res=route.store.handler?route.store.handler(c):route.store.compile()(c);if(_res)return Promise.resolve(_res).then((_res)=>{if(!_res.headers)_res.headers=new Headers();return getResponseLength(_res).then((length)=>{_res.headers.set("content-length", length);return new Response(null,{status:_res.status,statusText:_res.statusText,headers:_res.headers});})});}}';
   let afterResponse = `c.error=notFound
 `;
   if (app.event.afterResponse?.length && !app.event.error) {
@@ -15967,7 +16073,7 @@ var createWSMessageParser = (parse2) => {
     return message;
   };
 };
-var createHandleWSResponse = (validateResponse) => {
+var createHandleWSResponse = (responseValidator) => {
   let handleWSResponse = (ws, data) => {
     if (data instanceof Promise)
       return data.then((data2) => handleWSResponse(ws, data2));
@@ -15975,9 +16081,9 @@ var createHandleWSResponse = (validateResponse) => {
       return ws.send(data.toString());
     if (data === undefined)
       return;
-    let send = (datum) => {
-      if (validateResponse?.Check(datum) === false)
-        return ws.send(new ValidationError("message", validateResponse, datum).message);
+    let validateResponse = responseValidator ? responseValidator.provider === "standard" ? (data2) => responseValidator.schema["~standard"].validate(data2).issues : (data2) => responseValidator.Check(data2) === false : undefined, send = (datum) => {
+      if (validateResponse && validateResponse(datum) === false)
+        return ws.send(new ValidationError("message", responseValidator, datum).message);
       if (typeof datum === "object")
         return ws.send(JSON.stringify(datum));
       ws.send(datum);
@@ -15988,8 +16094,8 @@ var createHandleWSResponse = (validateResponse) => {
     if (init instanceof Promise)
       return (async () => {
         let first = await init;
-        if (validateResponse?.Check(first) === false)
-          return ws.send(new ValidationError("message", validateResponse, first).message);
+        if (validateResponse && validateResponse(first))
+          return ws.send(new ValidationError("message", responseValidator, first).message);
         if (send(first.value), !first.done)
           for await (let datum of data)
             send(datum);
@@ -16157,10 +16263,10 @@ for(const [k,v] of c.request.headers.entries())c.headers[k]=v
   } else
     console.log("Elysia isn't running. Call `app.listen` to start the server.", Error().stack);
 }, ws(app, path, options) {
-  let { parse: parse2, body, response, ...rest } = options, validateMessage = getSchemaValidator(body, { modules: app.definitions.typebox, models: app.definitions.type, normalize: app.config.normalize }), validateResponse = getSchemaValidator(response, { modules: app.definitions.typebox, models: app.definitions.type, normalize: app.config.normalize });
+  let { parse: parse2, body, response, ...rest } = options, messageValidator = getSchemaValidator(body, { modules: app.definitions.typebox, models: app.definitions.type, normalize: app.config.normalize }), validateMessage = messageValidator ? messageValidator.provider === "standard" ? (data) => messageValidator.schema["~standard"].validate(data).issues : (data) => messageValidator.Check(data) === false : undefined, responseValidator = getSchemaValidator(response, { modules: app.definitions.typebox, models: app.definitions.type, normalize: app.config.normalize });
   app.route("WS", path, async (context) => {
     let server = context.server ?? app.server, { set: set2, path: path2, qi, headers, query, params } = context;
-    if (context.validator = validateResponse, options.upgrade) {
+    if (context.validator = responseValidator, options.upgrade) {
       if (typeof options.upgrade === "function") {
         let temp = options.upgrade(context);
         if (temp instanceof Promise)
@@ -16175,7 +16281,7 @@ for(const [k,v] of c.request.headers.entries())c.headers[k]=v
     }
     if (set2.headers["set-cookie"] && Array.isArray(set2.headers["set-cookie"]))
       set2.headers = parseSetCookies(new Headers(set2.headers), set2.headers["set-cookie"]);
-    let handleResponse3 = createHandleWSResponse(validateResponse), parseMessage = createWSMessageParser(parse2), _id;
+    let handleResponse3 = createHandleWSResponse(responseValidator), parseMessage = createWSMessageParser(parse2), _id;
     if (typeof options.beforeHandle === "function") {
       let result = options.beforeHandle(context);
       if (result instanceof Promise)
@@ -16194,7 +16300,7 @@ for(const [k,v] of c.request.headers.entries())c.headers[k]=v
       if (_id)
         return _id;
       return _id = randomId();
-    }, validator: validateResponse, ping(ws, data) {
+    }, validator: responseValidator, ping(ws, data) {
       options.ping?.(ws, data);
     }, pong(ws, data) {
       options.pong?.(ws, data);
@@ -16206,8 +16312,8 @@ for(const [k,v] of c.request.headers.entries())c.headers[k]=v
       }
     }, message: async (ws, _message) => {
       let message = await parseMessage(ws, _message);
-      if (validateMessage?.Check(message) === false) {
-        let validationError = new ValidationError("message", validateMessage, message);
+      if (validateMessage && validateMessage(message)) {
+        let validationError = new ValidationError("message", messageValidator, message);
         if (!hasCustomErrorHandlers)
           return void ws.send(validationError.message);
         return handleErrors(ws, validationError);
@@ -16277,7 +16383,7 @@ var createDynamicHandler = (app) => {
             case "application/octet-stream":
               body = await request.arrayBuffer();
               break;
-            case "multipart/form-data":
+            case "multipart/form-data": {
               body = {};
               let form2 = await request.formData();
               for (let key of form2.keys()) {
@@ -16290,6 +16396,7 @@ var createDynamicHandler = (app) => {
                   body[key] = value;
               }
               break;
+            }
           }
         else {
           let contentType;
@@ -16321,7 +16428,7 @@ var createDynamicHandler = (app) => {
                       body = await request.arrayBuffer();
                       break;
                     case "formdata":
-                    case "multipart/form-data":
+                    case "multipart/form-data": {
                       body = {};
                       let form2 = await request.formData();
                       for (let key of form2.keys()) {
@@ -16334,7 +16441,8 @@ var createDynamicHandler = (app) => {
                           body[key] = value;
                       }
                       break;
-                    default:
+                    }
+                    default: {
                       let parser = app["~parser"][hook];
                       if (parser) {
                         let temp = parser(context, contentType);
@@ -16346,6 +16454,7 @@ var createDynamicHandler = (app) => {
                         }
                       }
                       break;
+                    }
                   }
                 else {
                   let temp = hook(context, contentType);
@@ -16371,7 +16480,7 @@ var createDynamicHandler = (app) => {
                 case "application/octet-stream":
                   body = await request.arrayBuffer();
                   break;
-                case "multipart/form-data":
+                case "multipart/form-data": {
                   body = {};
                   let form2 = await request.formData();
                   for (let key of form2.keys()) {
@@ -16384,6 +16493,7 @@ var createDynamicHandler = (app) => {
                       body[key] = value;
                   }
                   break;
+                }
               }
           }
         }
@@ -16593,7 +16703,7 @@ var createDynamicErrorHandler = (app) => {
         }
       return mapResponse3(context.response, context.set);
     }
-    return new Response(typeof error.cause === "string" ? error.cause : error.message, { headers: context.set.headers, status: error.status ?? 500 });
+    return context.set.status = error.status ?? 500, mapResponse3(typeof error.cause === "string" ? error.cause : error.message, context.set);
   };
 };
 
@@ -17592,10 +17702,7 @@ var UserResponseSchema = t.Object({
   createdAt: t.String()
 });
 // src/notification.ts
-var NotificationTypeSchema = t.Union([
-  t.Literal("in-app"),
-  t.Literal("email")
-]);
+var NotificationTypeSchema = t.Union([t.Literal("in-app"), t.Literal("email")]);
 var CreateNotificationSchema = t.Object({
   userId: t.String(),
   type: NotificationTypeSchema,

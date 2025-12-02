@@ -1,0 +1,31 @@
+# Token Optimizer Output
+## Command
+```
+bun run typecheck
+```
+
+## Output
+• Packages in scope: @vibe-code/contract, @vibe/e2e, @vibe/frontend, @vibe/ui, @vibework/backend
+• Running typecheck in 5 packages
+• Remote caching disabled
+@vibe-code/contract:typecheck: cache miss, executing 1a2de928a0b83f63
+@vibe-code/contract:build: cache hit, replaying logs f5afab60024e1119
+@vibe-code/contract:build: $ bun build ./src/index.ts --outdir ./dist --target bun && tsc --emitDeclarationOnly
+@vibe-code/contract:build: Bundled 287 modules in 39ms
+@vibe-code/contract:build: 
+@vibe-code/contract:build:   index.js0.71 MB  (entry point)
+@vibe-code/contract:build: 
+@vibe/frontend:typecheck: cache miss, executing ca1496b030381042
+@vibework/backend:typecheck: cache miss, executing 52350707052bd7ef
+@vibe-code/contract:typecheck: $ tsc --noEmit
+@vibe/frontend:typecheck: $ tsc --noEmit
+@vibework/backend:typecheck: $ tsc --noEmit
+
+ Tasks:    4 successful, 4 total
+Cached:    1 cached, 4 total
+  Time:    6.053s 
+
+$ turbo run typecheck
+turbo 2.6.1
+
+

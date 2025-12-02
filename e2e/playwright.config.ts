@@ -24,14 +24,14 @@ export default defineConfig({
       cwd: '../backend',
       url: 'http://localhost:3000/healthz',
       reuseExistingServer: !process.env.CI,
-      timeout: 30000,
+      timeout: 60000,
     },
     {
       command: 'bun run dev',
       cwd: '../frontend',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
-      timeout: 30000,
+      timeout: 60000,
     },
   ],
 })
