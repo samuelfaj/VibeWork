@@ -1,0 +1,27 @@
+{
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "submit": "Enviar",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "errors": {
+      "emailRequired": "Por favor, ingresa tu correo electrónico",
+      "emailInvalid": "Por favor, ingresa un correo electrónico válido",
+      "passwordRequired": "Por favor, ingresa tu contraseña",
+      "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+      "invalidEmail": "Formato de correo electrónico inválido",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "loginFailed": "Error en el inicio de sesión. Verifica tus credenciales.",
+      "signupFailed": "Error en el registro. Por favor, intenta de nuevo."
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ocurrió un error"
+  }
+}

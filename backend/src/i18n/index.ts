@@ -1,6 +1,7 @@
 import i18next from 'i18next'
 import en from './locales/en.json'
 import ptBR from './locales/pt-BR.json'
+import es from './locales/es.json'
 
 let initialized = false
 
@@ -13,6 +14,7 @@ export async function initI18n(): Promise<void> {
     resources: {
       en: { translation: en },
       'pt-BR': { translation: ptBR },
+      es: { translation: es },
     },
     interpolation: {
       escapeValue: false,
@@ -51,6 +53,7 @@ export function getLanguageFromHeader(acceptLanguage: string | null | undefined)
   for (const { code } of languages) {
     if (code === 'pt-BR' || code.startsWith('pt')) return 'pt-BR'
     if (code === 'en' || code.startsWith('en')) return 'en'
+    if (code === 'es' || code.startsWith('es')) return 'es'
   }
 
   return 'en'

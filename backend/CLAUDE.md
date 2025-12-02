@@ -12,7 +12,7 @@ Backend service for the VibeWork platform, featuring:
 - **Typegoose/Mongoose**: MongoDB document storage
 - **ioredis**: Redis caching
 - **Google Cloud Pub/Sub**: Async event messaging
-- **i18next**: Internationalization (en, pt-BR)
+- **i18next**: Internationalization (en, pt-BR, es)
 
 ## Structure
 
@@ -21,31 +21,31 @@ backend/
 ├── src/
 │   ├── index.ts              # Entry point, server startup, graceful shutdown
 │   ├── app.ts                # Elysia app with swagger, cors, i18n, error handling
-│   ├── routes/
-│   │   ├── health.ts         # /healthz, /readyz endpoints
-│   │   └── __tests__/
-│   │       └── health.test.ts
+│   ├── app.test.ts           # Tests for app.ts (co-located)
 │   ├── infra/
 │   │   ├── index.ts          # Barrel exports for all infra
 │   │   ├── cache.ts          # Redis client and connection
+│   │   ├── cache.test.ts     # Tests for cache.ts (co-located)
 │   │   ├── pubsub.ts         # Google Cloud Pub/Sub client
+│   │   ├── pubsub.test.ts    # Tests for pubsub.ts (co-located)
 │   │   ├── database/
 │   │   │   ├── mysql.ts      # Drizzle ORM + mysql2 pool
-│   │   │   └── mongodb.ts    # Mongoose connection
-│   │   └── __tests__/
-│   │       ├── cache.test.ts
-│   │       ├── mysql.test.ts
-│   │       ├── mongodb.test.ts
-│   │       └── pubsub.test.ts
+│   │   │   ├── mysql.test.ts # Tests for mysql.ts (co-located)
+│   │   │   ├── mongodb.ts    # Mongoose connection
+│   │   │   └── mongodb.test.ts # Tests for mongodb.ts (co-located)
 │   ├── i18n/
 │   │   ├── index.ts          # i18next config, t(), getLanguageFromHeader()
-│   │   ├── locales/
-│   │   │   ├── en.json
-│   │   │   └── pt-BR.json
-│   │   └── __tests__/
-│   │       └── i18n.test.ts
-│   └── __tests__/
-│       └── app.test.ts
+│   │   ├── index.test.ts     # Tests for index.ts (co-located)
+│   │   ├── middleware.ts     # i18n middleware
+│   │   ├── middleware.test.ts # Tests for middleware.ts (co-located)
+│   │   └── locales/
+│   │       ├── en.json
+│   │       ├── pt-BR.json
+│   │       └── es.json
+├── modules/
+│   ├── health/               # Health checks module
+│   ├── users/                # User authentication module
+│   └── notifications/        # Notifications module
 ├── package.json
 ├── tsconfig.json
 ├── Dockerfile
@@ -144,7 +144,7 @@ Returns HTTP 503 if any check fails.
 
 ## Internationalization
 
-Supported locales: `en`, `pt-BR`
+Supported locales: `en`, `pt-BR`, `es`
 
 Language is detected from `Accept-Language` header:
 

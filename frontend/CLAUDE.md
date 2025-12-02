@@ -8,7 +8,7 @@ Single-page application for the VibeWork platform, featuring:
 
 - **Eden RPC**: Type-safe API calls inferred from backend Elysia routes
 - **TanStack Query**: Server state management with caching
-- **react-i18next**: Internationalization (en, pt-BR)
+- **react-i18next**: Internationalization (en, pt-BR, es)
 - **Feature-based architecture**: Modular feature folders
 
 ## Structure
@@ -29,7 +29,8 @@ frontend/
 │   │   ├── index.ts            # i18next config
 │   │   └── locales/
 │   │       ├── en.json         # English
-│   │       └── pt-BR.json      # Portuguese
+│   │       ├── pt-BR.json      # Portuguese
+│   │       └── es.json         # Spanish
 │   └── lib/
 │       ├── api.ts              # Eden treaty client
 │       └── query.ts            # QueryClient setup
@@ -107,7 +108,7 @@ bun run lint
      }
    }
    ```
-2. Add corresponding keys to `src/i18n/locales/pt-BR.json`
+2. Add corresponding keys to `src/i18n/locales/pt-BR.json` and `src/i18n/locales/es.json`
 3. Use in components:
 
    ```typescript
@@ -142,3 +143,4 @@ VITE_API_URL=http://localhost:3000
 
 - `en` - English
 - `pt-BR` - Brazilian Portuguese
+- `es` - Spanish

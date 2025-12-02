@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import { t, getLanguageFromHeader } from './index'
 
-export const SUPPORTED_LOCALES = ['en', 'pt-BR'] as const
+export const SUPPORTED_LOCALES = ['en', 'pt-BR', 'es'] as const
 export const DEFAULT_LOCALE = 'en'
 
 export function parseAcceptLanguage(header: string | null): string {

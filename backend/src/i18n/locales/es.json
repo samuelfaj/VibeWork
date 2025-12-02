@@ -1,0 +1,38 @@
+{
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Correo electrónico o contraseña inválidos",
+      "userExists": "Ya existe un usuario con este correo electrónico",
+      "sessionExpired": "Tu sesión ha expirado, por favor inicia sesión de nuevo",
+      "unauthorized": "No estás autorizado para realizar esta acción",
+      "tokenExpired": "Tu token de autenticación ha expirado"
+    },
+    "validation": {
+      "invalidEmail": "Por favor, ingresa una dirección de correo electrónico válida",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "requiredField": "Este campo es obligatorio",
+      "invalidFormat": "Formato inválido"
+    },
+    "notification": {
+      "notFound": "Notificación no encontrada",
+      "unauthorized": "No estás autorizado para acceder a esta notificación",
+      "createFailed": "Error al crear la notificación",
+      "updateFailed": "Error al actualizar la notificación"
+    },
+    "generic": {
+      "serverError": "Error interno del servidor",
+      "notFound": "Recurso no encontrado",
+      "badRequest": "Solicitud inválida",
+      "forbidden": "Acceso prohibido",
+      "conflict": "Conflicto",
+      "timeout": "Tiempo de espera agotado",
+      "tooManyRequests": "Demasiadas solicitudes",
+      "serviceUnavailable": "Servicio no disponible"
+    }
+  },
+  "health": {
+    "ok": "OK",
+    "ready": "Listo",
+    "notReady": "No listo"
+  }
+}

@@ -14,10 +14,11 @@ This package defines validation schemas using TypeBox (via Elysia's `t` export) 
 ```
 packages/contract/
 ├── src/
-│   ├── index.ts          # Barrel export
-│   ├── user.ts           # User schemas (Signup, Login, UserResponse)
-│   ├── notification.ts   # Notification schemas
-│   └── __tests__/        # Unit tests
+│   ├── index.ts             # Barrel export
+│   ├── user.ts              # User schemas (Signup, Login, UserResponse)
+│   ├── user.test.ts         # User tests (co-located)
+│   ├── notification.ts      # Notification schemas
+│   └── notification.test.ts # Notification tests (co-located)
 ├── package.json
 ├── tsconfig.json
 └── CLAUDE.md
@@ -47,7 +48,7 @@ packages/contract/
    ```typescript
    export * from './product'
    ```
-5. Add tests in `src/__tests__/product.test.ts`
+5. Add tests in `src/product.test.ts` (co-located with source file, NOT in separate `__tests__` directory)
 
 ## Schema Naming Conventions
 

@@ -61,29 +61,54 @@ This repository implements a full-stack web application with:
 
 ```
 /
-├── backend/                    # ElysiaJS backend service
-│   ├── src/                    # Entry point, app config, routes
-│   ├── modules/
-│   │   ├── users/              # User auth (MySQL/Drizzle/Better-Auth)
-│   │   └── notifications/      # Notifications (MongoDB/Pub/Sub)
-│   ├── infra/                  # DB connections, cache, pubsub
-│   └── CLAUDE.md               # Backend documentation
-├── frontend/                   # React + Vite application
+├── backend/                         # ElysiaJS backend service
 │   ├── src/
-│   │   ├── features/           # Feature modules (auth, etc.)
-│   │   ├── i18n/               # Internationalization
-│   │   └── lib/                # Eden client, query config
-│   └── CLAUDE.md               # Frontend documentation
-├── packages/
-│   ├── contract/               # Shared TypeBox schemas
-│   │   └── CLAUDE.md           # Contract documentation
-│   └── ui/                     # Shared UI components
-├── infra/                      # Terraform IaC (GCP)
-├── e2e/                        # Playwright E2E tests
-├── docker-compose.yml          # Local development services
-├── turbo.json                  # Turborepo pipeline config
-└── CLAUDE.md                   # This file
+│   │   ├── infra/                   # Infrastructure connections → see infra/CLAUDE.md
+│   │   └── i18n/                    # Internationalization
+│   ├── modules/
+│   │   ├── health/                  # Health checks → see modules/health/CLAUDE.md
+│   │   ├── users/                   # User auth → see modules/users/CLAUDE.md
+│   │   ├── notifications/           # Notifications → see modules/notifications/CLAUDE.md
+│   │   └── CLAUDE.md                # Modular architecture guide
+│   └── CLAUDE.md                    # Backend overview
+│
+├── frontend/                        # React + Vite application
+│   ├── src/
+│   │   ├── features/                # Feature modules → see features/CLAUDE.md
+│   │   ├── lib/                     # API client, Query setup → see lib/CLAUDE.md
+│   │   ├── i18n/                    # Internationalization → see i18n/CLAUDE.md
+│   │   │   ├── locales/
+│   │   │   │   ├── en.json
+│   │   │   │   ├── pt-BR.json
+│   │   │   │   └── es.json
+│   │   │   └── CLAUDE.md
+│   │   └── CLAUDE.md
+│   └── CLAUDE.md                    # Frontend overview
+│
+├── packages/                        # Shared workspace → see packages/CLAUDE.md
+│   ├── contract/
+│   │   ├── src/
+│   │   │   ├── user.ts              # User schemas
+│   │   │   └── notification.ts      # Notification schemas
+│   │   └── CLAUDE.md                # Contract documentation
+│   └── ui/
+│       ├── src/
+│       │   └── Button.tsx           # Shared components
+│       └── CLAUDE.md                # UI component library
+│
+├── infra/                           # Terraform IaC → see infra/CLAUDE.md
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── CLAUDE.md
+│
+├── e2e/                             # Playwright E2E tests
+├── docker-compose.yml               # Local development services
+├── turbo.json                       # Turborepo pipeline config
+└── CLAUDE.md                        # This file - Documentation Map
 ```
+
+**Quick Navigation:** Every major directory has a `CLAUDE.md` file with detailed documentation. Use the [Documentation Map](#documentation-map) above to find what you need.
 
 ## Quick Start
 
@@ -123,15 +148,57 @@ bun run build
 | `bun run typecheck`        | TypeScript type checking           |
 | `bun run format`           | Format code with Prettier          |
 
-## Package Documentation
+## Documentation Map
 
-Each package has its own CLAUDE.md with detailed documentation:
+Every important folder has detailed CLAUDE.md documentation. Use this map to find the right documentation for your task:
 
-- [`backend/CLAUDE.md`](backend/CLAUDE.md) - Backend API, routes, infrastructure
-- [`frontend/CLAUDE.md`](frontend/CLAUDE.md) - Frontend features, components
-- [`packages/contract/CLAUDE.md`](packages/contract/CLAUDE.md) - Shared schemas
-- [`backend/modules/users/CLAUDE.md`](backend/modules/users/CLAUDE.md) - User authentication
-- [`backend/modules/notifications/CLAUDE.md`](backend/modules/notifications/CLAUDE.md) - Notification system
+### Frontend Documentation
+
+| Documentation                                                        | Purpose                                             |
+| -------------------------------------------------------------------- | --------------------------------------------------- |
+| [`frontend/CLAUDE.md`](frontend/CLAUDE.md)                           | Frontend application overview, structure, setup     |
+| [`frontend/src/features/CLAUDE.md`](frontend/src/features/CLAUDE.md) | Feature-based architecture, adding new features     |
+| [`frontend/src/lib/CLAUDE.md`](frontend/src/lib/CLAUDE.md)           | API client (Eden), TanStack Query, Ant Design setup |
+| [`frontend/src/i18n/CLAUDE.md`](frontend/src/i18n/CLAUDE.md)         | Internationalization (en, pt-BR, es), translations  |
+
+### Backend Documentation
+
+| Documentation                                                                        | Purpose                                       |
+| ------------------------------------------------------------------------------------ | --------------------------------------------- |
+| [`backend/CLAUDE.md`](backend/CLAUDE.md)                                             | Backend overview, API structure, setup        |
+| [`backend/src/infra/CLAUDE.md`](backend/src/infra/CLAUDE.md)                         | Database, cache, Pub/Sub, auth connections    |
+| [`backend/modules/CLAUDE.md`](backend/modules/CLAUDE.md)                             | Modular architecture, adding new modules      |
+| [`backend/modules/health/CLAUDE.md`](backend/modules/health/CLAUDE.md)               | Health checks, readiness probes               |
+| [`backend/modules/users/CLAUDE.md`](backend/modules/users/CLAUDE.md)                 | User authentication, sessions, profiles       |
+| [`backend/modules/notifications/CLAUDE.md`](backend/modules/notifications/CLAUDE.md) | Notifications, Pub/Sub events, email delivery |
+
+### Shared Code Documentation
+
+| Documentation                                                | Purpose                                       |
+| ------------------------------------------------------------ | --------------------------------------------- |
+| [`packages/CLAUDE.md`](packages/CLAUDE.md)                   | Shared workspace overview, building packages  |
+| [`packages/contract/CLAUDE.md`](packages/contract/CLAUDE.md) | TypeBox schemas, type definitions             |
+| [`packages/ui/CLAUDE.md`](packages/ui/CLAUDE.md)             | Reusable UI components, component development |
+
+### Infrastructure Documentation
+
+| Documentation                        | Purpose                                    |
+| ------------------------------------ | ------------------------------------------ |
+| [`infra/CLAUDE.md`](infra/CLAUDE.md) | Terraform setup, GCP resources, deployment |
+
+### Finding Documentation by Task
+
+**Need to...**
+
+- **Add a new frontend feature?** → [`frontend/src/features/CLAUDE.md`](frontend/src/features/CLAUDE.md)
+- **Add a new backend API endpoint?** → [`backend/src/routes/CLAUDE.md`](backend/src/routes/CLAUDE.md)
+- **Create a new backend module?** → [`backend/modules/CLAUDE.md`](backend/modules/CLAUDE.md)
+- **Add translation keys?** → [`frontend/src/i18n/CLAUDE.md`](frontend/src/i18n/CLAUDE.md)
+- **Use the API client?** → [`frontend/src/lib/CLAUDE.md`](frontend/src/lib/CLAUDE.md)
+- **Connect to a database?** → [`backend/src/infra/CLAUDE.md`](backend/src/infra/CLAUDE.md)
+- **Deploy to GCP?** → [`infra/CLAUDE.md`](infra/CLAUDE.md)
+- **Build a shared UI component?** → [`packages/ui/CLAUDE.md`](packages/ui/CLAUDE.md)
+- **Define a new data schema?** → [`packages/contract/CLAUDE.md`](packages/contract/CLAUDE.md)
 
 ## Environment Setup
 
@@ -153,3 +220,4 @@ See individual package CLAUDE.md files for package-specific variables.
 3. **Type-Safe RPC**: Eden provides compile-time type safety between frontend and backend
 4. **i18n Everywhere**: Both frontend and backend support internationalization (en, pt-BR)
 5. **Test Coverage**: 80% threshold enforced
+6. **Co-located Tests**: Test files live alongside source files (e.g., `file.ts` and `file.test.ts`), NOT in separate `__tests__` directories

@@ -2,7 +2,7 @@ import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { initI18n, getTranslation, getLanguageFromHeader, i18nMiddleware } from './i18n'
-import { healthRoutes } from './routes/health'
+import { healthModule } from '../modules/health'
 import { usersModule } from '../modules/users'
 import { notificationsModule } from '../modules/notifications'
 import { connectMongo } from './infra'
@@ -32,7 +32,7 @@ export const app = new Elysia()
       },
     }
   })
-  .use(healthRoutes)
+  .use(healthModule)
   .use(usersModule)
   .use(notificationsModule)
   .get('/', () => ({ status: 'ok' }))
