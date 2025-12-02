@@ -34,6 +34,9 @@ yarn-error.log*
 .cache/
 *.tsbuildinfo
 
+# Turborepo
+.turbo/
+
 # Test coverage
 coverage/
 
