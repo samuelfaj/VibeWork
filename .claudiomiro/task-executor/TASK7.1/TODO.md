@@ -1,4 +1,5 @@
 Fully implemented: YES
+Code review passed
 
 ## Context Reference
 
@@ -113,13 +114,13 @@ Fully implemented: YES
 
 - [x] Run unit tests:
       `bash
-    bun test backend/modules/notifications --silent
-    `
+  bun test backend/modules/notifications --silent
+  `
 
 - [x] Type check:
       `bash
-    bun run typecheck --filter=backend
-    `
+  bun run typecheck --filter=backend
+  `
 
 ---
 
