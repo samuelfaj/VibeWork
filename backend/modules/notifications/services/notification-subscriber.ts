@@ -41,8 +41,13 @@ async function handleMessage(message: Message): Promise<void> {
     }
 
     if (payload.type === 'email') {
+      if (!emailService) {
+        console.error(`[NotificationSubscriber] Email service not initialized: ${correlationId}`)
+        message.nack()
+        return
+      }
       console.log(`[NotificationSubscriber] Processing email notification: ${correlationId}`)
-      await emailService!.sendEmail(payload.userId, 'New Notification', payload.message)
+      await emailService.sendEmail(payload.userId, 'New Notification', payload.message)
     } else {
       console.log(`[NotificationSubscriber] Ignoring in-app notification: ${correlationId}`)
     }

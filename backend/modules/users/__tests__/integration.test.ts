@@ -34,14 +34,13 @@ describe('User Module Integration Tests', () => {
 
     db = drizzle(pool)
 
-    // Create tables
+    // Create tables matching production schema (Better-Auth stores password in account table)
     await pool.execute(`
       CREATE TABLE IF NOT EXISTS user (
         id VARCHAR(36) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         email_verified BOOLEAN NOT NULL DEFAULT false,
-        password_hash VARCHAR(255) NOT NULL,
         image TEXT,
         created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
@@ -118,7 +117,6 @@ describe('User Module Integration Tests', () => {
         name: 'Test User',
         email: 'test@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$hashedpassword',
       }
 
       await db.insert(users).values(testUser)
@@ -132,7 +130,6 @@ describe('User Module Integration Tests', () => {
       expect(result.name).toBe('Test User')
       expect(result.email).toBe('test@example.com')
       expect(result.emailVerified).toBe(false)
-      expect(result.passwordHash).toBe('$argon2id$v=19$m=65536,t=3,p=4$hashedpassword')
     })
 
     it('should enforce unique email constraint', async () => {
@@ -141,7 +138,6 @@ describe('User Module Integration Tests', () => {
         name: 'User 1',
         email: 'duplicate@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash1',
       }
 
       const user2 = {
@@ -149,35 +145,11 @@ describe('User Module Integration Tests', () => {
         name: 'User 2',
         email: 'duplicate@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash2',
       }
 
       await db.insert(users).values(user1)
 
       await expect(db.insert(users).values(user2)).rejects.toThrow()
-    })
-
-    it('should store password as hash (not plaintext)', async () => {
-      const userId = crypto.randomUUID()
-      const hashedPassword = '$argon2id$v=19$m=65536,t=3,p=4$somesalt$hashedvalue'
-      const testUser = {
-        id: userId,
-        name: 'Secure User',
-        email: 'secure@example.com',
-        emailVerified: false,
-        passwordHash: hashedPassword,
-      }
-
-      await db.insert(users).values(testUser)
-      const [result] = await db
-        .select()
-        .from(users)
-        .where(sql`id = ${userId}`)
-
-      // Password should be stored as hash, not plaintext
-      expect(result.passwordHash).toBe(hashedPassword)
-      expect(result.passwordHash).toMatch(/^\$argon2/)
-      expect(result.passwordHash).not.toBe('plaintext123')
     })
 
     it('should find user by email', async () => {
@@ -187,7 +159,6 @@ describe('User Module Integration Tests', () => {
         name: 'Findable User',
         email: 'findme@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash',
       }
 
       await db.insert(users).values(testUser)
@@ -220,7 +191,6 @@ describe('User Module Integration Tests', () => {
         name: 'Session User',
         email: 'session@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash',
       })
 
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
@@ -251,7 +221,6 @@ describe('User Module Integration Tests', () => {
         name: 'Cascade User',
         email: 'cascade@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash',
       })
 
       await db.insert(sessions).values({
@@ -283,7 +252,6 @@ describe('User Module Integration Tests', () => {
         name: 'Account User',
         email: 'account@example.com',
         emailVerified: false,
-        passwordHash: '$argon2id$hash',
       })
 
       await db.insert(accounts).values({
@@ -302,6 +270,37 @@ describe('User Module Integration Tests', () => {
       expect(result).toBeDefined()
       expect(result.userId).toBe(userId)
       expect(result.providerId).toBe('credential')
+    })
+
+    it('should store password hash in account table (Better-Auth pattern)', async () => {
+      const userId = crypto.randomUUID()
+      const accountId = crypto.randomUUID()
+      const hashedPassword = '$argon2id$v=19$m=65536,t=3,p=4$somesalt$hashedvalue'
+
+      await db.insert(users).values({
+        id: userId,
+        name: 'Secure User',
+        email: 'secure@example.com',
+        emailVerified: false,
+      })
+
+      await db.insert(accounts).values({
+        id: accountId,
+        accountId: 'credential-account-id',
+        providerId: 'credential',
+        userId,
+        password: hashedPassword,
+      })
+
+      const [result] = await db
+        .select()
+        .from(accounts)
+        .where(sql`id = ${accountId}`)
+
+      // Password should be stored as hash in account table
+      expect(result.password).toBe(hashedPassword)
+      expect(result.password).toMatch(/^\$argon2/)
+      expect(result.password).not.toBe('plaintext123')
     })
   })
 })

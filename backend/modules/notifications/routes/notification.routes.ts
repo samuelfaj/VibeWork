@@ -8,7 +8,18 @@ import { formatNotificationResponse } from '../core/notification.formatter'
 export const notificationRoutes = new Elysia({ prefix: '/notifications' })
   .post(
     '/',
-    async ({ body, set }) => {
+    async ({ body, headers, set }) => {
+      const userId = headers['x-user-id']
+      if (!userId) {
+        set.status = 401
+        return { error: 'Unauthorized' }
+      }
+
+      if (body.userId !== userId) {
+        set.status = 403
+        return { error: 'Cannot create notifications for other users' }
+      }
+
       const doc = await NotificationModel.create(body)
       await publishNotificationCreated(doc)
       set.status = 201

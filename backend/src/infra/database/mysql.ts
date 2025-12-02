@@ -5,7 +5,7 @@ const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || '127.0.0.1',
   port: process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : 3307,
   user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'password123',
+  password: process.env.MYSQL_PASSWORD || '',
   database: process.env.MYSQL_DATABASE || 'vibe_db',
   connectionLimit: 10,
   connectTimeout: 5000,

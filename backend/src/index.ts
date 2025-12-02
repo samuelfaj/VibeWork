@@ -1,5 +1,11 @@
 import 'reflect-metadata'
 import { app } from './app'
+import {
+  closeMongoConnection,
+  closeRedisConnection,
+  closePubSubConnection,
+  closeMySqlConnection,
+} from './infra'
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000
 
@@ -8,8 +14,18 @@ app.listen(PORT, () => {
   console.log(`[backend] Swagger UI at http://localhost:${PORT}/swagger`)
 })
 
-const shutdown = () => {
+const shutdown = async () => {
   console.log('[backend] Shutting down gracefully...')
+  try {
+    await Promise.allSettled([
+      closeMongoConnection(),
+      closeRedisConnection(),
+      closePubSubConnection(),
+      closeMySqlConnection(),
+    ])
+  } catch (error) {
+    console.error('[backend] Error during shutdown:', error)
+  }
   process.exit(0)
 }
 
