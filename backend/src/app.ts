@@ -4,6 +4,7 @@ import { cors } from '@elysiajs/cors'
 import { initI18n, getTranslation, getLanguageFromHeader, i18nMiddleware } from './i18n'
 import { healthRoutes } from './routes/health'
 import { usersModule } from '../modules/users'
+import { notificationsModule } from '../modules/notifications'
 
 await initI18n()
 
@@ -31,6 +32,7 @@ export const app = new Elysia()
   })
   .use(healthRoutes)
   .use(usersModule)
+  .use(notificationsModule)
   .get('/', () => ({ status: 'ok' }))
 
 export type App = typeof app

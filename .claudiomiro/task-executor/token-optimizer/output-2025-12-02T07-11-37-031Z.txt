@@ -1,0 +1,34 @@
+# Token Optimizer Output
+## Command
+```
+bun test backend/modules/notifications/__tests__/notification.routes.test.ts
+```
+
+## Output
+bun test v1.2.8 (adab0f64)
+
+backend/modules/notifications/__tests__/notification.routes.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+2 | import { Elysia } from 'elysia'
+3 | 
+4 | // Mock MongoDB model
+5 | const mockCreate = vi.fn()
+6 | 
+7 | vi.mock('../models/notification.model', () => ({
+       ^
+TypeError: vi.mock is not a function. (In 'vi.mock("../models/notification.model", () => ({
+  NotificationModel: {
+    create: (data) => mockCreate(data)
+  }
+}))', 'vi.mock' is undefined)
+      at /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/notifications/__tests__/notification.routes.test.ts:7:4
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 tests across 1 files. [152.00ms]
+
