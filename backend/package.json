@@ -9,6 +9,9 @@
     "dev": "bun run --watch src/index.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "db:generate": "bunx drizzle-kit generate",
@@ -35,6 +38,9 @@
     "typescript": "latest",
     "@types/node": "latest",
     "vitest": "latest",
-    "drizzle-kit": "latest"
+    "drizzle-kit": "latest",
+    "@vitest/coverage-v8": "latest",
+    "@testcontainers/mysql": "latest",
+    "@testcontainers/mongodb": "latest"
   }
 }

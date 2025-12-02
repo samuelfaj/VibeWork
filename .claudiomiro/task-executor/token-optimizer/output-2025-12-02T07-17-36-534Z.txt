@@ -1,0 +1,14 @@
+# Token Optimizer Output
+## Command
+```
+find /Users/samuelfajreldines/Desenvolvimento/VibeWork -name 'CLAUDE.md' -type f
+```
+
+## Output
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/frontend/CLAUDE.md
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/users/CLAUDE.md
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/modules/notifications/CLAUDE.md
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/backend/CLAUDE.md
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/packages/contract/CLAUDE.md
+/Users/samuelfajreldines/Desenvolvimento/VibeWork/CLAUDE.md
+

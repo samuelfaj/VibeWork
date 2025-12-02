@@ -1,0 +1,13 @@
+# Token Optimizer Output
+## Command
+```
+bun run typecheck 2>&1
+```
+
+## Output
+$ tsc --noEmit
+modules/users/__tests__/integration.test.ts(34,5): error TS2322: Type 'import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/drizzle-orm/mysql2/driver").MySql2Database<Record<string, unknown>> & { $client: import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/mysql2/promise").Pool; }' is not assignable to type 'import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/drizzle-orm/mysql2/driver").MySql2Database<Record<string, unknown>> & { $client: import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/mysql2/typings/mysql/index").Pool; }'.
+  Type 'MySql2Database<Record<string, unknown>> & { $client: Pool; }' is not assignable to type '{ $client: Pool; }'.
+    Types of property '$client' are incompatible.
+      Property 'promise' is missing in type 'import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/mysql2/promise").Pool' but required in type 'import("/Users/samuelfajreldines/Desenvolvimento/VibeWork/node_modules/mysql2/typings/mysql/lib/Pool").Pool'.
+

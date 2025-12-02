@@ -1,5 +1,16 @@
 {
-  "name": "@vibe-code/e2e",
-  "version": "0.0.0",
-  "private": true
+  "name": "@vibe/e2e",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.15.21"
+  }
 }
