@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
 import { initI18n, t, getLanguageFromHeader } from './i18n'
+import { healthRoutes } from './routes/health'
 
 await initI18n()
 
@@ -21,6 +22,7 @@ export const app = new Elysia()
 
     return { error: errorMessages[code] || t('errors.serverError', { lng: lang }) }
   })
+  .use(healthRoutes)
   .get('/', () => ({ status: 'ok' }))
 
 export type App = typeof app
