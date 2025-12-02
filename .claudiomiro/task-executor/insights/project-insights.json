@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-02T05:58:27.296Z",
+  "lastUpdated": "2025-12-02T06:05:02.242Z",
   "curatedInsights": {
     "patterns": [
       {
@@ -3905,6 +3905,66 @@
         "category": "testing",
         "actionable": false,
         "evidence": "Phase 4: Test Results",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "1c6dd328-a34a-49ae-b6a7-fb46a13319e8",
+        "insight": "Testing commands",
+        "description": "Testing commands",
+        "learnedFrom": "TASK9.5",
+        "addedAt": "2025-12-02T06:05:02.041Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Implementation Plan",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "4eb73c42-e0bf-4593-8975-e3e799648f08",
+        "insight": "**Test Framework:** vitest",
+        "description": "**Test Framework:** vitest",
+        "learnedFrom": "TASK9.5",
+        "addedAt": "2025-12-02T06:05:02.170Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "1884aba0-d33b-4d07-9299-4dee2664c0f2",
+        "insight": "**Test Naming:** file.test.ext",
+        "description": "**Test Naming:** file.test.ext",
+        "learnedFrom": "TASK9.5",
+        "addedAt": "2025-12-02T06:05:02.209Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Detected Codebase Patterns",
+        "tags": [],
+        "scope": "project",
+        "lastUsedAt": null
+      },
+      {
+        "id": "e401a18c-604a-4661-ad0c-e3ea00092097",
+        "insight": "`/backend/src/i18n/__tests__/i18n.test.ts`",
+        "description": "`/backend/src/i18n/__tests__/i18n.test.ts`",
+        "learnedFrom": "TASK9.5",
+        "addedAt": "2025-12-02T06:05:02.235Z",
+        "usageCount": 0,
+        "confidence": 0.7,
+        "category": "testing",
+        "actionable": false,
+        "evidence": "Recently Completed Tasks",
         "tags": [],
         "scope": "project",
         "lastUsedAt": null

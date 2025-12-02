@@ -15,16 +15,17 @@ const mockMongo = vi.mocked(checkMongoConnection)
 const mockRedis = vi.mocked(checkRedisConnection)
 
 describe('Health Routes', () => {
-  let app: Elysia
-
   beforeEach(() => {
     vi.clearAllMocks()
-    app = new Elysia().use(healthRoutes)
   })
+
+  function createApp() {
+    return new Elysia().use(healthRoutes)
+  }
 
   describe('GET /healthz', () => {
     it('should return 200 with status ok', async () => {
-      const response = await app.handle(new Request('http://localhost/healthz'))
+      const response = await createApp().handle(new Request('http://localhost/healthz'))
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body).toEqual({ status: 'ok' })
@@ -37,7 +38,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(true)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.status).toBe('ok')
@@ -51,7 +52,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(true)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       expect(response.status).toBe(503)
       const body = await response.json()
       expect(body.status).toBe('fail')
@@ -63,7 +64,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(false)
       mockRedis.mockResolvedValue(true)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       expect(response.status).toBe(503)
       const body = await response.json()
       expect(body.status).toBe('fail')
@@ -75,7 +76,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(false)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       expect(response.status).toBe(503)
       const body = await response.json()
       expect(body.status).toBe('fail')
@@ -89,7 +90,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(true)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       expect(response.status).toBe(503)
       const body = await response.json()
       expect(body.checks.mysql.status).toBe('fail')
@@ -116,7 +117,7 @@ describe('Health Routes', () => {
         return true
       })
 
-      await app.handle(new Request('http://localhost/readyz'))
+      await createApp().handle(new Request('http://localhost/readyz'))
 
       // All starts should happen before any ends (parallel execution)
       const startIndices = callOrder
@@ -134,7 +135,7 @@ describe('Health Routes', () => {
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(true)
 
-      const response = await app.handle(new Request('http://localhost/readyz'))
+      const response = await createApp().handle(new Request('http://localhost/readyz'))
       const body = await response.json()
 
       expect(typeof body.checks.mysql.latency).toBe('number')

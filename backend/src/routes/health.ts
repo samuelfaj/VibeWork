@@ -1,12 +1,12 @@
 import { Elysia } from 'elysia'
 import { checkMySqlConnection, checkMongoConnection, checkRedisConnection } from '../infra'
 
-interface CheckResult {
+export interface CheckResult {
   status: 'ok' | 'fail'
   latency?: number
 }
 
-interface ReadyzResponse {
+export interface ReadyzResponse {
   status: 'ok' | 'fail'
   checks: {
     mysql: CheckResult
