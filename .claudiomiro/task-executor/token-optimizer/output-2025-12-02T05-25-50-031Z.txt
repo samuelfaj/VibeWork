@@ -1,9 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/frontend && bun run typecheck
-```
-
-## Output
-$ tsc --noEmit
-

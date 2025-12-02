@@ -1,8 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/frontend && npx tsc --noEmit 2>&1
-```
-
-## Output
-(no output)

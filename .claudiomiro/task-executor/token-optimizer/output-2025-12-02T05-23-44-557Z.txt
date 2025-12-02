@@ -1,8 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/frontend && npx eslint src/i18n/index.ts 2>&1
-```
-
-## Output
-(no output)

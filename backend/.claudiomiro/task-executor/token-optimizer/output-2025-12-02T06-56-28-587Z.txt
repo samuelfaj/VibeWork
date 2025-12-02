@@ -1,8 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-npx tsc --noEmit 2>&1
-```
-
-## Output
-(no output)

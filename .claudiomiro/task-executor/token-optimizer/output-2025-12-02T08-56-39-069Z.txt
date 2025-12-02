@@ -1,9 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && bun run lint
-```
-
-## Output
-$ eslint src/
-

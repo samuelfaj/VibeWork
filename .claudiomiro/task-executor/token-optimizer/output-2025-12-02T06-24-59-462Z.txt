@@ -1,8 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && bun run eslint src/i18n/ --quiet
-```
-
-## Output
-(no output)

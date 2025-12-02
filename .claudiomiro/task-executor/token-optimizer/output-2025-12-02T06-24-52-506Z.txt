@@ -1,8 +1,0 @@
-# Token Optimizer Output
-## Command
-```
-cd /Users/samuelfajreldines/Desenvolvimento/VibeWork/backend && bun run tsc --noEmit
-```
-
-## Output
-(no output)
