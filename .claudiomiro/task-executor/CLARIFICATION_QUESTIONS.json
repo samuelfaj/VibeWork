@@ -1,0 +1,207 @@
+[
+  {
+    "id": 1,
+    "category": "Scope & Requirements",
+    "title": "Multi-Language Clarification",
+    "context": "You stated 'CRITICAL: Both, frontend and backend must be multi-language' but this term has two common interpretations in software development.",
+    "ambiguity": "It's unclear whether 'multi-language' refers to internationalization (i18n) for supporting multiple human languages in the UI, or using multiple programming languages in the codebase.",
+    "question": "What do you mean by 'multi-language'?",
+    "options": [
+      {
+        "key": "a",
+        "label": "Internationalization (i18n)",
+        "description": "Support for multiple human languages (e.g., English, Portuguese, Spanish) in UI text, dates, and formats. Would use libraries like react-i18next for frontend."
+      },
+      {
+        "key": "b",
+        "label": "Multiple programming languages",
+        "description": "Using different programming languages (e.g., TypeScript + Rust + Go) in the codebase. This is unusual given the Bun/TypeScript stack specified."
+      },
+      {
+        "key": "c",
+        "label": "Both",
+        "description": "Support for i18n AND use of multiple programming languages."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "category": "Technical Details",
+    "title": "Cloud Provider for Terraform",
+    "context": "You requested Terraform configuration for MySQL, MongoDB, and Redis but didn't specify the target cloud provider. Each provider has different resource types, naming conventions, and best practices.",
+    "ambiguity": "Terraform code varies significantly between cloud providers (AWS RDS vs GCP Cloud SQL vs Azure Database).",
+    "question": "Which cloud provider should the Terraform configuration target?",
+    "options": [
+      {
+        "key": "a",
+        "label": "AWS",
+        "description": "Amazon Web Services - RDS for MySQL, DocumentDB for MongoDB, ElastiCache for Redis"
+      },
+      {
+        "key": "b",
+        "label": "GCP",
+        "description": "Google Cloud Platform - Cloud SQL for MySQL, MongoDB Atlas (or Firestore), Memorystore for Redis"
+      },
+      {
+        "key": "c",
+        "label": "Azure",
+        "description": "Microsoft Azure - Azure Database for MySQL, Cosmos DB (MongoDB API), Azure Cache for Redis"
+      },
+      {
+        "key": "d",
+        "label": "Local/Docker only",
+        "description": "Skip cloud Terraform, only provide Docker Compose for local development with all services"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "category": "Security & Authentication",
+    "title": "Authentication Methods",
+    "context": "Better-Auth supports multiple authentication methods: email/password, magic links, OAuth providers, passkeys, etc. You specified Better-Auth with Drizzle adapter but didn't specify which methods to implement.",
+    "ambiguity": "The auth implementation varies significantly based on methods supported. OAuth requires provider configuration, magic links need email service, etc.",
+    "question": "Which authentication methods should be implemented initially?",
+    "options": [
+      {
+        "key": "a",
+        "label": "Email/Password only",
+        "description": "Simple credential-based auth with password hashing. Minimal setup, good for MVP."
+      },
+      {
+        "key": "b",
+        "label": "Email/Password + OAuth",
+        "description": "Credentials plus social login (Google, GitHub, etc.). Which OAuth providers?"
+      },
+      {
+        "key": "c",
+        "label": "Magic Links only",
+        "description": "Passwordless email-based auth. Requires email service configuration (SendGrid, Resend, etc.)."
+      },
+      {
+        "key": "d",
+        "label": "Full suite",
+        "description": "Email/Password + Magic Links + OAuth. More complex initial setup but complete solution."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "category": "Testing Strategy",
+    "title": "Test Coverage Threshold",
+    "context": "You mentioned configuring 'coverage threshold (for example, 80% or 90%)' but didn't specify the exact value. This affects how strict the CI pipeline will be.",
+    "ambiguity": "80% is industry-standard but more forgiving; 90% is stricter and may slow initial development. Different thresholds can be set for different metrics (lines, branches, functions).",
+    "question": "What test coverage threshold should be enforced?",
+    "options": [
+      {
+        "key": "a",
+        "label": "80% overall",
+        "description": "Industry standard. Balances quality with developer velocity. Good for most projects."
+      },
+      {
+        "key": "b",
+        "label": "90% overall",
+        "description": "Strict. Ensures comprehensive testing but may slow initial development."
+      },
+      {
+        "key": "c",
+        "label": "Differentiated thresholds",
+        "description": "Different thresholds: 90% for critical paths (auth, payments), 70% for utilities. More nuanced approach."
+      },
+      {
+        "key": "d",
+        "label": "Start at 70%, increase over time",
+        "description": "Begin with lower threshold, increase as codebase matures. Pragmatic for greenfield projects."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "category": "Technical Details",
+    "title": "Notification Types",
+    "context": "The Notification module uses MongoDB/Typegoose, but the types of notifications aren't specified. This affects the schema design and required integrations.",
+    "ambiguity": "Different notification types require different infrastructure: email needs SMTP/provider, push needs FCM/APNs, in-app needs real-time delivery.",
+    "question": "What types of notifications should the Notification module support initially?",
+    "options": [
+      {
+        "key": "a",
+        "label": "In-app only",
+        "description": "Notifications stored in MongoDB, delivered via API polling or WebSocket. No external services needed."
+      },
+      {
+        "key": "b",
+        "label": "In-app + Email",
+        "description": "In-app notifications plus email delivery. Requires email service (SendGrid, Resend, AWS SES)."
+      },
+      {
+        "key": "c",
+        "label": "In-app + Push",
+        "description": "In-app plus browser/mobile push notifications. Requires FCM/APNs configuration."
+      },
+      {
+        "key": "d",
+        "label": "All types",
+        "description": "In-app, Email, and Push notifications. Full notification system but more complex setup."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "category": "Architecture & Approach",
+    "title": "Redis Event Bus Pattern",
+    "context": "You mentioned configuring Redis connection for event_bus.ts but didn't specify the messaging pattern. Redis supports multiple patterns with different trade-offs.",
+    "ambiguity": "Pub/Sub is simple but fire-and-forget; Streams provide persistence and consumer groups; BullMQ adds job queue capabilities.",
+    "question": "Which Redis messaging pattern should the event bus use?",
+    "options": [
+      {
+        "key": "a",
+        "label": "Pub/Sub",
+        "description": "Simple publish/subscribe. Fire-and-forget, no persistence. Good for real-time events."
+      },
+      {
+        "key": "b",
+        "label": "Redis Streams",
+        "description": "Persistent message log with consumer groups. Reliable delivery, message replay capability."
+      },
+      {
+        "key": "c",
+        "label": "BullMQ",
+        "description": "Full job queue built on Redis. Supports retries, scheduling, priorities. More features but added complexity."
+      },
+      {
+        "key": "d",
+        "label": "Minimal placeholder",
+        "description": "Just establish Redis connection, implement specific pattern later based on needs."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "category": "Deployment & Integration",
+    "title": "Local Development Environment",
+    "context": "The project requires MySQL, MongoDB, and Redis. For local development, these services need to run somewhere.",
+    "ambiguity": "It's not specified whether to use Docker Compose for local services, expect developers to have them installed locally, or use cloud-hosted dev databases.",
+    "question": "How should local development databases be managed?",
+    "options": [
+      {
+        "key": "a",
+        "label": "Docker Compose",
+        "description": "Provide docker-compose.yml with MySQL, MongoDB, Redis. Consistent across all developers."
+      },
+      {
+        "key": "b",
+        "label": "Local installation",
+        "description": "Assume developers have services installed locally. Document required versions."
+      },
+      {
+        "key": "c",
+        "label": "Cloud dev instances",
+        "description": "Use cloud-hosted development databases (e.g., PlanetScale, MongoDB Atlas free tier)."
+      },
+      {
+        "key": "d",
+        "label": "Docker Compose + Cloud option",
+        "description": "Provide Docker Compose as default, document cloud alternatives for those who prefer them."
+      }
+    ]
+  }
+]

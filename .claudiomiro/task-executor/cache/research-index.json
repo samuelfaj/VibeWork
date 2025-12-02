@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "created": "2025-12-02T04:37:30.956Z",
+  "lastUpdated": "2025-12-02T04:37:30.957Z",
+  "patterns": {
+    "api": [
+      "TASK0"
+    ],
+    "database": [
+      "TASK0"
+    ],
+    "testing": [
+      "TASK0"
+    ],
+    "config": [
+      "TASK0"
+    ],
+    "component": [
+      "TASK0"
+    ],
+    "validation": [
+      "TASK0"
+    ],
+    "logging": [
+      "TASK0"
+    ],
+    "cache": [
+      "TASK0"
+    ],
+    "file": [
+      "TASK0"
+    ]
+  },
+  "taskResearch": {
+    "TASK0": {
+      "topics": [
+        "api",
+        "database",
+        "testing",
+        "config",
+        "component",
+        "validation",
+        "logging",
+        "cache",
+        "file"
+      ],
+      "researchPath": "/Users/samuelfajreldines/Desenvolvimento/VibeWork/.claudiomiro/task-executor/TASK0/RESEARCH.md",
+      "indexedAt": "2025-12-02T04:37:30.957Z"
+    }
+  }
+}

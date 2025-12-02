@@ -1,0 +1,23 @@
+{
+  "name": "vibe-code-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.2.8",
+  "workspaces": ["backend", "frontend", "packages/*", "e2e"],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "turbo run test:e2e"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "vitest": "latest",
+    "eslint": "latest",
+    "prettier": "latest",
+    "turbo": "latest"
+  }
+}
