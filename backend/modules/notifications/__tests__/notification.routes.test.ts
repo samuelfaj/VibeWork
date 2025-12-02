@@ -57,7 +57,10 @@ describe('Notification Routes', () => {
       const response = await app.handle(
         new Request('http://localhost/notifications', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': 'user-456',
+          },
           body: JSON.stringify({
             userId: 'user-456',
             type: 'in-app',
@@ -83,7 +86,10 @@ describe('Notification Routes', () => {
       const response = await app.handle(
         new Request('http://localhost/notifications', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': 'user-456',
+          },
           body: JSON.stringify({
             userId: 'user-456',
             type: 'sms',
@@ -99,7 +105,10 @@ describe('Notification Routes', () => {
       const response = await app.handle(
         new Request('http://localhost/notifications', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': 'user-456',
+          },
           body: JSON.stringify({
             userId: 'user-456',
           }),
