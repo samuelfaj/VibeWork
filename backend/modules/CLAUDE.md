@@ -1,466 +1,609 @@
-# Modules - Feature Modules
+# Modules Architecture
 
-Modular feature modules that encapsulate business logic, routes, and data models. Each module is a self-contained feature that could potentially be extracted into a microservice.
+## Folder Rules
 
-## Purpose
+Each module can have **only these folders**:
 
-Organizes backend code by business feature:
+| Folder         | Purpose                              | File Suffix                 | Example                 |
+| -------------- | ------------------------------------ | --------------------------- | ----------------------- |
+| `controllers/` | HTTP request/response handling       | `.controller.ts`            | `lead.controller.ts`    |
+| `handlers/`    | Pub/Sub message handling             | `.handler.ts`               | `lead.handler.ts`       |
+| `services/`    | Business logic (decoupled from HTTP) | `.service.ts`               | `lead.service.ts`       |
+| `routes/`      | HTTP endpoints (Elysia instances)    | `.routes.ts`                | `lead.routes.ts`        |
+| `models/`      | MongoDB schemas (Typegoose)          | `.model.ts`                 | `lead.model.ts`         |
+| `schema/`      | MySQL schemas (Drizzle)              | `.schema.ts`                | `user.schema.ts`        |
+| `core/`        | Constants, types, config             | `.constants.ts` `.types.ts` | `followup.constants.ts` |
+| `shared/`      | Shared code within module            | varies                      | `lead.types.ts`         |
+| `test/`        | Test factories and helpers           | `.factory.ts`               | `lead.factory.ts`       |
+| `submodules/`  | Nested features (same structure)     | -                           | `follow-up/`            |
 
-- **users** - User authentication and profile management
-- **notifications** - User notifications with multi-channel delivery
+## Architecture Overview
 
-This modular monolith architecture allows:
-
-- **Independent development**: Features developed and tested in isolation
-- **Clear boundaries**: Module interfaces are well-defined
-- **Scalability**: Modules can be extracted to microservices
-- **Code reuse**: Modules can be shared across different parts of the application
-
-## Structure
-
-```
-modules/
-├── health/                        # Health checks module
-│   ├── CLAUDE.md                 # Module documentation
-│   ├── index.ts                  # Module export
-│   ├── routes/
-│   │   ├── health.routes.ts      # Health check endpoints
-│   │   └── health.routes.test.ts # Tests for routes (co-located)
-│
-├── users/                         # User authentication module
-│   ├── CLAUDE.md                 # Module documentation
-│   ├── core/
-│   │   ├── password.ts           # Argon2 password hashing
-│   │   └── password.test.ts      # Tests for password (co-located)
-│   ├── routes/
-│   │   ├── auth.routes.ts        # Better-Auth routes
-│   │   └── user.routes.ts        # User profile endpoints
-│   ├── schema/
-│   │   ├── user.schema.ts        # Drizzle user table
-│   │   └── auth.schema.ts        # Session/account tables
-│   ├── services/
-│   │   └── user.service.ts       # Business logic
-│   └── integration.test.ts       # Integration tests (co-located)
-│
-└── notifications/                 # Notifications module
-    ├── CLAUDE.md                 # Module documentation
-    ├── routes/
-    │   └── notification.routes.ts # REST API endpoints
-    │   └── notification.routes.test.ts # Tests for routes (co-located)
-    ├── services/
-    │   ├── notification.service.ts # CRUD operations
-    │   ├── notification-publisher.ts # Pub/Sub publishing
-    │   ├── notification-publisher.test.ts # Tests for publisher (co-located)
-    │   ├── notification-subscriber.ts # Pub/Sub subscription
-    │   ├── email.service.ts       # Email delivery
-    │   └── email.service.test.ts  # Tests for email service (co-located)
-    ├── models/
-    │   └── notification.model.ts  # Typegoose model
-    ├── core/
-    │   ├── notification.formatter.ts # Response formatting
-    │   └── notification.formatter.test.ts # Tests for formatter (co-located)
-    └── integration.test.ts        # Integration tests (co-located)
-```
-
-## Module Details
-
-### `health` - Health Checks & Readiness Probes
-
-**Location:** `backend/modules/health/`
-
-**Purpose:** Provides liveness and readiness checks for container orchestration (Kubernetes, Docker Compose, etc.).
-
-**Key Components:**
-
-- **Routes** (`routes/health.routes.ts`)
-  - `GET /healthz` - Liveness probe (simple health check)
-  - `GET /readyz` - Readiness probe (checks all dependencies)
-
-- **Implementation Details**
-  - Each health check has a 5-second timeout
-  - Readiness checks MySQL, MongoDB, and Redis in parallel
-  - Returns HTTP 503 if any dependency check fails
-
-**Reference:** See [`modules/health/CLAUDE.md`](health/CLAUDE.md) for detailed documentation.
-
----
-
-### `users` - Authentication & User Management
-
-**Location:** `backend/modules/users/`
-
-**Purpose:** User registration, login, session management, and profile endpoints.
-
-**Key Components:**
-
-- **Routes** (`routes/auth.routes.ts`, `routes/user.routes.ts`)
-  - `POST /auth/signup` - Register new user
-  - `POST /auth/login` - Login user
-  - `POST /auth/logout` - Logout user
-  - `GET /users/me` - Get current user profile
-  - `PATCH /users/me` - Update current user
-
-- **Services** (`services/user.service.ts`)
-  - User CRUD operations
-  - Session management
-  - Password validation
-
-- **Core** (`core/password.ts`)
-  - Argon2id password hashing
-  - Password verification
-
-- **Schema** (`schema/user.schema.ts`, `schema/auth.schema.ts`)
-  - User table definition
-  - Session and account tables
-  - Verification links
-
-**Database Tables:**
-
-- `users` - User accounts
-- `sessions` - Active sessions
-- `accounts` - OAuth accounts (if used)
-- `verificationTokens` - Email verification tokens
-
-**Reference:** See [`modules/users/CLAUDE.md`](users/CLAUDE.md) for detailed documentation.
-
----
-
-### `notifications` - User Notifications
-
-**Location:** `backend/modules/notifications/`
-
-**Purpose:** Send, retrieve, and manage user notifications across multiple channels.
-
-**Key Components:**
-
-- **Routes** (`routes/notification.routes.ts`)
-  - `POST /notifications` - Create notification
-  - `GET /notifications` - List user notifications
-  - `GET /notifications/:id` - Get notification
-  - `PATCH /notifications/:id` - Update notification (mark as read)
-  - `DELETE /notifications/:id` - Delete notification
-
-- **Services** (`services/`)
-  - **notification.service.ts** - CRUD operations
-  - **notification-publisher.ts** - Pub/Sub event publishing
-  - **notification-subscriber.ts** - Pub/Sub event subscription (async processor)
-  - **email.service.ts** - Email delivery via AWS SES
-
-- **Models** (`models/notification.model.ts`)
-  - Typegoose MongoDB model
-  - Supports in-app and email notifications
-
-- **Core** (`core/notification.formatter.ts`)
-  - Response formatting
-  - Data transformation
-
-**Features:**
-
-- CRUD operations for notifications
-- Multi-channel delivery (in-app, email)
-- Async processing with Pub/Sub
-- Pagination support
-- User isolation (X-User-Id header)
-- Retry logic for failed deliveries
-
-**Data Flow:**
-
-1. API receives notification creation request
-2. Notification published to Pub/Sub topic
-3. Subscriber listens on subscription
-4. Processes notification (send email, store in DB)
-5. Acknowledges or retries on failure
-
-**Reference:** See [`modules/notifications/CLAUDE.md`](notifications/CLAUDE.md) for detailed documentation.
-
----
-
-## Module Architecture
-
-### Standard Module Structure
-
-Each module should follow this structure:
+This architecture uses two parallel patterns for different entry points:
 
 ```
-module-name/
-├── CLAUDE.md               # Module documentation
-├── routes/                 # API route handlers
-│   └── *.routes.ts
-├── services/               # Business logic
-│   └── *.service.ts
-├── models/                 # Data models (if using MongoDB)
-│   └── *.model.ts
-├── schema/                 # Database schema (if using MySQL)
-│   └── *.schema.ts
-├── core/                   # Core utilities
-│   ├── *.ts
-│   └── __tests__/
-├── types.ts                # TypeScript types (optional)
-└── __tests__/              # Integration tests
-    └── *.test.ts
+HTTP:    Request → Routes → Controller → Service → Model → Database
+Pub/Sub: Message → pubsub-receiver → Handler → Service → Model → Database
 ```
 
-### Dependencies Between Modules
+Both **Controllers** (HTTP) and **Handlers** (Pub/Sub) orchestrate services but are decoupled from business logic.
 
-Modules should be loosely coupled:
+## Architecture: Controller → Service → Model (HTTP)
 
-**✅ Allowed:**
+Following **Elysia best practices**, each layer has a specific responsibility:
 
-- Module → shared packages (`@vibe-code/contract`, `@vibe/ui`)
-- Module → backend infrastructure (`infra/`)
-- Module → i18n
+```
+HTTP Request → Routes → Controller → Service → Model/Repository → Database
+```
 
-**❌ Avoid:**
+| Layer          | Responsibility                                             | Example                  |
+| -------------- | ---------------------------------------------------------- | ------------------------ |
+| **Routes**     | HTTP routing, request validation schemas (Elysia instance) | `leadRoutes`             |
+| **Controller** | Request/response handling, error formatting, HTTP concerns | `LeadController.list()`  |
+| **Service**    | Business logic, decoupled from HTTP (reusable)             | `LeadService.findById()` |
+| **Model**      | Data structure and database operations                     | `LeadModel`              |
 
-- Module A → Module B (unless explicit and documented)
-- Cross-module service calls without abstraction
-- Shared mutable state between modules
+### Why This Separation?
 
-### Dependency Injection Pattern
+1. **Testability**: Services can be tested without HTTP context
+2. **Reusability**: Services can be used from CLI, workers, Pub/Sub handlers
+3. **Type Safety**: Controllers handle Elysia Context with proper typing
+4. **Maintainability**: Clear boundaries between HTTP and business logic
 
-Use services for dependency injection:
+### Controller Pattern
+
+Controllers receive Elysia Context directly and handle destructuring internally:
 
 ```typescript
-// ✅ Good: Injected dependency
-export function createNotificationService(
-  pubsub: PubSubClient,
-  emailService: EmailService
-) {
-  return {
-    create: async (data) => {
-      // Use injected dependencies
-      await pubsub.publish(...)
-      await emailService.send(...)
-    },
+// Controller receives typed Context
+static async getById({ params, set, request }: Context<{ params: { id: string } }>) {
+  const lang = getLanguageFromHeader(request.headers.get('accept-language'))
+  const lead = await LeadService.findById(params.id)
+
+  if (!lead) {
+    set.status = 404
+    return { error: { code: 'NOT_FOUND', message: getTranslation('errors.notFound', lang) } }
+  }
+
+  return lead
+}
+
+// Routes are clean and simple
+.get('/:id', LeadController.getById, { params: t.Object({ id: t.String() }) })
+```
+
+## Architecture: Handler → Service → Model (Pub/Sub)
+
+For asynchronous messaging via Google Cloud Pub/Sub:
+
+```
+Pub/Sub Message → pubsub-receiver → Handler → Service → Model/Repository → Database
+```
+
+| Layer               | Responsibility                                          | Example                          |
+| ------------------- | ------------------------------------------------------- | -------------------------------- |
+| **pubsub-receiver** | Decodes messages, routes to handlers (centralized)      | `POST /pubsub/push`              |
+| **Handler**         | Message handling, orchestration, logging (domain-local) | `LeadHandler.initiateFollowUp()` |
+| **Service**         | Business logic, decoupled from messaging (reusable)     | `LeadService.create()`           |
+| **Model**           | Data structure and database operations                  | `LeadModel`                      |
+
+### Why Handlers?
+
+1. **Separation of concerns**: Handlers own messaging orchestration, services own business logic
+2. **Parallel to Controllers**: Same pattern as HTTP - Controllers for HTTP, Handlers for Pub/Sub
+3. **Testability**: Handlers can be tested without Pub/Sub infrastructure
+4. **Domain locality**: Handlers live in domain modules, not in pubsub-receiver
+
+### Handler Pattern
+
+Handlers receive decoded payload and metadata, orchestrate services:
+
+```typescript
+// submodules/follow-up/handlers/followup.handler.ts
+export class FollowUpHandler {
+  /**
+   * Action: initiate-lead-follow-up
+   * Creates lead and sends initial follow-up message
+   */
+  static async initiateFollowUp(body: unknown, _metadata: HandlerMetadata): Promise<HandlerResult> {
+    const payload = body as InitiateFollowUpPayload
+
+    // Check if lead already exists
+    const existingLead = await LeadService.findByCountryPhone(payload.countryPhone)
+    if (existingLead) {
+      return { success: true, message: 'Lead already exists' }
+    }
+
+    // Create new lead using service
+    const lead = await LeadService.create({
+      countryPhone: payload.countryPhone,
+      phone: payload.phone,
+      // ...
+    })
+
+    // Orchestrate follow-up services (within same submodule)
+    const generated = await MessageGenerator.generate(lead, 'initial')
+    await WhatsAppPublisher.send(lead.countryPhone, generated.content, lead._id!, 'initial')
+
+    return { success: true, message: `Lead ${lead._id} created` }
+  }
+}
+```
+
+### Handler Placement: Root vs Submodule
+
+**Principle:** Handlers should live where their domain logic lives.
+
+| Handler Location      | When to use                                      |
+| --------------------- | ------------------------------------------------ |
+| `module/handlers/`    | Handler uses only root-level services            |
+| `submodule/handlers/` | Handler orchestrates submodule-specific services |
+
+**Why?** Encapsulation - parent modules should not import submodule internals.
+
+```
+❌ WRONG: Root handler importing submodule internals
+leads/handlers/lead.handler.ts
+  → imports submodules/follow-up/services/message-generator.service.ts
+  → imports submodules/follow-up/services/whatsapp-publisher.service.ts
+
+✅ CORRECT: Handler lives in the submodule it orchestrates
+leads/submodules/follow-up/handlers/followup.handler.ts
+  → imports ../services/message-generator.service.ts (relative, same submodule)
+  → imports ../services/whatsapp-publisher.service.ts (relative, same submodule)
+```
+
+### Handler Registration
+
+Handlers are registered in `pubsub-receiver/core/handlers.constants.ts`:
+
+```typescript
+// Import from module index (not direct path to submodule)
+import { FollowUpHandler } from '../../leads'
+
+export const pubsubHandlers: HandlerEntry[] = [
+  {
+    action: PUBSUB_ACTIONS.INITIATE_LEAD_FOLLOW_UP,
+    handler: FollowUpHandler.initiateFollowUp,
+    description: 'Creates lead and sends initial follow-up message',
+  },
+  // ... more handlers
+]
+```
+
+## File Naming
+
+```
+✅ CORRECT:
+controllers/lead.controller.ts
+handlers/lead.handler.ts
+services/lead.service.ts
+services/payload-decoder.service.ts
+routes/lead.routes.ts
+models/lead.model.ts
+core/followup.constants.ts
+
+❌ WRONG:
+services/lead.ts           # Missing .service suffix
+services/leadService.ts    # Wrong naming
+core/decoder.ts            # Should be in services/ with .service.ts
+controllers/leadController.ts  # Should be lead.controller.ts
+handlers/leadHandler.ts    # Should be lead.handler.ts
+```
+
+## Class Naming Convention
+
+Classes follow the pattern: `<Entity><Type>` where:
+
+- `<Entity>`: Domain entity name (PascalCase)
+- `<Type>`: Class type based on file location
+
+### Naming by File Type
+
+| File Type         | Export Name Pattern                                       | Examples                                                   |
+| ----------------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| `*.controller.ts` | `<Entity>Controller` (class, PascalCase)                  | `LeadController`, `UserController`, `OrderController`      |
+| `*.handler.ts`    | `<Entity>Handler` (class, PascalCase)                     | `LeadHandler`, `OrderHandler`, `PaymentHandler`            |
+| `*.service.ts`    | `<Entity>Service` (class, PascalCase)                     | `LeadService`, `PaymentService`, `MessageGeneratorService` |
+| `*.model.ts`      | `<Entity>Model` (class, PascalCase)                       | `LeadModel`, `UserModel`, `OrderModel`                     |
+| `*.schema.ts`     | `<Entity>Schema` or `<Entity>Table` (class, PascalCase)   | `UserSchema`, `OrderTable`                                 |
+| `*.routes.ts`     | `<entity>Routes` (const, camelCase)                       | `leadRoutes`, `userRoutes`                                 |
+| `*.repository.ts` | `<Entity>Repository` (class, PascalCase)                  | `LeadRepository`, `OrderRepository`                        |
+| `*.factory.ts`    | `Create<Entity>` or `Mock<Entity>` (function, PascalCase) | `CreateMockLead`, `MockUserFactory`                        |
+| `*.constants.ts`  | `<ENTITY>_<TYPE>` (const, UPPER_SNAKE_CASE)               | `FOLLOW_UP_TIMING`, `PUBSUB_ACTIONS`                       |
+| `*.types.ts`      | Types/interfaces (no class)                               | `Lead`, `UserCreateInput`, `OrderStatus`                   |
+
+### Complete Example
+
+```typescript
+// lead.controller.ts (HTTP request/response handling)
+export class LeadController {
+  static async list({ query }: Context<{ query: ListQuery }>) {
+    const page = parseInt(query.page || '1', 10)
+    const limit = Math.min(parseInt(query.limit || '20', 10), 100)
+    return LeadService.findWithPagination({ page, limit })
+  }
+
+  static async getById({ params, set, request }: Context<{ params: { id: string } }>) {
+    const lang = getLanguageFromHeader(request.headers.get('accept-language'))
+    const lead = await LeadService.findById(params.id)
+    if (!lead) {
+      set.status = 404
+      return { error: { code: 'NOT_FOUND', message: getTranslation('errors.leads.notFound', lang) } }
+    }
+    return lead
   }
 }
 
-// ❌ Bad: Hardcoded dependencies
-export const notificationService = {
-  create: async (data) => {
-    const pubsub = new PubSubClient()  // Hard to test
-    const email = new EmailService()    // Hard to test
-  },
+// lead.service.ts (Business logic - decoupled from HTTP)
+export class LeadService {
+  static async create(data: CreateLead): Promise<Lead> { ... }
+  static async findById(id: string): Promise<Lead | null> { ... }
 }
-```
 
----
-
-## Adding a New Module
-
-### 1. Create Module Directory
-
-```bash
-mkdir -p backend/modules/mymodule/{routes,services,schema,core,__tests__}
-```
-
-### 2. Create Routes
-
-```typescript
-// modules/mymodule/routes/mymodule.routes.ts
-import { Elysia } from 'elysia'
-import { myModuleService } from '../services'
-
-export const myModuleRoutes = new Elysia({ prefix: '/mymodule' })
-  .post('/', ({ body }) => myModuleService.create(body))
-  .get('/', () => myModuleService.list())
-  .get('/:id', ({ params: { id } }) => myModuleService.getById(id))
-  .patch('/:id', ({ params: { id }, body }) => myModuleService.update(id, body))
-  .delete('/:id', ({ params: { id } }) => myModuleService.delete(id))
-```
-
-### 3. Create Services
-
-```typescript
-// modules/mymodule/services/mymodule.service.ts
-import { db } from '@/infra'
-
-export const myModuleService = {
-  create: async (data) => {
-    // Business logic
-    return db.insert(mymodules).values(data)
-  },
-
-  list: async () => {
-    return db.query.mymodules.findMany()
-  },
-
-  getById: async (id) => {
-    return db.query.mymodules.findFirst({
-      where: eq(mymodules.id, id),
-    })
-  },
-
-  update: async (id, data) => {
-    return db.update(mymodules).set(data).where(eq(mymodules.id, id))
-  },
-
-  delete: async (id) => {
-    return db.delete(mymodules).where(eq(mymodules.id, id))
-  },
+// lead.model.ts (MongoDB with Typegoose)
+export class LeadModel {
+  @prop() countryPhone: string
+  @prop() status: 'active' | 'paused'
 }
-```
 
-### 4. Register Routes in App
-
-```typescript
-// src/app.ts
-import { myModuleRoutes } from '@/modules/mymodule/routes'
-
-export const app = new Elysia().use(myModuleRoutes).use(otherRoutes)
-```
-
-### 5. Create Tests
-
-```typescript
-// modules/mymodule/__tests__/mymodule.routes.test.ts
-import { describe, it, expect } from 'vitest'
-import { app } from '@/app'
-
-describe('MyModule Routes', () => {
-  it('should create item', async () => {
-    const response = await app.handle(
-      new Request('http://localhost/mymodule', {
-        method: 'POST',
-        body: JSON.stringify({ name: 'Test' }),
-      })
-    )
-
-    expect(response.status).toBe(201)
+// lead.routes.ts (Elysia instance - delegates to controller)
+export const leadRoutes = new Elysia({ prefix: '/leads' })
+  .get('/', LeadController.list, {
+    query: t.Object({ page: t.Optional(t.String()), limit: t.Optional(t.String()) }),
+  })
+  .get('/:id', LeadController.getById, {
+    params: t.Object({ id: t.String() }),
   })
 
-  it('should list items', async () => {
-    const response = await app.handle(new Request('http://localhost/mymodule'))
+// lead.factory.ts
+export const createMockLead = (): Lead => ({ ... })
 
-    expect(response.status).toBe(200)
+// submodules/follow-up/handlers/followup.handler.ts (Pub/Sub message handling in submodule)
+export class FollowUpHandler {
+  static async initiateFollowUp(body: unknown, metadata: HandlerMetadata): Promise<HandlerResult> { ... }
+  static async handleResponse(body: unknown, metadata: HandlerMetadata): Promise<HandlerResult> { ... }
+}
+
+// followup-scheduler.service.ts (Multi-word entity)
+export class FollowUpScheduler {
+  static scheduleNext(step: string) { ... }
+}
+
+// followup.constants.ts (Constants use UPPER_SNAKE_CASE)
+export const FOLLOWUP_TIMING = {
+  initial: 0,
+  followup_1: 1200000,
+  followup_2: 5400000,
+} as const
+
+export const FOLLOWUP_ACTIONS = {
+  INITIATE: 'initiate-lead-follow-up',
+  RESPOND: 'lead-responded',
+} as const
+
+// lead.types.ts (Types and interfaces, no classes)
+export type Lead = {
+  _id?: string
+  countryPhone: string
+  status: LeadStatus
+  followUpState: FollowUpState
+}
+
+export interface CreateLeadInput {
+  countryPhone: string
+  phone: string
+  language: 'en' | 'pt-BR' | 'es'
+}
+
+export type LeadStatus = 'active' | 'paused' | 'responded' | 'cancelled'
+```
+
+### Routes Naming (Special Case)
+
+Routes are **not classes**, they're **Elysia instances**. Use camelCase for the constant:
+
+```typescript
+// ✅ CORRECT
+export const leadRoutes = new Elysia()
+export const userRoutes = new Elysia()
+export const notificationRoutes = new Elysia()
+
+// ❌ WRONG
+export const LeadRoutes = new Elysia()  // Should be camelCase
+export class UserRoutes { ... }         // Routes should not be classes
+```
+
+### Key Rules
+
+1. **Classes use PascalCase** with type suffix: `LeadService`, `UserModel`, `OrderRepository`
+2. **Routes use camelCase** with Routes suffix: `leadRoutes`, `userRoutes` (these are Elysia instances, not classes)
+3. **Constants use UPPER_SNAKE_CASE**: `FOLLOW_UP_TIMING`, `PUBSUB_ACTIONS`
+4. **Functions use camelCase**: `createMockLead()`, `getCurrentTime()`
+5. **Types/Interfaces use PascalCase** (no suffix): `Lead`, `UserInput`, `OrderStatus`
+6. **Multi-word entities** keep all words: `LeadFollowUpService` (not `LeadFollowUpSvc`)
+7. **Always include the type suffix** for classes (Service, Model, Repository, etc.)
+8. **Be explicit** - avoid abbreviations like `Svc`, `Mgr`, `Repo`, `Srv`
+
+### ❌ Anti-patterns
+
+```typescript
+// Wrong - no type suffix
+export class Lead { ... }
+
+// Wrong - PascalCase for routes (should be camelCase)
+export const LeadRoutes = new Elysia()
+
+// Wrong - routes as a class
+export class UserRoutes { ... }
+
+// Wrong - inconsistent capitalization
+export class leadService { ... }
+
+// Wrong - abbreviations
+export class LeadSvc { ... }
+
+// Wrong - type suffix doesn't match file type
+export class LeadFactory { ... } // in lead.service.ts
+
+// Wrong - PascalCase for constants
+export const FollowUpTiming = { ... }
+
+// Wrong - camelCase for classes
+export const leadService = new LeadService()
+```
+
+## Class Pattern: Static vs Instance
+
+### Principle
+
+- **Static classes**: When logic has no internal state and works as pure functions
+- **Instance classes**: When there's state, configurable dependencies, or need for polymorphism
+
+### When to Use Static Classes (preferred)
+
+Use static when **ALL** of these are true:
+
+1. No mutable internal state
+2. Will not be extended (no inheritance)
+3. No dependency injection needed
+4. All methods are purely functional operations
+5. Class is a semantic grouping of functions (Helpers, Utils, Parsers, Validators)
+6. Tests can call methods directly without complex mocks
+
+```typescript
+// ✅ CORRECT: Static class - no state, pure functions
+export class LeadService {
+  static async create(data: CreateLead): Promise<Lead> { ... }
+  static async findById(id: string): Promise<Lead | null> { ... }
+}
+
+// Usage
+await LeadService.create(data)
+```
+
+### When to Use Instance Classes
+
+Use instance when **ANY** of these are true:
+
+1. Has internal state (config, cache, options, context)
+2. Behavior varies per instance
+3. Has external dependency that varies between environments (repos, APIs)
+4. Needs mock, spy, or substitution in tests
+5. May serve as extension point (polymorphism)
+6. Lifecycle matters (setup, teardown, connection, temp storage)
+
+```typescript
+// ✅ CORRECT: Instance class - has state and dependencies
+export class NotificationSender {
+  constructor(
+    private readonly emailProvider: EmailProvider,
+    private readonly config: NotificationConfig
+  ) {}
+
+  async send(notification: Notification): Promise<void> { ... }
+}
+
+// Usage
+const sender = new NotificationSender(emailProvider, config)
+await sender.send(notification)
+```
+
+### Anti-pattern
+
+Never force static classes when:
+
+- Domain clearly represents an entity with its own behavior
+- Code may need variations in the future
+- Testability depends on controlling dependencies
+- Using "static" just to avoid writing `new`
+
+### Helper Functions Placement
+
+When a function is used by **only one method**, define it as a local `const` inside that method:
+
+| Scope             | When to use                     | Example                                         |
+| ----------------- | ------------------------------- | ----------------------------------------------- |
+| Local `const`     | Used by single method only      | `const extractData = () => {...}` inside method |
+| `private static`  | Shared between multiple methods | `private static validate()` in class            |
+| Exported function | Reused across modules           | `export function formatDate()`                  |
+
+```typescript
+// ✅ CORRECT: Helper used only by this method - define locally
+static async processItems(): Promise<void> {
+  const processItem = async (item: Item): Promise<void> => {
+    await service.save(item)
+  }
+
+  for (const item of items) {
+    await processItem(item)
+  }
+}
+
+// ✅ CORRECT: Helper shared between methods - private static
+export class OrderHandler {
+  private static validateOrder(order: Order): boolean {
+    return order.items.length > 0
+  }
+
+  static async create() { /* uses validateOrder */ }
+  static async update() { /* uses validateOrder */ }
+}
+```
+
+## Tests
+
+Tests are **co-located** with source files:
+
+```
+controllers/
+├── lead.controller.ts
+└── lead.controller.test.ts    ← Same folder
+services/
+├── lead.service.ts
+└── lead.service.test.ts    ← Same folder
+routes/
+├── lead.routes.ts
+└── lead.routes.test.ts     ← Same folder
+```
+
+### Required Tests
+
+The following file types **MUST** have co-located tests:
+
+| File Type         | Test Required | Example Test File          |
+| ----------------- | ------------- | -------------------------- |
+| `*.controller.ts` | **Yes**       | `lead.controller.test.ts`  |
+| `*.service.ts`    | **Yes**       | `lead.service.test.ts`     |
+| `*.routes.ts`     | **Yes**       | `lead.routes.test.ts`      |
+| `*.handler.ts`    | **Yes**       | `followup.handler.test.ts` |
+| `*.model.ts`      | Optional      | `lead.model.test.ts`       |
+| `*.constants.ts`  | No            | -                          |
+| `*.types.ts`      | No            | -                          |
+
+### Controller Test Pattern
+
+Controllers should be tested by mocking their dependencies (services, i18n):
+
+```typescript
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { MyController } from './my.controller'
+import { MyService } from '../services/my.service'
+import * as i18nModule from '@i18n'
+
+describe('MyController', () => {
+  beforeEach(() => {
+    vi.spyOn(i18nModule, 'getLanguageFromHeader').mockReturnValue('en')
+    vi.spyOn(i18nModule, 'getTranslation').mockImplementation((key) => `translated:${key}`)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should return data when found', async () => {
+    vi.spyOn(MyService, 'findById').mockResolvedValue({ id: '123' })
+    const context = createMockContext({ params: { id: '123' } })
+
+    const result = await MyController.getById(context as never)
+
+    expect(result).toEqual({ id: '123' })
   })
 })
 ```
 
-### 6. Create CLAUDE.md
+## Module Structure Example
 
-Document the module with endpoints, architecture, and usage.
-
----
-
-## Best Practices
-
-### Service Layer Organization
-
-```typescript
-// ✅ Good: Clear, focused service
-export const userService = {
-  // Get user by email
-  getByEmail: async (email: string) => {
-    return db.query.users.findFirst({
-      where: eq(users.email, email),
-    })
-  },
-
-  // Verify password for login
-  verifyPassword: async (userId: string, password: string) => {
-    const user = await this.getById(userId)
-    return verifyPassword(password, user.password)
-  },
-
-  // Update profile
-  updateProfile: async (userId: string, data: ProfileUpdate) => {
-    return db.update(users).set(data).where(eq(users.id, userId))
-  },
-}
-
-// ❌ Bad: Unclear, mixed concerns
-export const service = {
-  do: async (x) => {
-    // Multiple things happening
-  },
-}
+```
+leads/
+├── index.ts                           # Public exports (re-exports from submodules)
+├── CLAUDE.md                          # Module docs (optional)
+├── controllers/
+│   ├── lead.controller.ts             # HTTP request/response handling
+│   └── lead.controller.test.ts
+├── routes/
+│   ├── lead.routes.ts                 # Elysia instance, delegates to controller
+│   └── lead.routes.test.ts
+├── services/
+│   ├── lead.service.ts                # Business logic (decoupled from HTTP/Pub/Sub)
+│   └── lead.service.test.ts
+├── models/
+│   ├── lead.model.ts
+│   └── lead.model.test.ts
+├── core/
+│   └── lead.types.ts
+│   └── lead.constants.ts
+├── test/
+│   └── factories/
+│       └── lead.factory.ts
+└── submodules/
+    └── follow-up/
+        ├── index.ts                   # Exports handler + services
+        ├── handlers/
+        │   └── followup.handler.ts    # Pub/Sub handling for follow-up domain
+        ├── services/
+        │   ├── followup-scheduler.service.ts
+        │   ├── message-generator.service.ts
+        │   └── whatsapp-publisher.service.ts
+        └── core/
+            └── followup.constants.ts
 ```
 
-### Error Handling
+## Index Exports
 
 ```typescript
-// ✅ Good: Specific errors with context
-export const userService = {
-  getById: async (id: string) => {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
-    })
+// modules/leads/index.ts
+import { leadRoutes } from './routes/lead.routes'
 
-    if (!user) {
-      throw new Error(`User not found: ${id}`)
-    }
+export const leadsModule = leadRoutes
 
-    return user
-  },
-}
+// Re-export controllers for external use (HTTP)
+export { LeadController } from './controllers/lead.controller'
 
-// ❌ Bad: Generic errors
-export const userService = {
-  getById: async (id) => {
-    return db.query.users.findFirst({
-      where: eq(users.id, id),
-    }) // Returns undefined on not found, no error
-  },
-}
+// Re-export services for external use
+export { LeadService } from './services/lead.service'
+export type { Lead } from './core/lead.types'
+
+// Re-export from submodules (handler + services)
+export {
+  FollowUpHandler,
+  FollowUpScheduler,
+  MessageGenerator,
+  WhatsAppPublisher,
+} from './submodules/follow-up'
 ```
-
-### Testing Modules
-
-Test each layer:
 
 ```typescript
-// Unit tests for core utilities
-// modules/users/core/__tests__/password.test.ts
-
-// Integration tests for routes
-// modules/users/__tests__/auth.routes.test.ts
-
-// Service tests
-// modules/users/__tests__/user.service.test.ts
+// modules/leads/submodules/follow-up/index.ts
+export { FollowUpHandler } from './handlers/followup.handler'
+export { FollowUpScheduler } from './services/followup-scheduler.service'
+export { MessageGenerator } from './services/message-generator.service'
+export { WhatsAppPublisher } from './services/whatsapp-publisher.service'
+export * from './core/followup.constants'
 ```
 
----
-
-## Module Communication
-
-### Calling Services from Other Modules
-
-When modules need to communicate, use service functions:
+## Inter-Module Communication
 
 ```typescript
-// ❌ Bad: Direct database access
-import { db } from '@/infra'
+// Read: Direct import
+import { LeadService } from '../leads'
+const lead = await LeadService.findById(id)
 
-const user = await db.query.users.findFirst(...)
-
-// ✅ Good: Service abstraction
-import { userService } from '@/modules/users/services'
-
-const user = await userService.getById(userId)
+// Write: Pub/Sub events
+await pubsub.topic('lead-created').publish({ leadId })
 ```
 
-### Through API Calls
+## Checklist for New Module
 
-For loosely coupled communication:
-
-```typescript
-// ❌ Bad: Internal service coupling
-import { userService } from '@/modules/users/services'
-await userService.sendWelcomeEmail(userId)
-
-// ✅ Good: Event-driven via Pub/Sub
-await pubsub.topic('user-created').publish({
-  userId: userId,
-  email: user.email,
-})
-```
-
----
-
-## Related Documentation
-
-- [`modules/users/CLAUDE.md`](users/CLAUDE.md) - User authentication module
-- [`modules/notifications/CLAUDE.md`](notifications/CLAUDE.md) - Notifications module
-- [`../src/infra/CLAUDE.md`](../src/infra/CLAUDE.md) - Infrastructure layer
-- [`../src/routes/CLAUDE.md`](../src/routes/CLAUDE.md) - Route patterns
+1. [ ] Create folder: `modules/mymodule/`
+2. [ ] Add `index.ts` with exports (re-export from submodules if applicable)
+3. [ ] Add `routes/*.routes.ts` for HTTP routing
+4. [ ] Add `controllers/*.controller.ts` for HTTP request/response handling
+5. [ ] Add `handlers/*.handler.ts` for Pub/Sub (root level OR in submodule - see Handler Placement)
+6. [ ] Add `services/*.service.ts` for business logic
+7. [ ] Add `models/*.model.ts` or `schema/*.schema.ts` for data
+8. [ ] Add `core/*.constants.ts` and `core/*.types.ts` if needed
+9. [ ] Add `test/factories/*.factory.ts` for test data
+10. [ ] **Add co-located tests** for controllers, services, routes, and handlers (see Required Tests)
+11. [ ] Register routes in `src/app.ts`
+12. [ ] Register handlers in `pubsub-receiver/core/handlers.constants.ts` (import from module index)

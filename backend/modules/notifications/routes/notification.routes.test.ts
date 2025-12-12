@@ -15,16 +15,20 @@ const mockGetUserNotifications = vi.fn()
 const mockMarkAsRead = vi.fn()
 
 vi.mock('../services/notification.service', () => ({
-  createNotification: vi.fn(),
+  NotificationService: {
+    getUserNotifications: (userId: string) => mockGetUserNotifications(userId),
+    markAsRead: (id: string, userId: string) => mockMarkAsRead(id, userId),
+  },
   getUserNotifications: (userId: string) => mockGetUserNotifications(userId),
   markAsRead: (id: string, userId: string) => mockMarkAsRead(id, userId),
 }))
 
-// Mock Pub/Sub
-const mockPublishNotificationCreated = vi.fn().mockResolvedValue('message-id')
-vi.mock('../services/notification-publisher', () => ({
-  publishNotificationCreated: (notification: unknown) =>
-    mockPublishNotificationCreated(notification),
+// Mock Pub/Sub publisher
+const mockPublishCreated = vi.fn().mockResolvedValue('message-id')
+vi.mock('../services/notification-publisher.service', () => ({
+  NotificationPublisherService: {
+    publishCreated: (notification: unknown) => mockPublishCreated(notification),
+  },
 }))
 
 describe('Notification Routes', () => {
@@ -79,7 +83,7 @@ describe('Notification Routes', () => {
         read: false,
         createdAt: '2024-01-01T00:00:00.000Z',
       })
-      expect(mockPublishNotificationCreated).toHaveBeenCalledWith(mockDoc)
+      expect(mockPublishCreated).toHaveBeenCalledWith(mockDoc)
     })
 
     it('should return 422 for invalid type', async () => {

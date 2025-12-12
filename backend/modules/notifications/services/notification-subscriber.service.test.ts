@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockPublishMessage = vi.fn().mockResolvedValue('message-id-123')
-const mockTopic = vi.fn().mockReturnValue({
-  publishMessage: mockPublishMessage,
-})
-
 const mockOn = vi.fn()
 const mockRemoveAllListeners = vi.fn()
 const mockClose = vi.fn().mockResolvedValue(undefined)
@@ -16,7 +11,6 @@ const mockSubscription = vi.fn().mockReturnValue({
 
 vi.mock('../../../src/infra/pubsub', () => ({
   pubsub: {
-    topic: mockTopic,
     subscription: mockSubscription,
   },
 }))
@@ -28,58 +22,7 @@ vi.mock('./email.service', () => ({
   }),
 }))
 
-describe('Notification Publisher', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should publish notification to correct topic', async () => {
-    const { publishNotificationCreated } = await import('./notification-publisher')
-
-    const notification = {
-      _id: { toString: () => 'notif-123' },
-      userId: 'user-456',
-      type: 'email' as const,
-      message: 'Test notification',
-      createdAt: new Date('2024-01-01T00:00:00Z'),
-    }
-
-    const result = await publishNotificationCreated(notification)
-
-    expect(mockTopic).toHaveBeenCalledWith('notification-created')
-    expect(mockPublishMessage).toHaveBeenCalledWith({
-      data: expect.any(Buffer),
-    })
-    expect(result).toBe('message-id-123')
-  })
-
-  it('should serialize notification correctly', async () => {
-    const { publishNotificationCreated } = await import('./notification-publisher')
-
-    const notification = {
-      _id: { toString: () => 'notif-456' },
-      userId: 'user-789',
-      type: 'in-app' as const,
-      message: 'Another notification',
-      createdAt: new Date('2024-06-15T12:30:00Z'),
-    }
-
-    await publishNotificationCreated(notification)
-
-    const [callArgs] = mockPublishMessage.mock.calls
-    const data = JSON.parse(callArgs[0].data.toString())
-
-    expect(data).toEqual({
-      id: 'notif-456',
-      userId: 'user-789',
-      type: 'in-app',
-      message: 'Another notification',
-      createdAt: '2024-06-15T12:30:00.000Z',
-    })
-  })
-})
-
-describe('Notification Subscriber', () => {
+describe('NotificationSubscriberService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.resetModules()
@@ -87,7 +30,7 @@ describe('Notification Subscriber', () => {
 
   describe('isValidPayload', () => {
     it('should return true for valid email payload', async () => {
-      const { isValidPayload } = await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
       const payload = {
         id: 'notif-123',
@@ -97,11 +40,11 @@ describe('Notification Subscriber', () => {
         createdAt: '2024-01-01T00:00:00Z',
       }
 
-      expect(isValidPayload(payload)).toBe(true)
+      expect(NotificationSubscriberService.isValidPayload(payload)).toBe(true)
     })
 
     it('should return true for valid in-app payload', async () => {
-      const { isValidPayload } = await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
       const payload = {
         id: 'notif-123',
@@ -111,11 +54,11 @@ describe('Notification Subscriber', () => {
         createdAt: '2024-01-01T00:00:00Z',
       }
 
-      expect(isValidPayload(payload)).toBe(true)
+      expect(NotificationSubscriberService.isValidPayload(payload)).toBe(true)
     })
 
     it('should return false for invalid type', async () => {
-      const { isValidPayload } = await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
       const payload = {
         id: 'notif-123',
@@ -125,23 +68,22 @@ describe('Notification Subscriber', () => {
         createdAt: '2024-01-01T00:00:00Z',
       }
 
-      expect(isValidPayload(payload)).toBe(false)
+      expect(NotificationSubscriberService.isValidPayload(payload)).toBe(false)
     })
 
     it('should return false for missing fields', async () => {
-      const { isValidPayload } = await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
-      expect(isValidPayload(null)).toBe(false)
-      expect(isValidPayload({})).toBe(false)
-      expect(isValidPayload({ id: 'test' })).toBe(false)
+      expect(NotificationSubscriberService.isValidPayload(null)).toBe(false)
+      expect(NotificationSubscriberService.isValidPayload({})).toBe(false)
+      expect(NotificationSubscriberService.isValidPayload({ id: 'test' })).toBe(false)
     })
   })
 
   describe('handleMessage', () => {
     it('should process email type and call EmailService', async () => {
-      const { handleMessage, startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
-      await startNotificationSubscriber()
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
+      await NotificationSubscriberService.start()
 
       const mockAck = vi.fn()
       const mockNack = vi.fn()
@@ -160,7 +102,7 @@ describe('Notification Subscriber', () => {
         nack: mockNack,
       }
 
-      await handleMessage(message as any)
+      await NotificationSubscriberService.handleMessage(message as never)
 
       expect(mockSendEmail).toHaveBeenCalledWith(
         'user@example.com',
@@ -170,13 +112,12 @@ describe('Notification Subscriber', () => {
       expect(mockAck).toHaveBeenCalled()
       expect(mockNack).not.toHaveBeenCalled()
 
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.stop()
     })
 
     it('should ignore in-app type and acknowledge', async () => {
-      const { handleMessage, startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
-      await startNotificationSubscriber()
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
+      await NotificationSubscriberService.start()
 
       const mockAck = vi.fn()
       const mockNack = vi.fn()
@@ -195,21 +136,20 @@ describe('Notification Subscriber', () => {
         nack: mockNack,
       }
 
-      await handleMessage(message as any)
+      await NotificationSubscriberService.handleMessage(message as never)
 
       expect(mockSendEmail).not.toHaveBeenCalled()
       expect(mockAck).toHaveBeenCalled()
       expect(mockNack).not.toHaveBeenCalled()
 
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.stop()
     })
 
     it('should nack on EmailService error', async () => {
       mockSendEmail.mockRejectedValueOnce(new Error('Email send failed'))
 
-      const { handleMessage, startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
-      await startNotificationSubscriber()
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
+      await NotificationSubscriberService.start()
 
       const mockAck = vi.fn()
       const mockNack = vi.fn()
@@ -228,18 +168,17 @@ describe('Notification Subscriber', () => {
         nack: mockNack,
       }
 
-      await handleMessage(message as any)
+      await NotificationSubscriberService.handleMessage(message as never)
 
       expect(mockNack).toHaveBeenCalled()
       expect(mockAck).not.toHaveBeenCalled()
 
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.stop()
     })
 
     it('should ack invalid payload to prevent retry', async () => {
-      const { handleMessage, startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
-      await startNotificationSubscriber()
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
+      await NotificationSubscriberService.start()
 
       const mockAck = vi.fn()
       const mockNack = vi.fn()
@@ -250,41 +189,59 @@ describe('Notification Subscriber', () => {
         nack: mockNack,
       }
 
-      await handleMessage(message as any)
+      await NotificationSubscriberService.handleMessage(message as never)
 
       expect(mockAck).toHaveBeenCalled()
       expect(mockNack).not.toHaveBeenCalled()
       expect(mockSendEmail).not.toHaveBeenCalled()
 
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.stop()
     })
   })
 
-  describe('startNotificationSubscriber', () => {
+  describe('start', () => {
     it('should start subscriber and listen on subscription', async () => {
-      const { startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
-      await startNotificationSubscriber()
+      await NotificationSubscriberService.start()
 
       expect(mockSubscription).toHaveBeenCalledWith('notification-created-sub')
       expect(mockOn).toHaveBeenCalledWith('message', expect.any(Function))
       expect(mockOn).toHaveBeenCalledWith('error', expect.any(Function))
 
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.stop()
     })
   })
 
-  describe('stopNotificationSubscriber', () => {
+  describe('stop', () => {
     it('should stop subscriber and cleanup', async () => {
-      const { startNotificationSubscriber, stopNotificationSubscriber } =
-        await import('./notification-subscriber')
+      const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
-      await startNotificationSubscriber()
-      await stopNotificationSubscriber()
+      await NotificationSubscriberService.start()
+      await NotificationSubscriberService.stop()
 
       expect(mockRemoveAllListeners).toHaveBeenCalled()
       expect(mockClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('backward compatibility', () => {
+    it('deprecated functions should work', async () => {
+      const { isValidPayload, startNotificationSubscriber, stopNotificationSubscriber } =
+        await import('./notification-subscriber.service')
+
+      expect(
+        isValidPayload({
+          id: 'test',
+          userId: 'user',
+          type: 'email',
+          message: 'msg',
+          createdAt: '2024-01-01',
+        })
+      ).toBe(true)
+
+      await startNotificationSubscriber()
+      await stopNotificationSubscriber()
     })
   })
 })
