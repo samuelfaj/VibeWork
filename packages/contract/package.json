@@ -14,7 +14,8 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target bun && tsc --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "elysia": "latest"
