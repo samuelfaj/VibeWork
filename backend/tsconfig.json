@@ -8,7 +8,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@infra": ["./src/infra"],
       "@infra/*": ["./src/infra/*"],
+      "@i18n": ["./src/i18n"],
+      "@i18n/*": ["./src/i18n/*"],
       "@modules/*": ["./modules/*"]
     }
   },
