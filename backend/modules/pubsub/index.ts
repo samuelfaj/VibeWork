@@ -4,10 +4,7 @@
 // RECEIVER EXPORTS (HTTP Pub/Sub push endpoint)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { pushRoutes } from './receiver/routes/push.routes'
-
 // Export the module for app registration
-export const pubsubModule = pushRoutes
 
 // Re-export receiver controllers for external use
 export { PushController } from './receiver/controllers/push.controller'
@@ -56,3 +53,5 @@ export type {
   PublishMessage,
   PublishResult,
 } from './core/pubsub.types'
+
+export { pushRoutes as pubsubModule } from './receiver/routes/push.routes'

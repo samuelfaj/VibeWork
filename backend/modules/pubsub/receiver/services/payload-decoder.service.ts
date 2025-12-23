@@ -18,14 +18,14 @@ export class PayloadDecodingError extends Error {
   }
 }
 
-export class PayloadDecoderService {
-  static decode(message: PubSubPushMessage): {
+export const PayloadDecoderService = {
+  decode(message: PubSubPushMessage): {
     payload: DecodedPayload
     metadata: HandlerMetadata
   } {
     let decoded: string
     try {
-      decoded = Buffer.from(message.message.data, 'base64').toString('utf-8')
+      decoded = Buffer.from(message.message.data, 'base64').toString('utf8')
     } catch {
       throw new PayloadDecodingError('Failed to decode base64', 'INVALID_BASE64')
     }
@@ -60,5 +60,5 @@ export class PayloadDecoderService {
         attributes: message.message.attributes,
       },
     }
-  }
+  },
 }

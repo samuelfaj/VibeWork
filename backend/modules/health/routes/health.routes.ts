@@ -21,7 +21,10 @@ export interface ReadyzResponse {
 
 const HEALTH_CHECK_TIMEOUT = 5000
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<TResult>(
+  promise: Promise<TResult>,
+  timeoutMs: number
+): Promise<TResult> {
   const timeoutPromise = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('timeout')), timeoutMs)
   )

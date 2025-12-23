@@ -1,8 +1,16 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { db } from './database/mysql'
-import { user } from '../../modules/users/schema/user.schema'
 import { session, account, verification } from '../../modules/users/schema/auth.schema'
+import { user } from '../../modules/users/schema/user.schema'
+import { db } from './database/mysql'
+
+const SECONDS_PER_MINUTE = 60
+const MINUTES_PER_HOUR = 60
+const HOURS_PER_DAY = 24
+const SESSION_EXPIRY_DAYS = 7
+
+const ONE_DAY_IN_SECONDS = SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY
+const SESSION_EXPIRY_SECONDS = ONE_DAY_IN_SECONDS * SESSION_EXPIRY_DAYS
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -18,8 +26,8 @@ export const auth = betterAuth({
     enabled: true,
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Update session every 24 hours
+    expiresIn: SESSION_EXPIRY_SECONDS,
+    updateAge: ONE_DAY_IN_SECONDS,
   },
 })
 

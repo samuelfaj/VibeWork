@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next'
-import { Form, Input, Button, Alert, Typography } from 'antd'
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Alert, Typography } from 'antd'
+import { useTranslation } from 'react-i18next'
 import { useSignup } from './hooks'
 
 const { Text, Link } = Typography

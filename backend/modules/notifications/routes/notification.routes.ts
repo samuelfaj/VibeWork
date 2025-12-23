@@ -1,5 +1,5 @@
-import { Elysia, t } from 'elysia'
 import { CreateNotificationSchema, NotificationSchema } from '@vibe-code/contract'
+import { Elysia, t } from 'elysia'
 import { NotificationController } from '../controllers/notification.controller'
 
 export const notificationRoutes = new Elysia({ prefix: '/notifications' })

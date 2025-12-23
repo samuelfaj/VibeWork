@@ -1,10 +1,11 @@
-import { Elysia } from 'elysia'
-import { swagger } from '@elysiajs/swagger'
 import { cors } from '@elysiajs/cors'
-import { initI18n, getTranslation, getLanguageFromHeader, i18nMiddleware } from './i18n'
+import { swagger } from '@elysiajs/swagger'
+import { Elysia } from 'elysia'
 import { healthModule } from '../modules/health'
-import { usersModule } from '../modules/users'
 import { notificationsModule } from '../modules/notifications'
+import { usersModule } from '../modules/users'
+import { initI18n, getTranslation, getLanguageFromHeader } from './i18n'
+import { i18nMiddleware } from './i18n/middleware'
 import { connectMongo } from './infra'
 
 await initI18n()

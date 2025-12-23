@@ -94,7 +94,7 @@ describe('PublisherService', () => {
 
     it('should reject non-string values for required fields', async () => {
       const payloadWithInvalidType = {
-        countryPhone: 5551992265039,
+        countryPhone: 5_551_992_265_039,
         message: 'Hello!',
         leadId: 'lead-123',
         step: 'initial',

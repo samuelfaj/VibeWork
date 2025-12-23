@@ -111,3 +111,49 @@ bun run test
 - `NotificationTypeSchema` - Union of 'in-app' | 'email'
 - `CreateNotificationSchema` - userId, type, message
 - `NotificationSchema` - Full notification with id, read status, timestamps
+
+---
+
+## Internationalization (i18n) Considerations
+
+**IMPORTANT**: All user-facing content must be translated to all three supported languages: English (en), Brazilian Portuguese (pt-BR), and Spanish (es).
+
+### Response Schemas with Messages
+
+When defining response schemas that include user-facing messages, the message field should contain **translation keys** or **already translated content**:
+
+```typescript
+// Response schema with message field
+export const ApiResponseSchema = t.Object({
+  message: t.String(), // Contains translated message from backend
+  data: t.Optional(t.Any()),
+})
+
+// Error response schema
+export const ErrorResponseSchema = t.Object({
+  error: t.String(), // Contains translated error message
+  code: t.String(), // Machine-readable error code (not translated)
+})
+```
+
+### Notification Messages
+
+Notification messages stored in the database should use translation keys, allowing the frontend to display them in the user's preferred language:
+
+```typescript
+// Store translation key, not the actual message
+export const CreateNotificationSchema = t.Object({
+  userId: t.String(),
+  type: NotificationTypeSchema,
+  messageKey: t.String(), // e.g., 'notification.orderCreated'
+  messageParams: t.Optional(t.Record(t.String(), t.Any())), // e.g., { orderId: '123' }
+})
+```
+
+### Supported Languages
+
+| Code    | Language             |
+| ------- | -------------------- |
+| `en`    | English              |
+| `pt-BR` | Brazilian Portuguese |
+| `es`    | Spanish              |

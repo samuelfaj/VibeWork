@@ -6,12 +6,12 @@ interface GetMeContext {
   set: { status: number }
 }
 
-export class UserController {
+export const UserController = {
   /**
    * GET /users/me
    * Returns the currently authenticated user
    */
-  static async getMe(ctx: GetMeContext) {
+  async getMe(ctx: GetMeContext) {
     const session = await auth.api.getSession({ headers: ctx.request.headers })
 
     if (!session) {
@@ -35,5 +35,5 @@ export class UserController {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }
-  }
+  },
 }

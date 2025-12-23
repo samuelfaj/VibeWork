@@ -1,7 +1,7 @@
 import i18next from 'i18next'
 import en from './locales/en.json'
-import ptBR from './locales/pt-BR.json'
 import es from './locales/es.json'
+import ptBR from './locales/pt-BR.json'
 
 let initialized = false
 
@@ -36,7 +36,7 @@ export function getTranslation(
   return i18next.t(key, { lng: locale, ...options })
 }
 
-export function getLanguageFromHeader(acceptLanguage: string | null | undefined): string {
+export function getLanguageFromHeader(acceptLanguage?: string | null): string {
   if (!acceptLanguage) return 'en'
 
   const languages = acceptLanguage
@@ -45,7 +45,7 @@ export function getLanguageFromHeader(acceptLanguage: string | null | undefined)
       const [code, qValue] = lang.trim().split(';q=')
       return {
         code: code.trim(),
-        q: qValue ? parseFloat(qValue) : 1,
+        q: qValue ? Number.parseFloat(qValue) : 1,
       }
     })
     .sort((a, b) => b.q - a.q)
@@ -59,4 +59,5 @@ export function getLanguageFromHeader(acceptLanguage: string | null | undefined)
   return 'en'
 }
 
-export { i18nMiddleware } from './middleware'
+// Note: Import i18nMiddleware directly from './middleware' to avoid circular dependency
+// Do not re-export here as middleware.ts imports from this file

@@ -1,8 +1,8 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
-import mongoose from 'mongoose'
 import { Elysia, t } from 'elysia'
+import mongoose from 'mongoose'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 
 // Mock the Pub/Sub publisher to avoid side effects
 vi.mock('../src/infra/pubsub', () => ({
@@ -20,14 +20,14 @@ const notificationSchema = new mongoose.Schema({
 
 describe('Notification Module Integration Tests', () => {
   let container: StartedMongoDBContainer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let NotificationModel: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let app: any
 
   beforeAll(async () => {
     console.log('[Integration] Starting MongoDB container...')
-    container = await new MongoDBContainer('mongo:7.0').withStartupTimeout(60000).start()
+    container = await new MongoDBContainer('mongo:7.0').withStartupTimeout(60_000).start()
 
     const connectionString = container.getConnectionString()
     console.log(`[Integration] MongoDB container started`)
@@ -104,7 +104,7 @@ describe('Notification Module Integration Tests', () => {
           set.status = 401
           return { error: 'Unauthorized' }
         }
-        if (!/^[0-9a-fA-F]{24}$/.test(params.id)) {
+        if (!/^[\dA-Fa-f]{24}$/.test(params.id)) {
           set.status = 400
           return { error: 'Invalid notification ID format' }
         }
@@ -128,7 +128,7 @@ describe('Notification Module Integration Tests', () => {
       })
 
     console.log('[Integration] MongoDB connection established')
-  }, 120000)
+  }, 120_000)
 
   afterAll(async () => {
     console.log('[Integration] Cleaning up...')

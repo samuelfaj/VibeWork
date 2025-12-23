@@ -9,8 +9,8 @@ interface NotificationDocument {
   createdAt: Date
 }
 
-export class NotificationFormatterService {
-  static formatResponse(doc: NotificationDocument): Notification {
+export const NotificationFormatterService = {
+  formatResponse(doc: NotificationDocument): Notification {
     return {
       id: doc._id.toString(),
       userId: doc.userId,
@@ -19,7 +19,7 @@ export class NotificationFormatterService {
       read: doc.read,
       createdAt: doc.createdAt.toISOString(),
     }
-  }
+  },
 }
 
 /**

@@ -4,6 +4,9 @@ import { NotificationFormatterService } from '../services/notification-formatter
 import { NotificationPublisherService } from '../services/notification-publisher.service'
 import { NotificationService } from '../services/notification.service'
 
+const DEFAULT_PAGE = 1
+const DEFAULT_LIMIT = 20
+
 interface CreateNotificationContext {
   body: CreateNotificationInput
   headers: Record<string, string | undefined>
@@ -21,12 +24,12 @@ interface MarkAsReadContext {
   set: { status: number }
 }
 
-export class NotificationController {
+export const NotificationController = {
   /**
    * POST /notifications
    * Creates a new notification and publishes event to Pub/Sub
    */
-  static async create(ctx: CreateNotificationContext) {
+  async create(ctx: CreateNotificationContext) {
     const userId = ctx.headers['x-user-id']
     if (!userId) {
       ctx.set.status = 401
@@ -42,20 +45,20 @@ export class NotificationController {
     await NotificationPublisherService.publishCreated(doc)
     ctx.set.status = 201
     return NotificationFormatterService.formatResponse(doc)
-  }
+  },
 
   /**
    * GET /notifications
    * Lists notifications for authenticated user with pagination
    */
-  static async list(ctx: ListNotificationsContext) {
+  async list(ctx: ListNotificationsContext) {
     const userId = ctx.headers['x-user-id']
     if (!userId) {
-      return { error: 'Unauthorized', data: [], total: 0, page: 1, limit: 20 }
+      return { error: 'Unauthorized', data: [], total: 0, page: DEFAULT_PAGE, limit: DEFAULT_LIMIT }
     }
 
-    const page = ctx.query.page ? Number(ctx.query.page) : 1
-    const limit = ctx.query.limit ? Number(ctx.query.limit) : 20
+    const page = ctx.query.page ? Number(ctx.query.page) : DEFAULT_PAGE
+    const limit = ctx.query.limit ? Number(ctx.query.limit) : DEFAULT_LIMIT
 
     const notifications = await NotificationService.getUserNotifications(userId)
     const start = (page - 1) * limit
@@ -67,13 +70,13 @@ export class NotificationController {
       page,
       limit,
     }
-  }
+  },
 
   /**
    * PATCH /notifications/:id/read
    * Marks a notification as read
    */
-  static async markAsRead(ctx: MarkAsReadContext) {
+  async markAsRead(ctx: MarkAsReadContext) {
     const userId = ctx.headers['x-user-id']
     if (!userId) {
       ctx.set.status = 401
@@ -81,7 +84,7 @@ export class NotificationController {
     }
 
     // Validate ObjectId format
-    if (!/^[0-9a-fA-F]{24}$/.test(ctx.params.id)) {
+    if (!/^[\dA-Fa-f]{24}$/.test(ctx.params.id)) {
       ctx.set.status = 400
       return { error: 'Invalid notification ID format' }
     }
@@ -93,5 +96,5 @@ export class NotificationController {
     }
 
     return notification
-  }
+  },
 }

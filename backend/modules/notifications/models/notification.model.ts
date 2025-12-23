@@ -1,7 +1,7 @@
 import { prop, getModelForClass, index } from '@typegoose/typegoose'
 
 @index({ userId: 1, createdAt: -1 })
-class Notification {
+class NotificationEntity {
   @prop({ required: true, type: String })
   userId!: string
 
@@ -18,4 +18,4 @@ class Notification {
   createdAt!: Date
 }
 
-export const NotificationModel = getModelForClass(Notification)
+export const NotificationModel = getModelForClass(NotificationEntity)

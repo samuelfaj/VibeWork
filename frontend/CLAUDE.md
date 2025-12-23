@@ -62,6 +62,133 @@ bun run preview
 bun run lint
 ```
 
+## API Communication (CRITICAL)
+
+**ALWAYS use Eden Treaty for API calls.** Never use raw `fetch` directly.
+
+Eden provides:
+
+- Full type-safety inferred from backend Elysia routes
+- Automatic `Accept-Language` header from i18n
+- Consistent error handling
+- IDE autocomplete for all endpoints
+
+### Eden Client Setup
+
+The Eden client is configured in `src/lib/api.ts` with automatic i18n headers:
+
+```typescript
+import { treaty } from '@elysiajs/eden'
+import i18n from '@/i18n'
+
+export const api = treaty<App>(baseUrl, {
+  headers: () => ({
+    'Accept-Language': i18n.language || 'pt-BR',
+  }),
+})
+```
+
+### Using Eden in Hooks (Preferred Pattern)
+
+```typescript
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+
+// GET request - fully type-safe
+export const useProducts = () =>
+  useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await api.products.get()
+      if (error) throw new Error(error.value.message)
+      return data
+    },
+  })
+
+// POST request with body
+export const useCreateProduct = () =>
+  useMutation({
+    mutationFn: async (body: { name: string; price: number }) => {
+      const { data, error } = await api.products.post(body)
+      if (error) throw new Error(error.value.message)
+      return data
+    },
+  })
+
+// Dynamic route parameters
+export const useProduct = (id: string) =>
+  useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      const { data, error } = await api.products({ id }).get()
+      if (error) throw new Error(error.value.message)
+      return data
+    },
+  })
+
+// Query parameters
+export const useFilteredProducts = (category: string) =>
+  useQuery({
+    queryKey: ['products', category],
+    queryFn: async () => {
+      const { data, error } = await api.products.get({
+        query: { category },
+      })
+      if (error) throw new Error(error.value.message)
+      return data
+    },
+  })
+```
+
+### Eden Treaty API Reference
+
+```typescript
+// GET request
+const { data, error, status } = await api.endpoint.get()
+
+// POST with body
+const { data, error } = await api.endpoint.post({ name: 'value' })
+
+// Dynamic path params - use function call syntax
+const { data, error } = await api.users({ id: '123' }).get()
+
+// Query parameters
+const { data, error } = await api.products.get({
+  query: { category: 'electronics', limit: 10 },
+})
+
+// Custom headers per request
+const { data, error } = await api.admin.get({
+  headers: { 'X-Admin-Token': 'secret' },
+})
+
+// File upload with FormData
+const formData = new FormData()
+formData.append('file', file)
+const { data, error } = await api.upload.post(formData)
+```
+
+### Error Handling Pattern
+
+```typescript
+const { data, error, status } = await api.products.get()
+
+if (error) {
+  switch (error.status) {
+    case 400:
+      throw new Error('Invalid request')
+    case 401:
+      throw new Error('Unauthorized')
+    case 404:
+      throw new Error('Not found')
+    default:
+      throw new Error(error.value?.message || 'Unknown error')
+  }
+}
+
+return data
+```
+
 ## Adding Features
 
 1. Create a feature folder in `src/features/` (e.g., `src/features/products/`)
@@ -139,8 +266,34 @@ VITE_API_URL=http://localhost:3000
 - `@vibe-code/contract` workspace:\* - Shared schemas
 - `@vibe/ui` workspace:\* - Shared UI components
 
-## Supported Locales
+## Internationalization (i18n) Requirements
 
-- `en` - English
-- `pt-BR` - Brazilian Portuguese
-- `es` - Spanish
+**CRITICAL**: All user-facing text MUST be translated to all three supported languages. No hardcoded strings in components.
+
+### Supported Locales
+
+| Code    | Language             | Required |
+| ------- | -------------------- | -------- |
+| `en`    | English              | Yes      |
+| `pt-BR` | Brazilian Portuguese | Yes      |
+| `es`    | Spanish              | Yes      |
+
+### Mandatory i18n Checklist
+
+When adding any new UI text:
+
+- [ ] Add key to `src/i18n/locales/en.json`
+- [ ] Add key to `src/i18n/locales/pt-BR.json`
+- [ ] Add key to `src/i18n/locales/es.json`
+- [ ] Use `t()` function in component, never hardcode strings
+
+### Example
+
+```typescript
+// WRONG - hardcoded string
+<button>Submit</button>
+
+// CORRECT - translated
+const { t } = useTranslation()
+<button>{t('common.submit')}</button>
+```

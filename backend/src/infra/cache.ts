@@ -1,9 +1,12 @@
 import Redis from 'ioredis'
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
+const REDIS_DEFAULT_URL = 'redis://localhost:6379'
+const CONNECTION_TIMEOUT_MS = 5000
+
+const redisUrl = process.env.REDIS_URL ?? REDIS_DEFAULT_URL
 
 export const redis = new Redis(redisUrl, {
-  connectTimeout: 5000,
+  connectTimeout: CONNECTION_TIMEOUT_MS,
   lazyConnect: true,
 })
 
@@ -18,7 +21,7 @@ redis.on('connect', () => {
 export async function checkRedisConnection(): Promise<boolean> {
   try {
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 5000)
+      setTimeout(() => reject(new Error('timeout')), CONNECTION_TIMEOUT_MS)
     )
     const checkPromise = async () => {
       const result = await redis.ping()

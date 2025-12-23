@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Elysia } from 'elysia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('../../../src/infra', () => ({
   checkMySqlConnection: vi.fn(),
@@ -89,7 +89,7 @@ describe('Health Routes', () => {
 
     it('should handle timeout errors', async () => {
       mockMySql.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(true), 10000))
+        () => new Promise((resolve) => setTimeout(() => resolve(true), 10_000))
       )
       mockMongo.mockResolvedValue(true)
       mockRedis.mockResolvedValue(true)
@@ -98,7 +98,7 @@ describe('Health Routes', () => {
       expect(response.status).toBe(503)
       const body = await response.json()
       expect(body.checks.mysql.status).toBe('fail')
-    }, 10000)
+    }, 10_000)
 
     it('should run checks in parallel', async () => {
       const callOrder: string[] = []

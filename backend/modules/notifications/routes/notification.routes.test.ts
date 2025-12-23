@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Elysia } from 'elysia'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // Mock MongoDB model
 const mockCreate = vi.fn()
@@ -32,7 +32,6 @@ vi.mock('../services/notification-publisher.service', () => ({
 }))
 
 describe('Notification Routes', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let app: any
 
   beforeEach(async () => {

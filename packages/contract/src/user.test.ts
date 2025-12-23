@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
 import { Value } from '@sinclair/typebox/value'
+import { describe, it, expect } from 'vitest'
 import { SignupSchema, LoginSchema, UserResponseSchema } from './user'
 
 describe('SignupSchema', () => {

@@ -2,6 +2,70 @@
 
 Production-ready monorepo with modular monolith backend and React frontend.
 
+## Language Standards
+
+| Asset              | Language                   | Notes                                       |
+| ------------------ | -------------------------- | ------------------------------------------- |
+| **Code**           | English                    | Variables, functions, classes, comments     |
+| **CLAUDE.md**      | English                    | All technical documentation                 |
+| **README.md**      | Trilingual (EN, PT-BR, ES) | User-facing documentation                   |
+| **Commits**        | English                    | Conventional commits format                 |
+| **API responses**  | i18n (en, pt-BR, es)       | All user-facing messages must be translated |
+| **Frontend UI**    | i18n (en, pt-BR, es)       | All UI text must use translation keys       |
+| **Error messages** | i18n (en, pt-BR, es)       | All error messages must be translated       |
+
+## Internationalization (i18n) Requirements
+
+**CRITICAL**: All user-facing content MUST support all three languages: English (en), Brazilian Portuguese (pt-BR), and Spanish (es).
+
+### What Must Be Translated
+
+| Content Type          | Location                         | Required |
+| --------------------- | -------------------------------- | -------- |
+| API error messages    | `backend/src/i18n/locales/`      | Yes      |
+| API success messages  | `backend/src/i18n/locales/`      | Yes      |
+| Validation errors     | `backend/src/i18n/locales/`      | Yes      |
+| UI labels and text    | `frontend/src/i18n/locales/`     | Yes      |
+| Button text           | `frontend/src/i18n/locales/`     | Yes      |
+| Form placeholders     | `frontend/src/i18n/locales/`     | Yes      |
+| Notification messages | `backend/src/i18n/locales/`      | Yes      |
+| Email templates       | `backend/modules/notifications/` | Yes      |
+
+### Implementation Pattern
+
+**Backend (API responses):**
+
+```typescript
+import { t, getLanguageFromHeader } from '@/i18n'
+
+// Get language from Accept-Language header
+const lang = getLanguageFromHeader(request.headers.get('accept-language'))
+
+// Return translated message
+return {
+  message: t('user.created', { lng: lang }),
+  data: user,
+}
+```
+
+**Frontend (React components):**
+
+```typescript
+import { useTranslation } from 'react-i18next'
+
+const { t } = useTranslation()
+return <button>{t('common.submit')}</button>
+```
+
+### Adding New Translations
+
+When adding any new user-facing text:
+
+1. Add key to `en.json` (English - required first)
+2. Add key to `pt-BR.json` (Portuguese - required)
+3. Add key to `es.json` (Spanish - required)
+4. Use the translation key in code, never hardcode strings
+
 ## Overview
 
 This repository implements a full-stack web application with:
@@ -55,6 +119,77 @@ This repository implements a full-stack web application with:
               │        Redis (Cache)           │
               │   Google Pub/Sub (Events)      │
               └────────────────────────────────┘
+```
+
+## Module Architecture
+
+### Core Principle: Domain-Based Organization
+
+```
+✅ CORRECT (by domain):
+modules/
+├── projects/      # One folder, all roles access it
+├── billing/
+└── files/
+
+❌ WRONG (by user type):
+modules/
+├── clients/projects/
+├── admin/projects/
+└── architect/projects/
+```
+
+**Why?**
+
+- Avoids code duplication
+- Single source of truth per entity
+- Permissions controlled by **role**, not folder structure
+- Easier maintenance and microservice extraction
+
+### Role-Based Access Control
+
+Same endpoint, data filtered by role:
+
+```typescript
+// All roles use the same route, data filtered automatically
+.get('/projects', async ({ user }) => {
+  switch (user.role) {
+    case 'client':
+      return projectService.getByClientId(user.clientId)
+    case 'manager':
+      return projectService.getByManagerId(user.id)
+    default:
+      return projectService.getAll()
+  }
+})
+
+// Restrict by role using middleware
+.post('/projects', handler, {
+  beforeHandle: requireRole(['manager', 'admin'])
+})
+```
+
+### Polymorphic Modules
+
+Some modules serve multiple entities:
+
+```typescript
+// files/ and messaging/ can be linked to any entity
+fileAssociation: {
+  entityType: 'project' | 'contract' | 'quote',
+  entityId: string
+}
+```
+
+### Inter-Module Communication
+
+```typescript
+// Synchronous (read) - import services
+import { projectService } from '@/modules/projects'
+const project = await projectService.getById(id)
+
+// Asynchronous (write) - use Pub/Sub events
+await pubsub.topic('order-created').publish({ orderId, userId })
 ```
 
 ## Project Structure
@@ -216,8 +351,13 @@ See individual package CLAUDE.md files for package-specific variables.
 ## Key Architectural Decisions
 
 1. **Modular Monolith**: Backend uses module boundaries that can be extracted to microservices
-2. **Redis = Cache Only**: Use Google Pub/Sub for event messaging, not Redis
-3. **Type-Safe RPC**: Eden provides compile-time type safety between frontend and backend
-4. **i18n Everywhere**: Both frontend and backend support internationalization (en, pt-BR)
-5. **Test Coverage**: 80% threshold enforced
-6. **Co-located Tests**: Test files live alongside source files (e.g., `file.ts` and `file.test.ts`), NOT in separate `__tests__` directories
+2. **Domain-Based Organization**: Modules organized by domain, NOT by user type
+3. **Role-Based Access Control**: Same endpoints for all users, data filtered by role
+4. **Polymorphic Modules**: Some modules (files, messaging) serve multiple entities
+5. **Redis = Cache Only**: Use Google Pub/Sub for event messaging, not Redis
+6. **Type-Safe RPC**: Eden provides compile-time type safety between frontend and backend
+7. **Trilingual i18n (MANDATORY)**: All user-facing content MUST be translated to en, pt-BR, and es - no exceptions
+8. **Test Coverage**: 80% threshold enforced
+9. **Co-located Tests**: Test files live alongside source files (e.g., `file.ts` and `file.test.ts`), NOT in separate `__tests__` directories
+
+**CRITICAL**: Never use `--no-verify` for git commits.

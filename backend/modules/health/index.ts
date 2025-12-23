@@ -1,3 +1,1 @@
-import { healthRoutes } from './routes/health.routes'
-
-export const healthModule = healthRoutes
+export { healthRoutes as healthModule } from './routes/health.routes'

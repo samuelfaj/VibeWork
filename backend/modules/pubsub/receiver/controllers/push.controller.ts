@@ -1,7 +1,7 @@
 // modules/pubsub/receiver/controllers/push.controller.ts
+import { getLanguageFromHeader, getTranslation } from '@i18n'
 import type { Context } from 'elysia'
 import type { PubSubPushMessage } from '@modules/pubsub/core/pubsub.types'
-import { getLanguageFromHeader, getTranslation } from '@i18n'
 import { HandlerService } from '../services/handler.service'
 import { PayloadDecoderService, PayloadDecodingError } from '../services/payload-decoder.service'
 
@@ -10,11 +10,11 @@ import { PayloadDecoderService, PayloadDecodingError } from '../services/payload
 // Handles HTTP request/response for Pub/Sub push messages
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export class PushController {
+export const PushController = {
   /**
    * POST /pubsub/push - Handle incoming Pub/Sub push message
    */
-  static async handlePush({ body, set, request }: Context<{ body: PubSubPushMessage }>) {
+  async handlePush({ body, set, request }: Context<{ body: PubSubPushMessage }>) {
     const lang = getLanguageFromHeader(request.headers.get('accept-language'))
 
     // Decode payload
@@ -67,5 +67,5 @@ export class PushController {
         },
       }
     }
-  }
+  },
 }

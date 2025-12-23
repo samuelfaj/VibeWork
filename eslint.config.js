@@ -4,8 +4,16 @@ import eslintConfigPrettier from 'eslint-config-prettier'
 import perfectionist from 'eslint-plugin-perfectionist'
 import security from 'eslint-plugin-security'
 import unicorn from 'eslint-plugin-unicorn'
+import unusedImports from 'eslint-plugin-unused-imports'
+import importPlugin from 'eslint-plugin-import'
+import etcPlugin from 'eslint-plugin-etc'
+import sonarjsPlugin from 'eslint-plugin-sonarjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createJiti } from 'jiti'
+
+const jiti = createJiti(import.meta.url)
+const localPlugin = jiti('./eslint-rules/index.ts')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -23,6 +31,8 @@ export default [
       'bun.lockb',
       '.env*',
       '**/.eslintcache',
+      '**/*.js',
+      'eslint-rules/**',
     ],
   },
 
@@ -47,19 +57,27 @@ export default [
       perfectionist,
       security,
       unicorn,
+      'unused-imports': unusedImports,
+      import: importPlugin,
+      etc: etcPlugin,
+      sonarjs: sonarjsPlugin,
+      local: localPlugin,
+    },
+    settings: {
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx', '.mts', '.cts'],
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
     },
     rules: {
       // TypeScript - Strict type checking (hardcore)
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
+      '@typescript-eslint/no-unused-vars': 'off', // Handled by unused-imports
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-misused-promises': 'warn',
@@ -67,6 +85,78 @@ export default [
       '@typescript-eslint/prefer-nullish-coalescing': 'warn',
       '@typescript-eslint/prefer-optional-chain': 'warn',
       '@typescript-eslint/strict-boolean-expressions': 'off',
+      '@typescript-eslint/no-magic-numbers': [
+        'error',
+        {
+          ignore: [0, 1],
+          enforceConst: true,
+          ignoreDefaultValues: true,
+          ignoreClassFieldInitialValues: true,
+          ignoreEnums: true,
+          ignoreNumericLiteralTypes: true,
+          ignoreReadonlyClassProperties: true,
+          ignoreTypeIndexes: true,
+        },
+      ],
+      '@typescript-eslint/no-shadow': [
+        'error',
+        {
+          builtinGlobals: true,
+          allow: ['defaultStatus', 'event', 'find', 'length', 'name', 'status', 'Notification', 'Text'],
+          ignoreTypeValueShadow: true,
+        },
+      ],
+      '@typescript-eslint/consistent-type-assertions': [
+        'warn',
+        { assertionStyle: 'as', objectLiteralTypeAssertions: 'allow-as-parameter' },
+      ],
+
+      // unused-imports
+      'no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'error',
+        { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
+      ],
+
+      // Import rules
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        { ts: 'never', tsx: 'never', js: 'never', jsx: 'never', json: 'always' },
+      ],
+      'import/max-dependencies': ['error', { ignoreTypeImports: true }],
+      'import/no-cycle': 'error',
+      'import/no-self-import': 'error',
+      'import/order': [
+        'error',
+        {
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+          pathGroups: [
+            { pattern: '@/**', group: 'internal', position: 'before' },
+            { pattern: '@infra/**', group: 'internal', position: 'before' },
+            { pattern: '@i18n/**', group: 'internal', position: 'before' },
+            { pattern: '@modules/**', group: 'internal', position: 'before' },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+
+      // etc plugin
+      'etc/no-const-enum': 'error',
+      'etc/no-enum': 'error',
+      'etc/no-t': 'error',
+
+      // sonarjs
+      'sonarjs/no-all-duplicated-branches': 'error',
+      'sonarjs/no-element-overwrite': 'error',
+      'sonarjs/no-extra-arguments': 'error',
+      'sonarjs/no-identical-conditions': 'error',
+      'sonarjs/no-identical-expressions': 'error',
+      'sonarjs/no-redundant-boolean': 'error',
+      'sonarjs/no-redundant-jump': 'error',
+      'sonarjs/no-unused-collection': 'error',
 
       // Security (hardcore)
       'security/detect-non-literal-regexp': 'warn',
@@ -161,6 +251,12 @@ export default [
       'perfectionist/sort-named-imports': 'off',
       'perfectionist/sort-object-types': 'off',
       'perfectionist/sort-objects': 'off',
+
+      // Local custom rules
+      'local/max-comment-lines': ['warn', 3],
+      'local/module-isolation': 'error',
+      'local/no-jsdoc': 'warn',
+      'local/soft-max-lines': ['warn', { max: 400, skipBlankLines: false, skipComments: false }],
     },
   },
 
@@ -177,6 +273,29 @@ export default [
     rules: {
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
+      // Enforce Eden Treaty usage - never use fetch directly
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message: 'Do not use fetch() directly. Use Eden Treaty from @/lib/api instead.',
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.name='fetch']",
+          message: 'Do not use fetch() directly. Use Eden Treaty from @/lib/api instead.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='window'][callee.property.name='fetch']",
+          message: 'Do not use window.fetch() directly. Use Eden Treaty from @/lib/api instead.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='globalThis'][callee.property.name='fetch']",
+          message: 'Do not use globalThis.fetch() directly. Use Eden Treaty from @/lib/api instead.',
+        },
+      ],
     },
   },
 
@@ -186,15 +305,28 @@ export default [
       '**/*.{test,spec}.{ts,tsx}',
       '**/jest.config.ts',
       '**/vitest.config.ts',
+      '**/tests/**',
+      '**/__tests__/**',
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/strict-boolean-expressions': 'off',
+      '@typescript-eslint/no-magic-numbers': 'off',
+      '@typescript-eslint/no-shadow': [
+        'error',
+        {
+          builtinGlobals: true,
+          allow: ['defaultStatus', 'event', 'find', 'length', 'name', 'status', 'screen'],
+        },
+      ],
+      '@typescript-eslint/consistent-type-assertions': 'off',
+      'import/max-dependencies': 'off',
       'security/detect-non-literal-regexp': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/prefer-top-level-await': 'off',
+      'unicorn/no-useless-undefined': 'off',
     },
   },
 

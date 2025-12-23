@@ -593,6 +593,67 @@ const lead = await LeadService.findById(id)
 await pubsub.topic('lead-created').publish({ leadId })
 ```
 
+## Typegoose Best Practices
+
+### Importing Ref Type (v13+)
+
+**CRITICAL:** `Ref` is a type-only export from `@typegoose/typegoose`. Always import it with `type` keyword to prevent runtime errors.
+
+#### ✅ CORRECT: Type-Only Import
+
+```typescript
+import type { Ref } from '@typegoose/typegoose'
+import { prop, getModelForClass } from '@typegoose/typegoose'
+import { Project } from './project.model'
+
+export class Message {
+  @prop({ required: true, ref: () => Project })
+  public projectId!: Ref<Project>
+}
+```
+
+#### ❌ WRONG: Runtime Import
+
+```typescript
+// This causes: SyntaxError: Export named 'Ref' not found in module
+import { Ref } from '@typegoose/typegoose' // ❌ Runtime import
+```
+
+### Why This Matters
+
+- `Ref<T>` is purely a TypeScript type used by Typegoose for type checking
+- It doesn't exist at runtime and cannot be imported as a regular value
+- Using `import type` ensures TypeScript erases it at compile time
+- Prevents "Export named 'Ref' not found" errors during Bun execution
+
+### Disabling "Setting Mixed" Warnings
+
+Typegoose warns when properties allow mixed types (any value). Use `@modelOptions` to suppress or control these warnings.
+
+```typescript
+import { prop, getModelForClass, modelOptions, Severity } from '@typegoose/typegoose'
+
+@modelOptions({
+  options: {
+    allowMixed: Severity.ALLOW, // Suppress warnings for flexible data
+  },
+})
+export class Project {
+  @prop({ type: () => Object, default: {} })
+  public projectProfile!: { [key: string]: unknown } // ✅ No warning
+}
+```
+
+### Checklist for Typegoose Models
+
+- [ ] Import `Ref` with `type` keyword: `import type { Ref } from '@typegoose/typegoose'`
+- [ ] Set `allowMixed: Severity.ALLOW` in `@modelOptions` if model has flexible properties
+- [ ] Use `@index` for frequently queried fields (projectId, userId, etc.)
+- [ ] Add `@modelOptions` with `timestamps: true` for createdAt/updatedAt
+- [ ] Specify collection name in `schemaOptions`
+- [ ] Use `public` visibility for all properties
+- [ ] Add `!` (non-null assertion) to required properties
+
 ## Checklist for New Module
 
 1. [ ] Create folder: `modules/mymodule/`

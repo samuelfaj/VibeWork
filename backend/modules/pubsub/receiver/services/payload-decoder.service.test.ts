@@ -35,8 +35,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toMatch(/INVALID_BASE64|INVALID_JSON/)
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toMatch(/INVALID_BASE64|INVALID_JSON/)
     }
   })
 
@@ -52,8 +52,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('INVALID_JSON')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('INVALID_JSON')
     }
   })
 
@@ -62,8 +62,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('MISSING_ACTION')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('MISSING_ACTION')
     }
   })
 
@@ -72,8 +72,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('MISSING_ACTION')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('MISSING_ACTION')
     }
   })
 
@@ -89,8 +89,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
     }
   })
 
@@ -108,8 +108,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
     }
   })
 
@@ -118,8 +118,8 @@ describe('PayloadDecoderService', () => {
     expect(() => PayloadDecoderService.decode(message)).toThrow(PayloadDecodingError)
     try {
       PayloadDecoderService.decode(message)
-    } catch (e) {
-      expect((e as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
+    } catch (error) {
+      expect((error as PayloadDecodingError).code).toBe('INVALID_STRUCTURE')
     }
   })
 

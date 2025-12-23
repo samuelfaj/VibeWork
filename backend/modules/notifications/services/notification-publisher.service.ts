@@ -10,11 +10,11 @@ interface NotificationDocument {
   createdAt: Date
 }
 
-export class NotificationPublisherService {
+export const NotificationPublisherService = {
   /**
    * Publishes a notification created event to Pub/Sub
    */
-  static async publishCreated(notification: NotificationDocument): Promise<string> {
+  async publishCreated(notification: NotificationDocument): Promise<string> {
     const topic = pubsub.topic(TOPIC_NAME)
     const data = Buffer.from(
       JSON.stringify({
@@ -28,7 +28,7 @@ export class NotificationPublisherService {
     const messageId = await topic.publishMessage({ data })
     console.log(`[NotificationPublisherService] Published message ${messageId} to ${TOPIC_NAME}`)
     return messageId
-  }
+  },
 }
 
 /**

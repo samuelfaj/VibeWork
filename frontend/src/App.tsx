@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { Card, Typography, Layout } from 'antd'
+import { useState } from 'react'
 import { LoginForm, SignupForm } from './features/auth'
 
 const { Title } = Typography

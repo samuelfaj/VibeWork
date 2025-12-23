@@ -12,53 +12,79 @@ Provides foundational utilities used throughout the frontend:
 
 ## Files
 
-### `api.ts` - Eden RPC Client
+### `api.ts` - Eden RPC Client (CRITICAL)
 
-Type-safe API client for communicating with the backend.
+**ALWAYS use Eden for API calls. Never use raw `fetch` directly.**
+
+Type-safe API client for communicating with the backend using [Eden Treaty](https://elysiajs.com/eden/overview).
 
 **Purpose:**
 
-- Creates a typed RPC client from backend routes
+- Creates a typed RPC client from backend Elysia routes
 - Provides autocomplete and type checking for all API calls
+- **Automatically includes `Accept-Language` header from i18next**
 - Handles request/response serialization
 
-**How It Works:**
+**Current Configuration:**
 
-The backend exports ElysiaJS routes which are automatically typed. Eden generates a TypeScript client that matches those types exactly.
+```typescript
+import { treaty } from '@elysiajs/eden'
+import i18n from '@/i18n'
+
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+export const api = treaty<App>(baseUrl, {
+  // Dynamic headers - called on every request
+  headers: () => ({
+    'Accept-Language': i18n.language || 'pt-BR',
+  }),
+})
+```
 
 **Basic Usage:**
 
 ```typescript
 import { api } from '@/lib/api'
 
-// Fetch current user (type-safe, autocomplete enabled)
-const user = await api.users.me.get()
+// GET request - returns { data, error, status, response }
+const { data, error } = await api.users.me.get()
+if (error) throw new Error(error.value.message)
 
-// Create notification (type-safe request/response)
-const notification = await api.notifications.post({
+// POST with body
+const { data, error } = await api.notifications.post({
   title: 'Hello',
   message: 'World',
 })
 
-// Update notification
-await api.notifications({ id: '123' }).patch({
+// Dynamic path parameters - use function call syntax
+const { data, error } = await api.notifications({ id: '123' }).patch({
   read: true,
 })
 
-// List notifications with query params
-const { data } = await api.notifications.get({
+// Query parameters
+const { data, error } = await api.notifications.get({
   query: { limit: 10, offset: 0 },
 })
 ```
 
+**Eden Response Structure:**
+
+```typescript
+const result = await api.endpoint.get()
+// result.data    - Response data (typed from backend)
+// result.error   - Error object if request failed
+// result.status  - HTTP status code
+// result.response - Raw Response object
+```
+
 **Type Safety:**
 
-Eden provides full type inference:
+Eden provides full type inference from backend routes:
 
 ```typescript
 // ✅ Compiler catches errors
-const user = await api.users.me.get()
-console.log(user.email) // ✅ Knows user has email
+const { data } = await api.users.me.get()
+console.log(data.email) // ✅ Knows user has email
 
 await api.notifications.post({
   title: 'Hello',
@@ -66,18 +92,43 @@ await api.notifications.post({
 })
 ```
 
-**Configuration:**
+**Error Handling Pattern:**
 
 ```typescript
-// api.ts
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const { data, error, status } = await api.products.get()
 
-export const api = treaty<App>(baseUrl, {
+if (error) {
+  switch (error.status) {
+    case 400:
+      throw new Error('Invalid request')
+    case 401:
+      throw new Error('Unauthorized')
+    case 404:
+      throw new Error('Not found')
+    default:
+      throw new Error(error.value?.message || 'Unknown error')
+  }
+}
+
+return data
+```
+
+**Custom Headers Per Request:**
+
+```typescript
+const { data, error } = await api.admin.get({
   headers: {
-    'X-User-Id': userId, // Custom headers
+    'X-Admin-Token': 'secret',
   },
-  credentials: 'include', // Include cookies for auth
 })
+```
+
+**File Upload:**
+
+```typescript
+const formData = new FormData()
+formData.append('file', file)
+const { data, error } = await api.upload.post(formData)
 ```
 
 **Environment Variable:**
@@ -86,20 +137,6 @@ Set in `.env.local`:
 
 ```
 VITE_API_URL=http://localhost:3000
-```
-
-**Error Handling:**
-
-```typescript
-try {
-  const user = await api.users.me.get()
-} catch (error) {
-  if (error.status === 401) {
-    // Unauthorized, redirect to login
-  } else if (error.status === 500) {
-    // Server error
-  }
-}
 ```
 
 ### `query.ts` - TanStack Query Setup

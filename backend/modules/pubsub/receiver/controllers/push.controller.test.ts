@@ -1,7 +1,7 @@
 // modules/pubsub/receiver/controllers/push.controller.test.ts
+import * as i18nModule from '@i18n'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { PubSubPushMessage, HandlerMetadata } from '@modules/pubsub/core/pubsub.types'
-import * as i18nModule from '@i18n'
 import { HandlerService } from '../services/handler.service'
 import { PayloadDecoderService, PayloadDecodingError } from '../services/payload-decoder.service'
 import { PushController } from './push.controller'

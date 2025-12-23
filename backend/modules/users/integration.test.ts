@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { MySqlContainer, StartedMySqlContainer } from '@testcontainers/mysql'
+import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
-import { sql } from 'drizzle-orm'
-import { users } from './schema/user.schema'
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { sessions, accounts, verifications } from './schema/auth.schema'
+import { users } from './schema/user.schema'
 
 describe('User Module Integration Tests', () => {
   let container: StartedMySqlContainer
   let pool: ReturnType<typeof mysql.createPool>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let db: any
 
   beforeAll(async () => {
@@ -18,7 +18,7 @@ describe('User Module Integration Tests', () => {
       .withDatabase('testdb')
       .withUsername('testuser')
       .withUserPassword('testpass')
-      .withStartupTimeout(60000)
+      .withStartupTimeout(60_000)
       .start()
 
     console.log(`[Integration] MySQL container started on port ${container.getPort()}`)
@@ -92,7 +92,7 @@ describe('User Module Integration Tests', () => {
     `)
 
     console.log('[Integration] Tables created')
-  }, 120000)
+  }, 120_000)
 
   afterAll(async () => {
     console.log('[Integration] Cleaning up...')

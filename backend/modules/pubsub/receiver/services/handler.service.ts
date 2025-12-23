@@ -2,11 +2,11 @@
 import { HANDLERS } from '@modules/pubsub/core/handlers.constants'
 import type { HandlerEntry } from '@modules/pubsub/core/pubsub.types'
 
-export class HandlerService {
+export const HandlerService = {
   /**
    * Finds a handler by action name
    */
-  static findHandler(action: string): HandlerEntry | undefined {
+  findHandler(action: string): HandlerEntry | undefined {
     return Object.values(HANDLERS).find((h) => h.action === action)
-  }
+  },
 }

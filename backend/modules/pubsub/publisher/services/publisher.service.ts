@@ -1,9 +1,9 @@
 // modules/pubsub/publisher/services/publisher.service.ts
+import { pubsub } from '@infra'
 import { Value } from '@sinclair/typebox/value'
 import type { TSchema } from 'elysia'
 import { PUBLISHERS } from '@modules/pubsub/core/publishers.constants'
 import type { PublishResult } from '@modules/pubsub/core/pubsub.types'
-import { pubsub } from '@infra'
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ERRORS
@@ -86,9 +86,9 @@ export class PublisherService {
   /**
    * Publishes a message to a Pub/Sub topic
    */
-  private static async publishToTopic<T extends Record<string, unknown>>(
+  private static async publishToTopic<TPayload extends Record<string, unknown>>(
     topic: string,
-    payload: T
+    payload: TPayload
   ): Promise<PublishResult> {
     const pubsubTopic = pubsub.topic(topic)
     const messageBuffer = Buffer.from(JSON.stringify(payload))

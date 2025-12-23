@@ -31,7 +31,7 @@ describe('i18n', () => {
   describe('getLanguageFromHeader()', () => {
     it('returns en for null/undefined', () => {
       expect(getLanguageFromHeader(null)).toBe('en')
-      expect(getLanguageFromHeader(undefined)).toBe('en')
+      expect(getLanguageFromHeader()).toBe('en')
     })
 
     it('returns en for empty string', () => {

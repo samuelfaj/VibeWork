@@ -6,12 +6,13 @@ export interface TestUser {
   name?: string
 }
 
-/**
- * Generate a unique test user with timestamp-based email
- */
+// Generate unique test user with timestamp-based email
 export function generateTestUser(): TestUser {
   const timestamp = Date.now()
-  const random = Math.random().toString(36).substring(2, 8)
+  const RADIX = 36
+  const SLICE_START = 2
+  const SLICE_END = 8
+  const random = Math.random().toString(RADIX).slice(SLICE_START, SLICE_END)
   return {
     email: `test-${timestamp}-${random}@e2e.local`,
     password: 'TestPassword123!',
@@ -19,10 +20,7 @@ export function generateTestUser(): TestUser {
   }
 }
 
-/**
- * Sign up a new user through the UI
- * Navigates to root and fills the signup form
- */
+// Sign up new user through UI (navigates to root, fills signup form)
 export async function signUp(page: Page, user: TestUser): Promise<void> {
   await page.goto('/')
 

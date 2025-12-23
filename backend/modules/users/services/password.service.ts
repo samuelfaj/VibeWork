@@ -2,20 +2,20 @@ import { hash, verify } from '@node-rs/argon2'
 
 // OWASP recommended settings for argon2id
 const ARGON2_OPTIONS = {
-  memoryCost: 65536, // 64 MB
+  memoryCost: 65_536, // 64 MB
   timeCost: 3,
   parallelism: 4,
 }
 
-export class PasswordService {
-  static async hash(password: string): Promise<string> {
+export const PasswordService = {
+  async hash(password: string): Promise<string> {
     if (!password) {
       throw new Error('Password cannot be empty')
     }
     return hash(password, ARGON2_OPTIONS)
-  }
+  },
 
-  static async verify(hashValue: string, password: string): Promise<boolean> {
+  async verify(hashValue: string, password: string): Promise<boolean> {
     if (!hashValue || !password) {
       return false
     }
@@ -24,7 +24,7 @@ export class PasswordService {
     } catch {
       return false
     }
-  }
+  },
 }
 
 /**

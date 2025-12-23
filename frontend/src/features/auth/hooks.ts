@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { authRequest } from '../../lib/authClient'
 
 interface AuthCredentials {
   email: string
@@ -23,31 +22,27 @@ interface AuthResponse {
   user: User
 }
 
+interface SessionResponse {
+  user: User | null
+}
+
 export function useSignup() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> => {
-      const response = await fetch(`${API_BASE}/api/auth/sign-up/email`, {
+      const namePart = credentials.email.split('@')[0]
+      return authRequest<AuthResponse>('/api/auth/sign-up/email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           email: credentials.email,
           password: credentials.password,
-          name: credentials.name || credentials.email.split('@')[0],
-        }),
-        credentials: 'include',
+          name: credentials.name ?? namePart,
+        },
       })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.message || 'Signup failed')
-      }
-
-      return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      void queryClient.invalidateQueries({ queryKey: ['currentUser'] })
     },
   })
 }
@@ -56,26 +51,16 @@ export function useLogin() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> => {
-      const response = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
+    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> =>
+      authRequest<AuthResponse>('/api/auth/sign-in/email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           email: credentials.email,
           password: credentials.password,
-        }),
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.message || 'Login failed')
-      }
-
-      return response.json()
-    },
+        },
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      void queryClient.invalidateQueries({ queryKey: ['currentUser'] })
     },
   })
 }
@@ -84,16 +69,12 @@ export function useCurrentUser() {
   return useQuery<User | null>({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE}/api/auth/get-session`, {
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
+      try {
+        const data = await authRequest<SessionResponse>('/api/auth/get-session')
+        return data.user ?? null
+      } catch {
         return null
       }
-
-      const data = await response.json()
-      return data.user || null
     },
     retry: false,
   })

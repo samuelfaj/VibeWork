@@ -5,5 +5,6 @@ import type { Elysia } from 'elysia'
 // For now, use generic Elysia type for treaty client setup
 type App = Elysia
 
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const DEFAULT_API_URL = 'http://localhost:3000'
+const baseUrl = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL
 export const api = treaty<App>(baseUrl)
