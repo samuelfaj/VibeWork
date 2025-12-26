@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run --maxWorkers=2",
-    "test:watch": "vitest --maxWorkers=2",
-    "test:headed": "HEADLESS=false vitest run --maxWorkers=2"
+    "test": "echo 'Use test:e2e instead'",
+    "test:e2e": "vitest run --maxWorkers=2",
+    "test:e2e:watch": "vitest --maxWorkers=2",
+    "test:e2e:headed": "HEADLESS=false vitest run --maxWorkers=2"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "^3.0.6",
