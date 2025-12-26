@@ -12,9 +12,7 @@
       "@infra/*": ["./src/infra/*"],
       "@i18n": ["./src/i18n"],
       "@i18n/*": ["./src/i18n/*"],
-      "@modules/*": ["./modules/*"],
-      "@vibe-code/contract": ["../shared/contract/src"],
-      "@vibe-code/contract/*": ["../shared/contract/src/*"]
+      "@modules/*": ["./modules/*"]
     }
   },
   "include": ["src/**/*", "modules/**/*", "tests/**/*", "drizzle.config.ts", "vitest.config.ts"],
