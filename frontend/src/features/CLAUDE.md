@@ -187,7 +187,6 @@ const [name, setName] = useGlobalState('name') // Unless shared across many comp
 - **Features can depend on:**
   - `/lib` - Shared utilities and API client
   - `/components` - Shared UI components (if needed)
-  - `@vibe/ui` - Shared component library
   - External packages
 
 ## Common Patterns
@@ -289,6 +288,109 @@ describe('useMyFeature', () => {
   })
 })
 ```
+
+## E2E Testing Requirements (CRITICAL)
+
+**CRITICAL**: Every new feature MUST include Stagehand E2E tests before being considered complete.
+
+### E2E Test Checklist
+
+When adding a new feature:
+
+- [ ] Create test file: `e2e-stagehand/tests/{feature}/{feature}.test.ts`
+- [ ] Test happy path (user completes main flow successfully)
+- [ ] Test error states (invalid inputs, API errors)
+- [ ] Test edge cases (empty states, long inputs)
+- [ ] Run tests: `bun run test:e2e:stagehand`
+
+### E2E Test Template
+
+```typescript
+// e2e-stagehand/tests/myfeature/myfeature.test.ts
+import 'dotenv/config'
+import { describe, test, expect, beforeAll, afterAll } from 'vitest'
+import { Stagehand } from '@browserbasehq/stagehand'
+import { z } from 'zod'
+import { APP_URL, createStagehand, delay } from '../../helpers/stagehand'
+
+describe('MyFeature E2E Tests', () => {
+  let stagehand: Stagehand
+
+  beforeAll(async () => {
+    stagehand = await createStagehand()
+  })
+
+  afterAll(async () => {
+    await stagehand.close()
+  })
+
+  test('should complete main user flow', async () => {
+    const page = stagehand.context.pages()[0]
+    await page.goto(`${APP_URL}/myfeature`)
+    await delay(1500)
+
+    // Use natural language for actions
+    await stagehand.act('Click the "Create New" button')
+    await stagehand.act('Type "My Item" in the name field')
+    await stagehand.act('Click the submit button')
+    await delay(2000)
+
+    // Validate with Zod schema
+    const result = await stagehand.extract(
+      'Check if the item was created successfully',
+      z.object({
+        success: z.boolean(),
+        itemName: z.string().optional(),
+      })
+    )
+
+    expect(result.success).toBe(true)
+  })
+
+  test('should show error for invalid input', async () => {
+    const page = stagehand.context.pages()[0]
+    await page.goto(`${APP_URL}/myfeature`)
+    await delay(1500)
+
+    await stagehand.act('Click the submit button without filling the form')
+    await delay(1000)
+
+    const result = await stagehand.extract(
+      'Check if there is a validation error',
+      z.object({
+        hasError: z.boolean(),
+        errorMessage: z.string().optional(),
+      })
+    )
+
+    expect(result.hasError).toBe(true)
+  })
+})
+```
+
+### Running E2E Tests
+
+```bash
+# Run all Stagehand E2E tests
+bun run test:e2e:stagehand
+
+# Run with visible browser (for debugging)
+cd e2e-stagehand && HEADLESS=false bun run test:headed
+
+# Run in watch mode
+cd e2e-stagehand && bun run test:watch
+```
+
+### Best Practices for E2E Tests
+
+1. **Use natural language**: Write instructions as you would tell a human
+2. **Be specific**: "Click the blue Submit button" is better than "Click submit"
+3. **Add delays**: AI needs time to process and act
+4. **Use Zod schemas**: Validate extracted data structure
+5. **Test error states**: Don't just test happy paths
+6. **Keep tests independent**: Each test should start fresh
+
+See [`e2e-stagehand/CLAUDE.md`](../../../e2e-stagehand/CLAUDE.md) for detailed Stagehand documentation.
 
 ## Future Features
 

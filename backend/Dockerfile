@@ -5,23 +5,23 @@ WORKDIR /app
 # Copy all workspace files needed for backend
 COPY package.json bun.lockb* tsconfig.json ./
 COPY backend/package.json ./backend/
-COPY packages/contract/package.json ./packages/contract/
+COPY shared/contract/package.json ./shared/contract/
 
 # Create stub package.json for workspaces not needed during backend build
-RUN mkdir -p frontend e2e packages/ui && \
+RUN mkdir -p frontend e2e/playwright e2e/stagehand && \
     echo '{"name":"@vibe/frontend","version":"0.0.0","private":true}' > frontend/package.json && \
-    echo '{"name":"@vibe/e2e","version":"0.0.0","private":true}' > e2e/package.json && \
-    echo '{"name":"@vibe/ui","version":"0.0.0","private":true}' > packages/ui/package.json
+    echo '{"name":"@vibe/e2e-playwright","version":"0.0.0","private":true}' > e2e/playwright/package.json && \
+    echo '{"name":"@vibe/e2e-stagehand","version":"0.0.0","private":true}' > e2e/stagehand/package.json
 
 # Install all dependencies (ignore scripts for Docker build)
 RUN bun install || true
 
 # Copy source code
-COPY packages/contract ./packages/contract
+COPY shared/contract ./shared/contract
 COPY backend ./backend
 
 # Build contract first, then backend
-WORKDIR /app/packages/contract
+WORKDIR /app/shared/contract
 RUN bun run build
 
 WORKDIR /app/backend
@@ -35,8 +35,8 @@ WORKDIR /app
 COPY --from=builder --chown=bun:bun /app/backend/dist ./dist
 COPY --from=builder --chown=bun:bun /app/backend/node_modules ./node_modules
 COPY --from=builder --chown=bun:bun /app/backend/package.json ./
-COPY --from=builder --chown=bun:bun /app/packages/contract/dist ./node_modules/@vibe-code/contract/dist
-COPY --from=builder --chown=bun:bun /app/packages/contract/package.json ./node_modules/@vibe-code/contract/
+COPY --from=builder --chown=bun:bun /app/shared/contract/dist ./node_modules/@vibe-code/contract/dist
+COPY --from=builder --chown=bun:bun /app/shared/contract/package.json ./node_modules/@vibe-code/contract/
 
 # Switch to non-root user (bun user exists in base image)
 USER bun

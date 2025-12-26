@@ -12,7 +12,7 @@ This package defines validation schemas using TypeBox (via Elysia's `t` export) 
 ## Structure
 
 ```
-packages/contract/
+shared/contract/
 ├── src/
 │   ├── index.ts             # Barrel export
 │   ├── user.ts              # User schemas (Signup, Login, UserResponse)

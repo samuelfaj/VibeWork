@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url'
 import { createJiti } from 'jiti'
 
 const jiti = createJiti(import.meta.url)
-const localPlugin = jiti('./eslint-rules/index.ts')
+const localPlugin = jiti('./.eslint-rules/index.ts')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,7 +32,7 @@ export default [
       '.env*',
       '**/.eslintcache',
       '**/*.js',
-      'eslint-rules/**',
+      '.eslint-rules/**',
     ],
   },
 

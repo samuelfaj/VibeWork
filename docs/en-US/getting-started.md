@@ -39,9 +39,9 @@ This command uses Bun workspaces to install dependencies for:
 - Root workspace
 - `/backend` package
 - `/frontend` package
-- `/packages/contract`
-- `/packages/ui`
-- `/e2e` package
+- `/shared/contract`
+- `/e2e/playwright`
+- `/e2e/stagehand`
 
 ## Step 3: Configure Environment Variables
 

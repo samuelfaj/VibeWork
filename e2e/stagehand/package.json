@@ -1,0 +1,21 @@
+{
+  "name": "@vibe/e2e-stagehand",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --maxWorkers=2",
+    "test:watch": "vitest --maxWorkers=2",
+    "test:headed": "HEADLESS=false vitest run --maxWorkers=2"
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "^3.0.6",
+    "dotenv": "^16.4.7",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

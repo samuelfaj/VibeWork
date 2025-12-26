@@ -6,8 +6,9 @@
   "workspaces": [
     "backend",
     "frontend",
-    "packages/*",
-    "e2e"
+    "shared/*",
+    "e2e/playwright",
+    "e2e/stagehand"
   ],
   "scripts": {
     "prepare": "husky || true",
@@ -21,6 +22,7 @@
     "typecheck": "turbo run typecheck",
     "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run test:e2e",
+    "test:e2e:stagehand": "turbo run test --filter=e2e/stagehand",
     "release": "semantic-release"
   },
   "devDependencies": {

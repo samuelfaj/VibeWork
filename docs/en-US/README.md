@@ -94,9 +94,8 @@ VibeWork/
 │   │   ├── lib/               # API client & utilities
 │   │   └── i18n/              # Translations
 │   └── CLAUDE.md              # Frontend documentation
-├── packages/
-│   ├── contract/              # Shared TypeBox schemas
-│   └── ui/                    # Shared UI components
+├── shared/
+│   └── contract/              # Shared TypeBox schemas
 ├── infra/                     # Terraform IaC (GCP)
 ├── e2e/                       # Playwright tests
 ├── docs/                      # Documentation (this directory)
@@ -191,7 +190,7 @@ This documentation is organized by audience:
   - `frontend/CLAUDE.md` - Frontend overview
   - `backend/modules/users/CLAUDE.md` - Authentication
   - `backend/modules/notifications/CLAUDE.md` - Notifications
-  - `packages/contract/CLAUDE.md` - Contract schemas
+  - `shared/contract/CLAUDE.md` - Contract schemas
 - **Configuration Files**:
   - `.env.example` - Environment variables
   - `docker-compose.yml` - Local development

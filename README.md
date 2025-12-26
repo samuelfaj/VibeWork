@@ -82,9 +82,8 @@ See [Getting Started Guide](./docs/en-US/getting-started.md) for detailed setup.
 VibeWork/
 ├── backend/                    # ElysiaJS API backend
 ├── frontend/                   # React SPA
-├── packages/
-│   ├── contract/              # Shared TypeBox schemas
-│   └── ui/                    # Shared UI components
+├── shared/
+│   └── contract/              # Shared TypeBox schemas
 ├── infra/                     # Terraform IaC (GCP)
 ├── e2e/                       # Playwright tests
 ├── docs/                      # Documentation
@@ -193,7 +192,7 @@ See [CLAUDE.md](./CLAUDE.md) for detailed command reference.
 - **[frontend/CLAUDE.md](./frontend/CLAUDE.md)** - Frontend overview
 - **[backend/modules/users/CLAUDE.md](./backend/modules/users/CLAUDE.md)** - Users & authentication
 - **[backend/modules/notifications/CLAUDE.md](./backend/modules/notifications/CLAUDE.md)** - Notifications system
-- **[packages/contract/CLAUDE.md](./packages/contract/CLAUDE.md)** - Shared contracts
+- **[shared/contract/CLAUDE.md](./shared/contract/CLAUDE.md)** - Shared contracts
 
 ## 🎯 Architecture
 

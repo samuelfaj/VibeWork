@@ -264,7 +264,6 @@ VITE_API_URL=http://localhost:3000
 - `@tanstack/react-query` ^5.0.0 - Server state management
 - `react-i18next` ^14.0.0 - Internationalization
 - `@vibe-code/contract` workspace:\* - Shared schemas
-- `@vibe/ui` workspace:\* - Shared UI components
 
 ## Internationalization (i18n) Requirements
 

@@ -1,5 +1,5 @@
 {
-  "name": "@vibe/e2e",
+  "name": "@vibe/e2e-playwright",
   "version": "0.0.1",
   "private": true,
   "type": "module",

@@ -9,7 +9,7 @@ The `@vibe-code/contract` package contains TypeBox schemas for API contracts. Th
 ## Location
 
 ```
-packages/contract/
+shared/contract/
 ├── src/
 │   ├── index.ts          # Barrel export
 │   ├── user.ts           # User schemas

@@ -94,9 +94,8 @@ VibeWork/
 │   │   ├── lib/               # Utilidades
 │   │   └── i18n/              # Traduções
 │   └── CLAUDE.md              # Documentação do frontend
-├── packages/
-│   ├── contract/              # Esquemas TypeBox compartilhados
-│   └── ui/                    # Componentes UI reutilizáveis
+├── shared/
+│   └── contract/              # Esquemas TypeBox compartilhados
 ├── infra/                     # Terraform IaC (GCP)
 ├── e2e/                       # Testes Playwright
 ├── docs/                      # Esta documentação
@@ -159,7 +158,7 @@ Cada pacote tem sua própria documentação CLAUDE.md com detalhes específicos:
 - `frontend/CLAUDE.md` - Visão geral do frontend
 - `backend/modules/users/CLAUDE.md` - Autenticação
 - `backend/modules/notifications/CLAUDE.md` - Sistema de notificações
-- `packages/contract/CLAUDE.md` - Esquemas de contrato
+- `shared/contract/CLAUDE.md` - Esquemas de contrato
 
 ## 🆘 Precisa de Ajuda?
 

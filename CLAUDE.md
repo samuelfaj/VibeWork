@@ -90,7 +90,7 @@ This repository implements a full-stack web application with:
 | i18n     | i18next                       | Frontend + backend       |
 | Monorepo | Turborepo + Bun Workspaces    | Build orchestration      |
 | Testing  | Vitest + Testcontainers       | Unit + integration tests |
-| E2E      | Playwright                    | End-to-end tests         |
+| E2E      | Playwright + Stagehand        | End-to-end tests         |
 
 ## Architecture
 
@@ -220,16 +220,12 @@ await pubsub.topic('order-created').publish({ orderId, userId })
 │   │   └── CLAUDE.md
 │   └── CLAUDE.md                    # Frontend overview
 │
-├── packages/                        # Shared workspace → see packages/CLAUDE.md
+├── shared/                          # Shared workspace → see shared/CLAUDE.md
 │   ├── contract/
 │   │   ├── src/
 │   │   │   ├── user.ts              # User schemas
 │   │   │   └── notification.ts      # Notification schemas
 │   │   └── CLAUDE.md                # Contract documentation
-│   └── ui/
-│       ├── src/
-│       │   └── Button.tsx           # Shared components
-│       └── CLAUDE.md                # UI component library
 │
 ├── infra/                           # Terraform IaC → see infra/CLAUDE.md
 │   ├── main.tf
@@ -237,7 +233,9 @@ await pubsub.topic('order-created').publish({ orderId, userId })
 │   ├── outputs.tf
 │   └── CLAUDE.md
 │
-├── e2e/                             # Playwright E2E tests
+├── e2e/                             # End-to-end tests
+│   ├── playwright/                  # Playwright E2E tests
+│   └── stagehand/                   # Stagehand AI E2E tests → see e2e/stagehand/CLAUDE.md
 ├── docker-compose.yml               # Local development services
 ├── turbo.json                       # Turborepo pipeline config
 └── CLAUDE.md                        # This file - Documentation Map
@@ -269,19 +267,20 @@ bun run build
 
 ## Common Commands
 
-| Command                    | Description                        |
-| -------------------------- | ---------------------------------- |
-| `bun install`              | Install all workspace dependencies |
-| `docker-compose up -d`     | Start local infrastructure         |
-| `bun run dev`              | Start all dev servers (Turborepo)  |
-| `bun run build`            | Build all packages                 |
-| `bun run test`             | Run unit tests                     |
-| `bun run test:integration` | Run integration tests              |
-| `bun run test:e2e`         | Run Playwright E2E tests           |
-| `bun run lint`             | Run ESLint on all packages         |
-| `bun run lint:fix`         | Auto-fix ESLint issues             |
-| `bun run typecheck`        | TypeScript type checking           |
-| `bun run format`           | Format code with Prettier          |
+| Command                      | Description                        |
+| ---------------------------- | ---------------------------------- |
+| `bun install`                | Install all workspace dependencies |
+| `docker-compose up -d`       | Start local infrastructure         |
+| `bun run dev`                | Start all dev servers (Turborepo)  |
+| `bun run build`              | Build all packages                 |
+| `bun run test`               | Run unit tests                     |
+| `bun run test:integration`   | Run integration tests              |
+| `bun run test:e2e`           | Run Playwright E2E tests           |
+| `bun run test:e2e:stagehand` | Run AI-powered Stagehand E2E tests |
+| `bun run lint`               | Run ESLint on all packages         |
+| `bun run lint:fix`           | Auto-fix ESLint issues             |
+| `bun run typecheck`          | TypeScript type checking           |
+| `bun run format`             | Format code with Prettier          |
 
 ## Documentation Map
 
@@ -309,17 +308,23 @@ Every important folder has detailed CLAUDE.md documentation. Use this map to fin
 
 ### Shared Code Documentation
 
-| Documentation                                                | Purpose                                       |
-| ------------------------------------------------------------ | --------------------------------------------- |
-| [`packages/CLAUDE.md`](packages/CLAUDE.md)                   | Shared workspace overview, building packages  |
-| [`packages/contract/CLAUDE.md`](packages/contract/CLAUDE.md) | TypeBox schemas, type definitions             |
-| [`packages/ui/CLAUDE.md`](packages/ui/CLAUDE.md)             | Reusable UI components, component development |
+| Documentation                                            | Purpose                                      |
+| -------------------------------------------------------- | -------------------------------------------- |
+| [`shared/CLAUDE.md`](shared/CLAUDE.md)                   | Shared workspace overview, building packages |
+| [`shared/contract/CLAUDE.md`](shared/contract/CLAUDE.md) | TypeBox schemas, type definitions            |
 
 ### Infrastructure Documentation
 
 | Documentation                        | Purpose                                    |
 | ------------------------------------ | ------------------------------------------ |
 | [`infra/CLAUDE.md`](infra/CLAUDE.md) | Terraform setup, GCP resources, deployment |
+
+### E2E Testing Documentation
+
+| Documentation                                        | Purpose                             |
+| ---------------------------------------------------- | ----------------------------------- |
+| [`e2e/stagehand/CLAUDE.md`](e2e/stagehand/CLAUDE.md) | AI-powered E2E tests with Stagehand |
+| [`e2e/playwright/`](e2e/playwright/)                 | Playwright E2E tests                |
 
 ### Finding Documentation by Task
 
@@ -332,8 +337,8 @@ Every important folder has detailed CLAUDE.md documentation. Use this map to fin
 - **Use the API client?** → [`frontend/src/lib/CLAUDE.md`](frontend/src/lib/CLAUDE.md)
 - **Connect to a database?** → [`backend/src/infra/CLAUDE.md`](backend/src/infra/CLAUDE.md)
 - **Deploy to GCP?** → [`infra/CLAUDE.md`](infra/CLAUDE.md)
-- **Build a shared UI component?** → [`packages/ui/CLAUDE.md`](packages/ui/CLAUDE.md)
-- **Define a new data schema?** → [`packages/contract/CLAUDE.md`](packages/contract/CLAUDE.md)
+- **Define a new data schema?** → [`shared/contract/CLAUDE.md`](shared/contract/CLAUDE.md)
+- **Add E2E tests for a feature?** → [`e2e/stagehand/CLAUDE.md`](e2e/stagehand/CLAUDE.md)
 
 ## Environment Setup
 
@@ -359,5 +364,57 @@ See individual package CLAUDE.md files for package-specific variables.
 7. **Trilingual i18n (MANDATORY)**: All user-facing content MUST be translated to en, pt-BR, and es - no exceptions
 8. **Test Coverage**: 80% threshold enforced
 9. **Co-located Tests**: Test files live alongside source files (e.g., `file.ts` and `file.test.ts`), NOT in separate `__tests__` directories
+10. **E2E Tests Required**: All new features MUST include Stagehand E2E tests before being considered complete
 
 **CRITICAL**: Never use `--no-verify` for git commits.
+
+## E2E Testing Requirements
+
+**CRITICAL**: All new features MUST include Stagehand E2E tests to verify the feature works end-to-end.
+
+### When to Add E2E Tests
+
+| Scenario                  | E2E Tests Required       |
+| ------------------------- | ------------------------ |
+| New user-facing feature   | Yes                      |
+| New page or route         | Yes                      |
+| New form or workflow      | Yes                      |
+| Bug fix affecting UI      | Yes                      |
+| Internal refactoring only | No                       |
+| Backend-only changes      | No (unless affecting UI) |
+
+### E2E Test Checklist
+
+Before a feature is considered complete:
+
+- [ ] Happy path tested (user can complete the main flow)
+- [ ] Error states tested (invalid inputs, API errors)
+- [ ] Edge cases tested (empty states, long inputs)
+- [ ] Tests pass locally: `bun run test:e2e:stagehand`
+
+### Writing E2E Tests
+
+1. Create test file: `e2e/stagehand/tests/{feature}/{feature}.test.ts`
+2. Use natural language for Stagehand actions
+3. Validate with Zod schemas for extracted data
+4. See [`e2e/stagehand/CLAUDE.md`](e2e/stagehand/CLAUDE.md) for detailed instructions
+
+### Example
+
+```typescript
+import { Stagehand } from '@browserbasehq/stagehand'
+import { z } from 'zod'
+
+test('should create new project', async () => {
+  await stagehand.act('Click the "New Project" button')
+  await stagehand.act('Type "My Project" in the project name field')
+  await stagehand.act('Click the submit button')
+
+  const result = await stagehand.extract(
+    'Check if project was created successfully',
+    z.object({ success: z.boolean() })
+  )
+
+  expect(result.success).toBe(true)
+})
+```

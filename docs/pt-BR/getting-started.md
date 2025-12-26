@@ -39,9 +39,9 @@ Este comando instala dependências para todos os workspaces:
 - Root
 - `/backend`
 - `/frontend`
-- `/packages/contract`
-- `/packages/ui`
-- `/e2e`
+- `/shared/contract`
+- `/e2e/playwright`
+- `/e2e/stagehand`
 
 ## Passo 3: Configurar Variáveis de Ambiente
 
