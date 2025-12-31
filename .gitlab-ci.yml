@@ -1,0 +1,177 @@
+# =============================================================================
+# VibeWork GitLab CI/CD Pipeline
+# GCP: Cloud Run, Cloud SQL, Redis, Pub/Sub
+# =============================================================================
+
+stages:
+  - validate
+  - test
+  - build
+  - infrastructure
+  - deploy
+  - e2e
+  - notify
+
+# =============================================================================
+# Global Configuration
+# =============================================================================
+
+variables:
+  # Project
+  PROJECT_NAME: vibe
+
+  # GCP
+  GCP_REGION: us-central1
+  ARTIFACT_REGISTRY: us-central1-docker.pkg.dev
+
+  # Docker
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: '/certs'
+
+  # Terraform
+  TF_ROOT: ${CI_PROJECT_DIR}/infra
+  TF_STATE_NAME: default
+
+  # Cache
+  BUN_INSTALL: ${CI_PROJECT_DIR}/.bun
+
+# Default image
+default:
+  image: oven/bun:1-alpine
+
+# Cache configuration - using tar for faster cache operations with many files
+.bun-cache: &bun-cache
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+
+# =============================================================================
+# Include Templates
+# =============================================================================
+
+include:
+  - local: '.gitlab/ci/terraform.yml'
+  - local: '.gitlab/ci/frontend.yml'
+  - local: '.gitlab/ci/backend.yml'
+
+# =============================================================================
+# Validate Stage
+# =============================================================================
+
+lint:
+  stage: validate
+  <<: *bun-cache
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - bun run lint
+    - bun run typecheck
+    - bun run build
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "production"
+
+# =============================================================================
+# Test Stage
+# =============================================================================
+
+test:unit:
+  stage: test
+  <<: *bun-cache
+  before_script:
+    - apk add --no-cache curl bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - bun run test
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit: coverage/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "staging"
+    - if: $CI_COMMIT_BRANCH == "production"
+
+# test:integration:
+#   stage: test
+#   <<: *bun-cache
+#   image: docker:24-cli
+#   services:
+#     - name: docker:24-dind
+#       alias: docker
+#       command: ['--tls=false']
+#   variables:
+#     DOCKER_HOST: tcp://docker:2375
+#     DOCKER_TLS_CERTDIR: ''
+#   before_script:
+#     - apk add --no-cache curl bash nodejs npm zstd
+#     - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+#     - echo "Waiting for Docker daemon..."
+#     - for i in $(seq 1 30); do docker info >/dev/null 2>&1 && break || sleep 1; done
+#     - docker info
+#     - curl -fsSL https://bun.sh/install | bash
+#     - export PATH="$BUN_INSTALL/bin:$PATH"
+#     - docker compose -f docker-compose.yml up -d
+#     - bun install
+#   script:
+#     - bun run test:integration
+#   after_script:
+#     - docker compose down -v || true
+#     - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#     - if: $CI_COMMIT_BRANCH == "main"
+#     - if: $CI_COMMIT_BRANCH == "staging"
+#     - if: $CI_COMMIT_BRANCH == "production"
+
+# =============================================================================
+# Notify Stage
+# =============================================================================
+
+# notify:success:
+#   stage: notify
+#   image: alpine:latest
+#   script:
+#     - apk add --no-cache curl
+#     - |
+#       if [ -n "$SLACK_WEBHOOK_URL" ]; then
+#         curl -X POST -H 'Content-type: application/json' \
+#           --data "{\"text\":\"✅ Pipeline succeeded for ${CI_PROJECT_NAME} on ${CI_COMMIT_REF_NAME}\"}" \
+#           $SLACK_WEBHOOK_URL
+#       fi
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "production"
+#       when: on_success
+#   allow_failure: true
+
+# notify:failure:
+#   stage: notify
+#   image: alpine:latest
+#   script:
+#     - apk add --no-cache curl
+#     - |
+#       if [ -n "$SLACK_WEBHOOK_URL" ]; then
+#         curl -X POST -H 'Content-type: application/json' \
+#           --data "{\"text\":\"❌ Pipeline failed for ${CI_PROJECT_NAME} on ${CI_COMMIT_REF_NAME}\"}" \
+#           $SLACK_WEBHOOK_URL
+#       fi
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "production"
+#       when: on_failure
+#   allow_failure: true

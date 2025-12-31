@@ -1,0 +1,168 @@
+# =============================================================================
+# Frontend CI/CD Templates (React + Vite → S3 + CloudFront)
+# Note: Currently GCP-only, S3/CloudFront templates ready for future use
+# =============================================================================
+
+# =============================================================================
+# Build Jobs
+# =============================================================================
+
+frontend:build:dev:
+  image: oven/bun:1-alpine
+  stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  variables:
+    VITE_API_URL: https://api-dev.vibework.app
+    VITE_ENVIRONMENT: development
+  script:
+    - cd shared/contract && bun run build && cd ../..
+    - cd frontend
+    - bun run build
+    - tar -czf dist.tar.gz dist
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+  artifacts:
+    paths:
+      - frontend/dist.tar.gz
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+frontend:build:staging:
+  image: oven/bun:1-alpine
+  stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  variables:
+    VITE_API_URL: https://api-staging.vibework.app
+    VITE_ENVIRONMENT: staging
+  script:
+    - cd shared/contract && bun run build && cd ../..
+    - cd frontend
+    - bun run build
+    - tar -czf dist.tar.gz dist
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+  artifacts:
+    paths:
+      - frontend/dist.tar.gz
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+
+frontend:build:prod:
+  image: oven/bun:1-alpine
+  stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  variables:
+    VITE_API_URL: https://api.vibework.app
+    VITE_ENVIRONMENT: production
+  script:
+    - cd shared/contract && bun run build && cd ../..
+    - cd frontend
+    - bun run build
+    - tar -czf dist.tar.gz dist
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
+  artifacts:
+    paths:
+      - frontend/dist.tar.gz
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+
+# =============================================================================
+# Deploy Jobs (S3 + CloudFront - Template for future use)
+# =============================================================================
+
+# frontend:deploy:dev:
+#   image: samuelfaj/docker-node-terraform-aws:latest
+#   stage: deploy
+#   script:
+#     - cd frontend
+#     - tar -xzf dist.tar.gz
+#     - aws s3 sync dist/ s3://vibe-dev-frontend --delete
+#     - |
+#       DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'dev.vibework.app')]].Id" --output text)
+#       if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+#         aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths '/*'
+#       fi
+#   dependencies:
+#     - frontend:build:dev
+#   environment:
+#     name: development
+#     url: https://dev.vibework.app
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#   needs:
+#     - frontend:build:dev
+#     - terraform:apply:dev
+
+# frontend:deploy:staging:
+#   image: samuelfaj/docker-node-terraform-aws:latest
+#   stage: deploy
+#   script:
+#     - cd frontend
+#     - tar -xzf dist.tar.gz
+#     - aws s3 sync dist/ s3://vibe-staging-frontend --delete
+#     - |
+#       DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'staging.vibework.app')]].Id" --output text)
+#       if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+#         aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths '/*'
+#       fi
+#   dependencies:
+#     - frontend:build:staging
+#   environment:
+#     name: staging
+#     url: https://staging.vibework.app
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "staging"
+#   needs:
+#     - frontend:build:staging
+#     - terraform:apply:staging
+
+# frontend:deploy:prod:
+#   image: samuelfaj/docker-node-terraform-aws:latest
+#   stage: deploy
+#   script:
+#     - cd frontend
+#     - tar -xzf dist.tar.gz
+#     - aws s3 sync dist/ s3://vibe-prod-frontend --delete
+#     - |
+#       DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'vibework.app') && !contains(@, 'dev.') && !contains(@, 'staging.')]].Id" --output text)
+#       if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+#         aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths '/*'
+#       fi
+#   dependencies:
+#     - frontend:build:prod
+#   environment:
+#     name: production
+#     url: https://vibework.app
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "production"
+#   needs:
+#     - frontend:build:prod
+#     - terraform:apply:prod

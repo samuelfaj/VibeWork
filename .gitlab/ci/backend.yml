@@ -1,0 +1,342 @@
+# =============================================================================
+# Backend CI/CD Templates (ElysiaJS → Cloud Run)
+# =============================================================================
+
+variables:
+  ARTIFACT_REGISTRY: us-central1-docker.pkg.dev
+
+# =============================================================================
+# Build & Deploy Jobs
+# =============================================================================
+
+backend:deploy:dev:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    # Preparing GCP
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    # Create .env file
+    - echo "NODE_ENV=development" > backend/.env
+    - echo "ENVIRONMENT=dev" >> backend/.env
+    - echo "TZ=America/Sao_Paulo" >> backend/.env
+    - echo "PORT=3000" >> backend/.env
+    - echo "MYSQL_HOST=$DB_HOST" >> backend/.env
+    - echo "MYSQL_PORT=3306" >> backend/.env
+    - echo "MYSQL_USER=$DB_USER" >> backend/.env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> backend/.env
+    - echo "MYSQL_DATABASE=vibe_dev" >> backend/.env
+    - echo "MONGODB_URI=$MONGODB_URI" >> backend/.env
+    - echo "REDIS_URL=$REDIS_URL" >> backend/.env
+    - echo "FRONTEND_URL=https://dev.vibework.app" >> backend/.env
+    - echo "API_URL=https://api-dev.vibework.app" >> backend/.env
+    - echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> backend/.env
+    - echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> backend/.env
+    - echo "JWT_SECRET=$JWT_SECRET" >> backend/.env
+    # Build and Deploy
+    - gcloud builds submit --config=cloudbuild.yaml --substitutions=_IMAGE_TAG=${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:dev-${CI_COMMIT_SHORT_SHA}
+    - gcloud run deploy vibe-dev-backend --image ${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:dev-${CI_COMMIT_SHORT_SHA} --platform managed --region $GCP_REGION --allow-unauthenticated
+  environment:
+    name: development
+    url: https://api-dev.vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - terraform:apply:dev
+
+backend:deploy:staging:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    # Preparing GCP
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    # Create .env file
+    - echo "NODE_ENV=staging" > backend/.env
+    - echo "ENVIRONMENT=staging" >> backend/.env
+    - echo "TZ=America/Sao_Paulo" >> backend/.env
+    - echo "PORT=3000" >> backend/.env
+    - echo "MYSQL_HOST=$DB_HOST" >> backend/.env
+    - echo "MYSQL_PORT=3306" >> backend/.env
+    - echo "MYSQL_USER=$DB_USER" >> backend/.env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> backend/.env
+    - echo "MYSQL_DATABASE=vibe_staging" >> backend/.env
+    - echo "MONGODB_URI=$MONGODB_URI" >> backend/.env
+    - echo "REDIS_URL=$REDIS_URL" >> backend/.env
+    - echo "FRONTEND_URL=https://staging.vibework.app" >> backend/.env
+    - echo "API_URL=https://api-staging.vibework.app" >> backend/.env
+    - echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> backend/.env
+    - echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> backend/.env
+    - echo "JWT_SECRET=$JWT_SECRET" >> backend/.env
+    # Build and Deploy
+    - gcloud builds submit --config=cloudbuild.yaml --substitutions=_IMAGE_TAG=${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:staging-${CI_COMMIT_SHORT_SHA}
+    - gcloud run deploy vibe-staging-backend --image ${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:staging-${CI_COMMIT_SHORT_SHA} --platform managed --region $GCP_REGION --allow-unauthenticated
+  environment:
+    name: staging
+    url: https://api-staging.vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+  needs:
+    - terraform:apply:staging
+
+backend:deploy:prod:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    # Preparing GCP
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    # Create .env file
+    - echo "NODE_ENV=production" > backend/.env
+    - echo "ENVIRONMENT=prod" >> backend/.env
+    - echo "TZ=America/Sao_Paulo" >> backend/.env
+    - echo "PORT=3000" >> backend/.env
+    - echo "MYSQL_HOST=$DB_HOST" >> backend/.env
+    - echo "MYSQL_PORT=3306" >> backend/.env
+    - echo "MYSQL_USER=$DB_PROD_USER" >> backend/.env
+    - echo "MYSQL_PASSWORD=$DB_PROD_PASSWORD" >> backend/.env
+    - echo "MYSQL_DATABASE=vibe" >> backend/.env
+    - echo "MONGODB_URI=$MONGODB_PROD_URI" >> backend/.env
+    - echo "REDIS_URL=$REDIS_PROD_URL" >> backend/.env
+    - echo "FRONTEND_URL=https://vibework.app" >> backend/.env
+    - echo "API_URL=https://api.vibework.app" >> backend/.env
+    - echo "GCP_PROJECT_ID=$GCP_PROJECT_ID" >> backend/.env
+    - echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> backend/.env
+    - echo "JWT_SECRET=$JWT_SECRET" >> backend/.env
+    # Build and Deploy
+    - gcloud builds submit --config=cloudbuild.yaml --substitutions=_IMAGE_TAG=${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:prod-${CI_COMMIT_SHORT_SHA}
+    - gcloud run deploy vibe-prod-backend --image ${ARTIFACT_REGISTRY}/${GCP_PROJECT_ID}/vibe/backend:prod-${CI_COMMIT_SHORT_SHA} --platform managed --region $GCP_REGION --allow-unauthenticated --min-instances=2 --max-instances=20 --memory=2Gi --cpu=2
+  environment:
+    name: production
+    url: https://api.vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+  needs:
+    - terraform:apply:prod
+
+# =============================================================================
+# Database Migrations
+# =============================================================================
+
+backend:migrate:dev:
+  image: oven/bun:1-alpine
+  stage: deploy
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - cd backend
+    - echo "MYSQL_HOST=$DB_HOST" > .env
+    - echo "MYSQL_PORT=3306" >> .env
+    - echo "MYSQL_USER=$DB_USER" >> .env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> .env
+    - echo "MYSQL_DATABASE=vibe_dev" >> .env
+    - bun run db:migrate
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+backend:migrate:staging:
+  image: oven/bun:1-alpine
+  stage: deploy
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - cd backend
+    - echo "MYSQL_HOST=$DB_HOST" > .env
+    - echo "MYSQL_PORT=3306" >> .env
+    - echo "MYSQL_USER=$DB_USER" >> .env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> .env
+    - echo "MYSQL_DATABASE=vibe_staging" >> .env
+    - bun run db:migrate
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+
+backend:migrate:prod:
+  image: oven/bun:1-alpine
+  stage: deploy
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - cd backend
+    - echo "MYSQL_HOST=$DB_HOST" > .env
+    - echo "MYSQL_PORT=3306" >> .env
+    - echo "MYSQL_USER=$DB_PROD_USER" >> .env
+    - echo "MYSQL_PASSWORD=$DB_PROD_PASSWORD" >> .env
+    - echo "MYSQL_DATABASE=vibe" >> .env
+    - bun run db:migrate
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+
+# =============================================================================
+# Database Seeding (Dev/Staging Only)
+# =============================================================================
+
+backend:seed:dev:
+  image: oven/bun:1-alpine
+  stage: deploy
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - cd backend
+    - echo "MYSQL_HOST=$DB_HOST" > .env
+    - echo "MYSQL_PORT=3306" >> .env
+    - echo "MYSQL_USER=$DB_USER" >> .env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> .env
+    - echo "MYSQL_DATABASE=vibe_dev" >> .env
+    - bun run seed
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - backend:migrate:dev
+  allow_failure: true
+
+backend:seed:staging:
+  image: oven/bun:1-alpine
+  stage: deploy
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-bun
+    paths:
+      - .cache-archive.tar.zst
+    when: always
+  before_script:
+    - apk add --no-cache bash zstd
+    - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+  script:
+    - cd backend
+    - echo "MYSQL_HOST=$DB_HOST" > .env
+    - echo "MYSQL_PORT=3306" >> .env
+    - echo "MYSQL_USER=$DB_USER" >> .env
+    - echo "MYSQL_PASSWORD=$DB_PASSWORD" >> .env
+    - echo "MYSQL_DATABASE=vibe_staging" >> .env
+    - bun run seed
+  after_script:
+    - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ 2>/dev/null || true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+  needs:
+    - backend:migrate:staging
+  allow_failure: true
+
+# =============================================================================
+# End-to-End Tests
+# =============================================================================
+
+e2e:stagehand:test:dev:
+  image: oven/bun:1-alpine
+  stage: e2e
+  script:
+    - cd e2e/stagehand
+    - bun install
+    - BROWSERBASE_API_KEY=$BROWSERBASE_API_KEY TEST_BASE_URL=https://dev.vibework.app TEST_API_URL=https://api-dev.vibework.app bun run test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - backend:deploy:dev
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - e2e/stagehand/.vitest/
+    expire_in: 30 days
+
+e2e:stagehand:test:staging:
+  image: oven/bun:1-alpine
+  stage: e2e
+  script:
+    - cd e2e/stagehand
+    - bun install
+    - BROWSERBASE_API_KEY=$BROWSERBASE_API_KEY TEST_BASE_URL=https://staging.vibework.app TEST_API_URL=https://api-staging.vibework.app bun run test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+  needs:
+    - backend:deploy:staging
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - e2e/stagehand/.vitest/
+    expire_in: 30 days
+
+e2e:stagehand:test:prod:
+  image: oven/bun:1-alpine
+  stage: e2e
+  script:
+    - cd e2e/stagehand
+    - bun install
+    - BROWSERBASE_API_KEY=$BROWSERBASE_API_KEY TEST_BASE_URL=https://vibework.app TEST_API_URL=https://api.vibework.app bun run test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+  needs:
+    - backend:deploy:prod
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - e2e/stagehand/.vitest/
+    expire_in: 30 days
+
+# =============================================================================
+# Rollback Jobs (Manual - Commented Out)
+# =============================================================================
+
+# backend:rollback:dev:
+#   image: samuelfaj/docker-node-terraform-aws:latest
+#   stage: deploy
+#   script:
+#     - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+#     - gcloud auth activate-service-account --key-file gcloud-service-key.json
+#     - gcloud config set project $GCP_PROJECT_ID
+#     - |
+#       PREVIOUS_REVISION=$(gcloud run revisions list \
+#         --service=vibe-dev-backend \
+#         --region=$GCP_REGION \
+#         --format="value(name)" \
+#         --limit=2 | tail -n 1)
+#       gcloud run services update-traffic vibe-dev-backend \
+#         --region=$GCP_REGION \
+#         --to-revisions=${PREVIOUS_REVISION}=100
+#   environment:
+#     name: development
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#       when: manual
+#   allow_failure: true

@@ -1,0 +1,204 @@
+# =============================================================================
+# Terraform CI/CD Templates
+# =============================================================================
+
+# =============================================================================
+# Terraform Validate
+# =============================================================================
+
+terraform:validate:dev:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: validate
+  script:
+    - cd ${CI_PROJECT_DIR}/infra/dev
+    - terraform init -backend=false
+    - terraform validate
+    - terraform fmt -check -recursive
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - infra/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - infra/**/*
+
+terraform:validate:staging:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: validate
+  script:
+    - cd ${CI_PROJECT_DIR}/infra/staging
+    - terraform init -backend=false
+    - terraform validate
+    - terraform fmt -check -recursive
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - infra/**/*
+    - if: $CI_COMMIT_BRANCH == "staging"
+      changes:
+        - infra/**/*
+
+terraform:validate:prod:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: validate
+  script:
+    - cd ${CI_PROJECT_DIR}/infra/prod
+    - terraform init -backend=false
+    - terraform validate
+    - terraform fmt -check -recursive
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+      changes:
+        - infra/**/*
+
+# =============================================================================
+# Development Environment
+# =============================================================================
+
+terraform:plan:dev:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: infrastructure
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/dev
+    - terraform init
+    - terraform plan -var="gcp_project_id=$GCP_PROJECT_ID" -var="mysql_password=$DB_PASSWORD" -out=tfplan
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/infra/dev/tfplan
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+terraform:apply:dev:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/dev
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  dependencies:
+    - terraform:plan:dev
+  environment:
+    name: development
+    url: https://dev.vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - terraform:plan:dev
+
+# =============================================================================
+# Staging Environment
+# =============================================================================
+
+terraform:plan:staging:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: infrastructure
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/staging
+    - terraform init
+    - terraform plan -var="gcp_project_id=$GCP_PROJECT_ID" -var="mysql_password=$DB_PASSWORD" -out=tfplan
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/infra/staging/tfplan
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+
+terraform:apply:staging:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/staging
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  dependencies:
+    - terraform:plan:staging
+  environment:
+    name: staging
+    url: https://staging.vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
+  needs:
+    - terraform:plan:staging
+
+# =============================================================================
+# Production Environment
+# =============================================================================
+
+terraform:plan:prod:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: infrastructure
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/prod
+    - terraform init
+    - terraform plan -var="gcp_project_id=$GCP_PROJECT_ID" -var="mysql_password=$DB_PROD_PASSWORD" -out=tfplan
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/infra/prod/tfplan
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+
+terraform:apply:prod:
+  image: samuelfaj/docker-node-terraform-aws:latest
+  stage: deploy
+  script:
+    - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+    - cd ${CI_PROJECT_DIR}/infra/prod
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  dependencies:
+    - terraform:plan:prod
+  environment:
+    name: production
+    url: https://vibework.app
+  rules:
+    - if: $CI_COMMIT_BRANCH == "production"
+  needs:
+    - terraform:plan:prod
+
+# =============================================================================
+# Destroy Jobs (Manual - Commented Out)
+# =============================================================================
+
+# terraform:destroy:dev:
+#   image: samuelfaj/docker-node-terraform-aws:latest
+#   stage: deploy
+#   script:
+#     - echo $GCP_SERVICE_KEY > gcloud-service-key.json
+#     - gcloud auth activate-service-account --key-file gcloud-service-key.json
+#     - gcloud config set project $GCP_PROJECT_ID
+#     - export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/gcloud-service-key.json"
+#     - cd ${CI_PROJECT_DIR}/infra/dev
+#     - terraform init
+#     - terraform destroy -var="gcp_project_id=$GCP_PROJECT_ID" -var="mysql_password=$DB_PASSWORD" -auto-approve
+#   environment:
+#     name: development
+#     action: stop
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#       when: manual
+#   allow_failure: true

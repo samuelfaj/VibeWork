@@ -16,7 +16,9 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "bunx drizzle-kit generate",
     "db:migrate": "bunx drizzle-kit migrate",
-    "db:push": "bunx drizzle-kit push"
+    "db:push": "bunx drizzle-kit push",
+    "seed": "bun run seeders/index.ts",
+    "seed:clean-reseed": "bun run seeders/clean-and-reseed.ts"
   },
   "dependencies": {
     "@vibe-code/contract": "workspace:*",

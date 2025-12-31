@@ -1,0 +1,15 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '$_IMAGE_TAG'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '.'
+
+images:
+  - '$_IMAGE_TAG'
+
+substitutions:
+  _IMAGE_TAG: 'us-central1-docker.pkg.dev/PROJECT_ID/vibe/backend:latest'

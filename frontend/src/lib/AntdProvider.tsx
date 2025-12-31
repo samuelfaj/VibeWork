@@ -1,12 +1,14 @@
 import { ConfigProvider } from 'antd'
 import type { Locale } from 'antd/es/locale'
 import enUS from 'antd/locale/en_US'
+import esES from 'antd/locale/es_ES'
 import ptBR from 'antd/locale/pt_BR'
 import { useTranslation } from 'react-i18next'
 
 const localeMap: Record<string, Locale> = {
   en: enUS,
   'pt-BR': ptBR,
+  es: esES,
 }
 
 interface AntdProviderProps {
