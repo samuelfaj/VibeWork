@@ -1,7 +1,14 @@
 # VibeWork
 
+![VibeWork](https://github.com/samuelfaj/VibeWork/blob/main/logo.png?raw=true)
+
 Modular monolith (Bun + ElysiaJS) and feature-based React SPA.  
 One product, one deploy, built for small teams and AI coding agents.
+
+![Bun](https://img.shields.io/badge/Bun-1.2.8%2B-orange)
+![React](https://img.shields.io/badge/React-18.2-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 | Language               | Docs                                         |
 | ---------------------- | -------------------------------------------- |
