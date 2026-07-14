@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { authRequest } from '../../lib/authClient'
+import type { UserResponse } from '@vibe-code/contract'
+import { api, unwrapEden } from '../../lib/api'
+import { authClient } from '../../lib/authClient'
+import { AppError, toAppError } from '../../lib/errors'
 
 interface AuthCredentials {
   email: string
@@ -7,42 +10,29 @@ interface AuthCredentials {
   name?: string
 }
 
-interface User {
-  id: string
-  email: string
-  name: string
-  emailVerified: boolean
-  image: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-interface AuthResponse {
-  token: string
-  user: User
-}
-
-interface SessionResponse {
-  user: User | null
-}
-
+/**
+ * Auth domain hooks.
+ * Better-Auth = session transport; profile = Eden GET /users/me.
+ */
 export function useSignup() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> => {
+    mutationFn: async (credentials: AuthCredentials) => {
       const namePart = credentials.email.split('@')[0]
-      return authRequest<AuthResponse>('/api/auth/sign-up/email', {
-        method: 'POST',
-        body: {
-          email: credentials.email,
-          password: credentials.password,
-          name: credentials.name ?? namePart,
-        },
+      const result = await authClient.signUp.email({
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.name ?? namePart ?? 'User',
       })
+      if (result.error) {
+        throw new AppError(result.error.message ?? 'Signup failed', 'SIGNUP_FAILED')
+      }
+      return result.data
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      void queryClient.invalidateQueries({ queryKey: ['session'] })
     },
   })
 }
@@ -51,27 +41,45 @@ export function useLogin() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (credentials: AuthCredentials): Promise<AuthResponse> =>
-      authRequest<AuthResponse>('/api/auth/sign-in/email', {
-        method: 'POST',
-        body: {
-          email: credentials.email,
-          password: credentials.password,
-        },
-      }),
+    mutationFn: async (credentials: AuthCredentials) => {
+      const result = await authClient.signIn.email({
+        email: credentials.email,
+        password: credentials.password,
+      })
+      if (result.error) {
+        throw new AppError(result.error.message ?? 'Login failed', 'LOGIN_FAILED')
+      }
+      return result.data
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      void queryClient.invalidateQueries({ queryKey: ['session'] })
+    },
+  })
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const result = await authClient.signOut()
+      if (result.error) {
+        throw toAppError(result.error, 'Logout failed')
+      }
+    },
+    onSuccess: () => {
+      queryClient.clear()
     },
   })
 }
 
 export function useCurrentUser() {
-  return useQuery<User | null>({
+  return useQuery({
     queryKey: ['currentUser'],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserResponse | null> => {
       try {
-        const data = await authRequest<SessionResponse>('/api/auth/get-session')
-        return data.user ?? null
+        return await unwrapEden(api.users.me.get())
       } catch {
         return null
       }

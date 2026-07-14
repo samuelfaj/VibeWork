@@ -32,7 +32,8 @@ describe('Health Routes', () => {
       const response = await createApp().handle(new Request('http://localhost/healthz'))
       expect(response.status).toBe(200)
       const body = await response.json()
-      expect(body).toEqual({ status: 'ok' })
+      expect(body.status).toBe('ok')
+      expect(typeof body.mode).toBe('string')
     })
   })
 

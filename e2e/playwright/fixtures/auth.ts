@@ -1,18 +1,16 @@
 import type { Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 
 export interface TestUser {
   email: string
   password: string
-  name?: string
+  name: string
 }
 
-// Generate unique test user with timestamp-based email
+/** Unique user for isolation between tests. */
 export function generateTestUser(): TestUser {
   const timestamp = Date.now()
-  const RADIX = 36
-  const SLICE_START = 2
-  const SLICE_END = 8
-  const random = Math.random().toString(RADIX).slice(SLICE_START, SLICE_END)
+  const random = Math.random().toString(36).slice(2, 8)
   return {
     email: `test-${timestamp}-${random}@e2e.local`,
     password: 'TestPassword123!',
@@ -20,60 +18,31 @@ export function generateTestUser(): TestUser {
   }
 }
 
-// Sign up new user through UI (navigates to root, fills signup form)
+/** GOLDEN PATH — signup via /signup, lands on /notifications. */
 export async function signUp(page: Page, user: TestUser): Promise<void> {
-  await page.goto('/')
+  await page.goto('/signup')
+  await expect(page.getByTestId('signup-email')).toBeVisible()
 
-  // Check if we're on login form and need to switch to signup
-  const signupHeading = page.locator('h2').filter({ hasText: /sign\s*up/i })
-  if (!(await signupHeading.isVisible())) {
-    // Click the switch to signup button
-    const switchButton = page.getByRole('button', { name: /sign\s*up/i })
-    if (await switchButton.isVisible()) {
-      await switchButton.click()
-    }
-  }
-
-  // Fill signup form using IDs
-  await page.locator('#signup-email').fill(user.email)
-  await page.locator('#signup-password').fill(user.password)
-  await page.locator('#signup-confirm-password').fill(user.password)
-
-  // Submit the form
-  await page.locator('form button[type="submit"]').click()
+  await page.getByTestId('signup-name').fill(user.name)
+  await page.getByTestId('signup-email').fill(user.email)
+  await page.getByTestId('signup-password').fill(user.password)
+  await page.getByTestId('signup-confirm-password').fill(user.password)
+  await page.getByTestId('signup-submit').click()
 }
 
-/**
- * Sign in an existing user through the UI
- */
+/** GOLDEN PATH — login via /login. */
 export async function signIn(page: Page, user: TestUser): Promise<void> {
-  await page.goto('/')
+  await page.goto('/login')
+  await expect(page.getByTestId('login-email')).toBeVisible()
 
-  // Check if we're on signup form and need to switch to login
-  const loginHeading = page.locator('h2').filter({ hasText: /log\s*in/i })
-  if (!(await loginHeading.isVisible())) {
-    // Click the switch to login button
-    const switchButton = page.getByRole('button', { name: /log\s*in/i })
-    if (await switchButton.isVisible()) {
-      await switchButton.click()
-    }
-  }
-
-  // Fill login form using IDs
-  await page.locator('#login-email').fill(user.email)
-  await page.locator('#login-password').fill(user.password)
-
-  // Submit the form
-  await page.locator('form button[type="submit"]').click()
+  await page.getByTestId('login-email').fill(user.email)
+  await page.getByTestId('login-password').fill(user.password)
+  await page.getByTestId('login-submit').click()
 }
 
-/**
- * Sign out the current user
- */
+/** Clear browser session (cookies + storage). */
 export async function signOut(page: Page): Promise<void> {
-  // Clear cookies to sign out (main session mechanism)
   await page.context().clearCookies()
-  // Only clear storage if we're on a valid page (not about:blank)
   try {
     const url = page.url()
     if (url && !url.startsWith('about:')) {
@@ -83,6 +52,14 @@ export async function signOut(page: Page): Promise<void> {
       })
     }
   } catch {
-    // Ignore storage errors - cookies are cleared, session will be invalidated
+    // cookies cleared is enough for session invalidation
   }
+}
+
+/** Wait until authenticated shell is visible (notifications or logout). */
+export async function expectAuthenticated(page: Page): Promise<void> {
+  await expect(page).toHaveURL(/\/(notifications)?$|\/notifications/)
+  await expect(
+    page.getByTestId('notifications-page').or(page.getByTestId('logout-button'))
+  ).toBeVisible({ timeout: 15_000 })
 }

@@ -1,15 +1,20 @@
 // modules/pubsub/core/publishers.constants.ts
 import { t } from 'elysia'
 
+/**
+ * Outbound Pub/Sub topics owned by this monorepo.
+ * Only register topics that product modules actually publish.
+ */
 export const PUBLISHERS = {
-  SEND_WHATSAPP_MESSAGE: {
-    topic: 'send-whatsapp-message',
+  NOTIFICATION_CREATED: {
+    topic: 'notification-created',
     schema: t.Object({
-      countryPhone: t.String({ minLength: 1 }),
+      id: t.String({ minLength: 1 }),
+      userId: t.String({ minLength: 1 }),
+      type: t.Union([t.Literal('in-app'), t.Literal('email')]),
       message: t.String({ minLength: 1 }),
-      leadId: t.String({ minLength: 1 }),
-      step: t.String({ minLength: 1 }),
+      createdAt: t.String({ minLength: 1 }),
     }),
-    description: 'Send WhatsApp message to a lead',
+    description: 'Notification created event for email/async consumers',
   },
 }

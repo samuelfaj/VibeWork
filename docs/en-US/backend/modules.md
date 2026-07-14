@@ -20,7 +20,7 @@ backend/modules/
 │   ├── schema/
 │   │   └── user.schema.ts
 │   ├── index.ts
-│   └── CLAUDE.md
+│   └── AGENTS.md
 └── notifications/            # Notification system
     ├── routes/
     │   └── notification.routes.ts
@@ -31,7 +31,7 @@ backend/modules/
     │   ├── email.service.ts
     │   └── publisher.service.ts
     ├── index.ts
-    └── CLAUDE.md
+    └── AGENTS.md
 ```
 
 ## Users Module
@@ -176,7 +176,7 @@ Test files located in `modules/users/**/__tests__/`
 
 ### Detailed Documentation
 
-See `backend/modules/users/CLAUDE.md` for:
+See `AGENTS.md` for:
 
 - Complete schema definitions
 - Service interfaces
@@ -371,7 +371,7 @@ Test files in `modules/notifications/**/__tests__/`
 
 ### Detailed Documentation
 
-See `backend/modules/notifications/CLAUDE.md` for:
+See `AGENTS.md` for:
 
 - Complete Typegoose model definitions
 - Pub/Sub integration details
@@ -427,7 +427,7 @@ See `backend/modules/notifications/CLAUDE.md` for:
 1. **Isolation**: Module should be self-contained
 2. **Exports**: Use barrel exports (index.ts)
 3. **Testing**: 80% coverage minimum
-4. **Documentation**: CLAUDE.md in module root
+4. **Documentation**: AGENTS.md in module root
 5. **Independence**: Can be extracted to microservice
 6. **Interface Stability**: Stable internal APIs
 
@@ -504,8 +504,8 @@ Communication via Pub/Sub:
 
 ## Next Steps
 
-- **[Users Module Details](../backend/README.md#users-module)** - Read module CLAUDE.md
-- **[Notifications Module Details](../backend/README.md#notifications-module)** - Read module CLAUDE.md
+- **[Users Module Details](../backend/README.md#users-module)** - Read module AGENTS.md
+- **[Notifications Module Details](../backend/README.md#notifications-module)** - Read module AGENTS.md
 - **[API Reference](./api-reference.md)** - Explore endpoints
 - **[Database Guide](./database.md)** - Understand schemas
 - **[Testing Guide](./testing.md)** - Learn test patterns

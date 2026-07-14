@@ -41,7 +41,7 @@ This command uses Bun workspaces to install dependencies for:
 - `/frontend` package
 - `/shared/contract`
 - `/e2e/playwright`
-- `/e2e/stagehand`
+- `/e2e/playwright`
 
 ## Step 3: Configure Environment Variables
 
@@ -400,7 +400,7 @@ Once setup is complete:
 - Check the [Architecture Overview](./architecture.md) for system design
 - Review [Backend Setup](./backend/setup.md) for backend-specific configuration
 - Review [Frontend Setup](./frontend/setup.md) for frontend-specific setup
-- Check CLAUDE.md files in each package for detailed documentation
+- Check AGENTS.md files in each package for detailed documentation
 - Review test files for usage examples
 
 ---

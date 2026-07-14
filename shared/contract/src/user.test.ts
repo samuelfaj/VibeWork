@@ -1,6 +1,6 @@
 import { Value } from '@sinclair/typebox/value'
 import { describe, it, expect } from 'vitest'
-import { SignupSchema, LoginSchema, UserResponseSchema } from './user'
+import { SignupSchema, LoginSchema, UserResponseSchema, UserRoleSchema } from './user'
 
 describe('SignupSchema', () => {
   it('validates correct input', () => {
@@ -46,12 +46,29 @@ describe('LoginSchema', () => {
   })
 })
 
+describe('UserRoleSchema', () => {
+  it('accepts client, manager, admin', () => {
+    expect(Value.Check(UserRoleSchema, 'client')).toBe(true)
+    expect(Value.Check(UserRoleSchema, 'manager')).toBe(true)
+    expect(Value.Check(UserRoleSchema, 'admin')).toBe(true)
+  })
+
+  it('rejects unknown role', () => {
+    expect(Value.Check(UserRoleSchema, 'superuser')).toBe(false)
+  })
+})
+
 describe('UserResponseSchema', () => {
   it('validates complete user object', () => {
     const valid = {
       id: '123',
       email: 'test@example.com',
+      name: 'Test User',
+      role: 'client',
+      emailVerified: true,
+      image: null,
       createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     }
     expect(Value.Check(UserResponseSchema, valid)).toBe(true)
   })
@@ -59,7 +76,12 @@ describe('UserResponseSchema', () => {
   it('rejects missing id', () => {
     const invalid = {
       email: 'test@example.com',
+      name: 'Test User',
+      role: 'client',
+      emailVerified: true,
+      image: null,
       createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     }
     expect(Value.Check(UserResponseSchema, invalid)).toBe(false)
   })

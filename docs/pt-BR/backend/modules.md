@@ -20,7 +20,7 @@ backend/modules/
 │   ├── schema/
 │   │   └── user.schema.ts
 │   ├── index.ts
-│   └── CLAUDE.md
+│   └── AGENTS.md
 └── notifications/            # Sistema de notificação
     ├── routes/
     │   └── notification.routes.ts
@@ -31,7 +31,7 @@ backend/modules/
     │   ├── email.service.ts
     │   └── publisher.service.ts
     ├── index.ts
-    └── CLAUDE.md
+    └── AGENTS.md
 ```
 
 ## Módulo de Usuários
@@ -176,7 +176,7 @@ Arquivos de teste localizados em `modules/users/**/__tests__/`
 
 ### Documentação Detalhada
 
-Veja `backend/modules/users/CLAUDE.md` para:
+Veja `AGENTS.md` para:
 
 - Definições de schema completas
 - Interfaces de serviço
@@ -371,7 +371,7 @@ Arquivos de teste em `modules/notifications/**/__tests__/`
 
 ### Documentação Detalhada
 
-Veja `backend/modules/notifications/CLAUDE.md` para:
+Veja `AGENTS.md` para:
 
 - Definições de modelo Typegoose completas
 - Detalhes de integração Pub/Sub
@@ -427,7 +427,7 @@ Veja `backend/modules/notifications/CLAUDE.md` para:
 1. **Isolamento**: Módulo deve ser auto-contido
 2. **Exports**: Use barrel exports (index.ts)
 3. **Testing**: 80% de cobertura mínimo
-4. **Documentation**: CLAUDE.md na raiz do módulo
+4. **Documentation**: AGENTS.md na raiz do módulo
 5. **Independence**: Pode ser extraído para microserviço
 6. **Interface Stability**: APIs internas estáveis
 
@@ -504,8 +504,8 @@ Comunicação via Pub/Sub:
 
 ## Próximos Passos
 
-- **[Detalhes do Módulo de Usuários](../backend/README.md#users-module)** - Leia CLAUDE.md do módulo
-- **[Detalhes do Módulo de Notificações](../backend/README.md#notifications-module)** - Leia CLAUDE.md do módulo
+- **[Detalhes do Módulo de Usuários](../backend/README.md#users-module)** - Leia AGENTS.md do módulo
+- **[Detalhes do Módulo de Notificações](../backend/README.md#notifications-module)** - Leia AGENTS.md do módulo
 - **[Referência de API](./api-reference.md)** - Explore endpoints
 - **[Guia de Banco de Dados](./database.md)** - Entenda schemas
 - **[Guia de Testes](./testing.md)** - Aprenda padrões de teste

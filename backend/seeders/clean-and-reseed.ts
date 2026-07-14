@@ -82,6 +82,7 @@ async function cleanAndReseed() {
         email: userData.email,
         name: userData.name,
         emailVerified: userData.emailVerified,
+        role: userData.role,
         image: userData.image,
       })
 

@@ -2,9 +2,11 @@
   "auth": {
     "login": "Iniciar sesión",
     "signup": "Registrarse",
+    "logout": "Cerrar sesión",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
+    "name": "Nombre",
     "submit": "Enviar",
     "noAccount": "¿No tienes cuenta?",
     "hasAccount": "¿Ya tienes cuenta?",
@@ -13,6 +15,7 @@
       "emailInvalid": "Por favor, ingresa un correo electrónico válido",
       "passwordRequired": "Por favor, ingresa tu contraseña",
       "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+      "nameRequired": "Por favor, ingresa tu nombre",
       "invalidEmail": "Formato de correo electrónico inválido",
       "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
       "passwordMismatch": "Las contraseñas no coinciden",
@@ -20,8 +23,20 @@
       "signupFailed": "Error en el registro. Por favor, intenta de nuevo."
     }
   },
+  "notifications": {
+    "title": "Notificaciones",
+    "subtitle": "Tus mensajes en la app",
+    "empty": "Aún no hay notificaciones",
+    "loadError": "No se pudieron cargar las notificaciones",
+    "createError": "No se pudo crear la notificación",
+    "create": "Crear",
+    "messagePlaceholder": "Escribe una notificación…",
+    "markRead": "Marcar como leída",
+    "read": "Leída"
+  },
   "common": {
     "loading": "Cargando...",
-    "error": "Ocurrió un error"
+    "error": "Ocurrió un error",
+    "retry": "Reintentar"
   }
 }

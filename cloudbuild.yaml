@@ -1,5 +1,27 @@
 steps:
+  # Install monorepo deps and run quality gates before image build
+  - name: 'oven/bun:1'
+    id: 'quality-gates'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -euo pipefail
+        bun install --frozen-lockfile || bun install
+        bun run banlist
+        bun run --filter @vibe-code/contract build
+        bun run --filter @vibework/backend build:types
+        bun run --filter @vibe-code/contract typecheck
+        bun run --filter @vibework/backend typecheck
+        bun run --filter @vibe/frontend typecheck
+        bun run --filter @vibe-code/contract test
+        bun run --filter @vibework/backend test
+        bun run --filter @vibe-code/contract build
+        bun run --filter @vibework/backend build
+        bun run --filter @vibe/frontend build
+
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-build'
     args:
       - 'build'
       - '-t'
@@ -7,6 +29,7 @@ steps:
       - '-f'
       - 'backend/Dockerfile'
       - '.'
+    waitFor: ['quality-gates']
 
 images:
   - '$_IMAGE_TAG'

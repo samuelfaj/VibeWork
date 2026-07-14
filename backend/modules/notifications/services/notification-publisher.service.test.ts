@@ -11,6 +11,15 @@ vi.mock('../../../src/infra/pubsub', () => ({
   },
 }))
 
+vi.mock('../../../src/infra/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}))
+
 describe('NotificationPublisherService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -60,24 +69,6 @@ describe('NotificationPublisherService', () => {
         message: 'Another notification',
         createdAt: '2024-06-15T12:30:00.000Z',
       })
-    })
-  })
-
-  describe('backward compatibility', () => {
-    it('publishNotificationCreated should work', async () => {
-      const { publishNotificationCreated } = await import('./notification-publisher.service')
-
-      const notification = {
-        _id: { toString: () => 'notif-123' },
-        userId: 'user-456',
-        type: 'email' as const,
-        message: 'Test notification',
-        createdAt: new Date('2024-01-01T00:00:00Z'),
-      }
-
-      const result = await publishNotificationCreated(notification)
-
-      expect(result).toBe('message-id-123')
     })
   })
 })

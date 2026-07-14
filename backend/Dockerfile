@@ -3,15 +3,14 @@ FROM oven/bun:1 AS builder
 WORKDIR /app
 
 # Copy all workspace files needed for backend
-COPY package.json bun.lockb* tsconfig.json ./
+COPY package.json bun.lockb* bun.lock* tsconfig.json ./
 COPY backend/package.json ./backend/
 COPY shared/contract/package.json ./shared/contract/
 
 # Create stub package.json for workspaces not needed during backend build
-RUN mkdir -p frontend e2e/playwright e2e/stagehand && \
+RUN mkdir -p frontend e2e/playwright && \
     echo '{"name":"@vibe/frontend","version":"0.0.0","private":true}' > frontend/package.json && \
-    echo '{"name":"@vibe/e2e-playwright","version":"0.0.0","private":true}' > e2e/playwright/package.json && \
-    echo '{"name":"@vibe/e2e-stagehand","version":"0.0.0","private":true}' > e2e/stagehand/package.json
+    echo '{"name":"@vibe/e2e-playwright","version":"0.0.0","private":true}' > e2e/playwright/package.json
 
 # Install all dependencies
 RUN bun install || true
@@ -38,6 +37,8 @@ WORKDIR /app
 # Copy source code FIRST (before node_modules install)
 COPY --from=builder /app/backend/src ./src
 COPY --from=builder /app/backend/modules ./modules
+COPY --from=builder /app/backend/migrations ./migrations
+COPY --from=builder /app/backend/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/backend/tsconfig.json ./
 COPY --from=builder /app/backend/.env ./
 
@@ -56,5 +57,9 @@ USER bun
 
 EXPOSE 3000
 
-# Run TypeScript source directly - native modules load correctly
-CMD ["bun", "run", "src/index.ts"]
+# Default API mode; set PROCESS_MODE=worker for pull subscribers
+ENV PROCESS_MODE=api
+ENV RUN_MIGRATIONS=true
+
+# Validate env → migrate → start
+CMD ["bun", "run", "src/entrypoint.ts"]

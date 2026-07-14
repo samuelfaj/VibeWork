@@ -1,5 +1,9 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 
+/**
+ * Email sending port.
+ * Stateful adapters (SES client) use **instance classes + factory** — not static services.
+ */
 export interface EmailService {
   sendEmail(to: string, subject: string, body: string): Promise<void>
 }
@@ -34,6 +38,7 @@ export class MockEmailService implements EmailService {
   }
 }
 
+/** Factory for process/env-selected email adapter. */
 export function createEmailService(useMock?: boolean): EmailService {
   return (useMock ?? process.env.EMAIL_SERVICE_MOCK === 'true')
     ? new MockEmailService()

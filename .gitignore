@@ -53,3 +53,5 @@ coverage/
 .claudiomiro
 .terraform
 .terraform.lock.hcl
+# emitted App types for FE
+backend/dist-types/

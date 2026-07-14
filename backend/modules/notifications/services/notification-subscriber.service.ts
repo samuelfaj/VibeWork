@@ -1,4 +1,6 @@
 import type { Subscription, Message } from '@google-cloud/pubsub'
+import { claimIdempotencyKey } from '../../../src/infra/idempotency'
+import { logger } from '../../../src/infra/logger'
 import { pubsub } from '../../../src/infra/pubsub'
 import { createEmailService, type EmailService } from './email.service'
 
@@ -12,84 +14,102 @@ interface NotificationPayload {
   createdAt: string
 }
 
-export class NotificationSubscriberService {
-  private static subscription: Subscription | null = null
-  private static emailService: EmailService | null = null
+/** Pure helper — no instance state. */
+export function isValidNotificationPayload(payload: unknown): payload is NotificationPayload {
+  if (!payload || typeof payload !== 'object') return false
+  const p = payload as Record<string, unknown>
+  return (
+    typeof p.id === 'string' &&
+    typeof p.userId === 'string' &&
+    (p.type === 'in-app' || p.type === 'email') &&
+    typeof p.message === 'string' &&
+    typeof p.createdAt === 'string'
+  )
+}
 
-  static isValidPayload(payload: unknown): payload is NotificationPayload {
-    if (!payload || typeof payload !== 'object') return false
-    const p = payload as Record<string, unknown>
-    return (
-      typeof p.id === 'string' &&
-      typeof p.userId === 'string' &&
-      (p.type === 'in-app' || p.type === 'email') &&
-      typeof p.message === 'string' &&
-      typeof p.createdAt === 'string'
-    )
+/**
+ * Process-lifecycle worker (pull subscriber).
+ * Holds connection state → **instance class + process singleton**, not static class.
+ *
+ * Use `notificationSubscriber` or `NotificationSubscriberService` facade.
+ * Do NOT add static methods on this class.
+ */
+export class NotificationSubscriber {
+  private subscription: Subscription | null = null
+  private emailService: EmailService | null = null
+
+  isValidPayload(payload: unknown): payload is NotificationPayload {
+    return isValidNotificationPayload(payload)
   }
 
-  static async handleMessage(message: Message): Promise<void> {
+  async handleMessage(message: Message): Promise<void> {
     const correlationId = message.id
     try {
+      const claimed = await claimIdempotencyKey(`notification-sub:${correlationId}`)
+      if (!claimed) {
+        logger.info('duplicate notification message skipped', { requestId: correlationId })
+        message.ack()
+        return
+      }
+
       const payload: unknown = JSON.parse(message.data.toString())
 
       if (!this.isValidPayload(payload)) {
-        console.error(
-          `[NotificationSubscriberService] Invalid payload, acking to prevent retry: ${correlationId}`
-        )
+        logger.error('invalid notification payload, acking', { requestId: correlationId })
         message.ack()
         return
       }
 
       if (payload.type === 'email') {
         if (!this.emailService) {
-          console.error(
-            `[NotificationSubscriberService] Email service not initialized: ${correlationId}`
-          )
+          logger.error('email service not initialized', { requestId: correlationId })
           message.nack()
           return
         }
-        console.log(
-          `[NotificationSubscriberService] Processing email notification: ${correlationId}`
-        )
+        logger.info('processing email notification', {
+          requestId: correlationId,
+          userId: payload.userId,
+        })
         await this.emailService.sendEmail(payload.userId, 'New Notification', payload.message)
       } else {
-        console.log(
-          `[NotificationSubscriberService] Ignoring in-app notification: ${correlationId}`
-        )
+        logger.info('ignoring in-app notification on pull worker', { requestId: correlationId })
       }
 
       message.ack()
-      console.log(`[NotificationSubscriberService] Message acknowledged: ${correlationId}`)
+      logger.info('notification message acknowledged', { requestId: correlationId })
     } catch (error) {
-      console.error(
-        `[NotificationSubscriberService] Error processing message ${correlationId}:`,
-        error
-      )
+      logger.error('error processing notification message', {
+        requestId: correlationId,
+        error: error instanceof Error ? error.message : String(error),
+      })
       message.nack()
     }
   }
 
-  static async start(): Promise<void> {
+  async start(): Promise<void> {
     if (this.subscription) {
-      console.log('[NotificationSubscriberService] Subscriber already running')
+      logger.info('notification subscriber already running')
       return
     }
 
     this.emailService = createEmailService()
     this.subscription = pubsub.subscription(SUBSCRIPTION_NAME)
 
-    this.subscription.on('message', this.handleMessage.bind(this))
+    this.subscription.on('message', (message) => {
+      void this.handleMessage(message)
+    })
     this.subscription.on('error', (error) => {
-      console.error('[NotificationSubscriberService] Subscription error:', error)
+      logger.error('notification subscription error', {
+        error: error instanceof Error ? error.message : String(error),
+      })
     })
 
-    console.log(`[NotificationSubscriberService] Listening on ${SUBSCRIPTION_NAME}`)
+    logger.info('notification subscriber listening', { action: SUBSCRIPTION_NAME })
   }
 
-  static async stop(): Promise<void> {
+  async stop(): Promise<void> {
     if (!this.subscription) {
-      console.log('[NotificationSubscriberService] Subscriber not running')
+      logger.info('notification subscriber not running')
       return
     }
 
@@ -97,35 +117,29 @@ export class NotificationSubscriberService {
     await this.subscription.close()
     this.subscription = null
     this.emailService = null
-    console.log('[NotificationSubscriberService] Subscriber stopped')
+    logger.info('notification subscriber stopped')
   }
 }
 
-// Backward compatibility exports
-/**
- * @deprecated Use NotificationSubscriberService.handleMessage() instead
- */
-export async function handleMessage(message: Message): Promise<void> {
-  return NotificationSubscriberService.handleMessage(message)
-}
+/** Process singleton — one pull subscriber per worker process. */
+export const notificationSubscriber = new NotificationSubscriber()
 
 /**
- * @deprecated Use NotificationSubscriberService.isValidPayload() instead
+ * Facade module object over the process singleton.
+ * Prefer this from product code; boot may use start/stop helpers below.
  */
-export function isValidPayload(payload: unknown): payload is NotificationPayload {
-  return NotificationSubscriberService.isValidPayload(payload)
+export const NotificationSubscriberService = {
+  isValidPayload: isValidNotificationPayload,
+  handleMessage: (message: Message) => notificationSubscriber.handleMessage(message),
+  start: () => notificationSubscriber.start(),
+  stop: () => notificationSubscriber.stop(),
 }
 
-/**
- * @deprecated Use NotificationSubscriberService.start() instead
- */
+/** Boot helpers used by `backend/src/index.ts` (PROCESS_MODE=worker|all). */
 export async function startNotificationSubscriber(): Promise<void> {
   return NotificationSubscriberService.start()
 }
 
-/**
- * @deprecated Use NotificationSubscriberService.stop() instead
- */
 export async function stopNotificationSubscriber(): Promise<void> {
   return NotificationSubscriberService.stop()
 }

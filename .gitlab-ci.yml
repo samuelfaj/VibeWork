@@ -90,8 +90,14 @@ test:unit:
     - apk add --no-cache curl bash zstd
     - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
     - bun install
+    - bun run --filter @vibe-code/contract build
   script:
-    - bun run test
+    - bun run banlist
+    - bun run --filter @vibe-code/contract build
+    - bun run --filter @vibework/backend build:types
+    - bun run --filter @vibe-code/contract test
+    - bun run --filter @vibework/backend test
+    - bun run typecheck
   after_script:
     - echo "Creating cache archive..." && tar --zstd -cf .cache-archive.tar.zst node_modules/ backend/node_modules/ shared/*/node_modules/ frontend/node_modules/ 2>/dev/null || true
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
@@ -108,22 +114,50 @@ test:unit:
     - if: $CI_COMMIT_BRANCH == "staging"
     - if: $CI_COMMIT_BRANCH == "production"
 
-# test:integration:
-#   stage: test
-#   <<: *bun-cache
-#   image: docker:24-cli
-#   services:
-#     - name: docker:24-dind
-#       alias: docker
-#       command: ['--tls=false']
-#   variables:
-#     DOCKER_HOST: tcp://docker:2375
-#     DOCKER_TLS_CERTDIR: ''
-#   before_script:
-#     - apk add --no-cache curl bash nodejs npm zstd
-#     - if [ -f .cache-archive.tar.zst ]; then echo "Extracting cache..." && tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
-#     - echo "Waiting for Docker daemon..."
-#     - for i in $(seq 1 30); do docker info >/dev/null 2>&1 && break || sleep 1; done
+# Canonical E2E = Playwright only
+test:e2e:playwright:
+  stage: e2e
+  <<: *bun-cache
+  before_script:
+    - apk add --no-cache bash zstd chromium nss freetype harfbuzz ca-certificates ttf-freefont
+    - if [ -f .cache-archive.tar.zst ]; then tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - bun install
+    - bun run --filter @vibe-code/contract build
+    - bunx playwright install chromium --with-deps || true
+  script:
+    - bun run test:e2e:playwright
+  rules:
+    - if: $RUN_E2E == "true"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+
+# Integration (Docker + testcontainers). Optional; enable with RUN_INTEGRATION=true
+test:integration:
+  stage: test
+  <<: *bun-cache
+  allow_failure: true
+  image: docker:24-cli
+  services:
+    - name: docker:24-dind
+      alias: docker
+      command: ['--tls=false']
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ''
+  before_script:
+    - apk add --no-cache bash curl zstd
+    - if [ -f .cache-archive.tar.zst ]; then tar --zstd -xf .cache-archive.tar.zst && rm -f .cache-archive.tar.zst; fi
+    - curl -fsSL https://bun.sh/install | bash
+    - export PATH="$HOME/.bun/bin:$PATH"
+    - bun install
+    - bun run --filter @vibe-code/contract build
+  script:
+    - bun run test:integration
+  rules:
+    - if: $RUN_INTEGRATION == "true"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 #     - docker info
 #     - curl -fsSL https://bun.sh/install | bash
 #     - export PATH="$BUN_INSTALL/bin:$PATH"

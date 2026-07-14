@@ -6,6 +6,16 @@ import { HandlerService } from '../services/handler.service'
 import { PayloadDecoderService, PayloadDecodingError } from '../services/payload-decoder.service'
 import { PushController } from './push.controller'
 
+vi.mock('../../../../src/infra/idempotency', () => ({
+  claimIdempotencyKey: vi.fn().mockResolvedValue(true),
+}))
+
+vi.mock('../services/push-auth.service', () => ({
+  PushAuthService: {
+    isAuthorized: vi.fn().mockReturnValue(true),
+  },
+}))
+
 describe('PushController', () => {
   const mockPushMessage: PubSubPushMessage = {
     message: {

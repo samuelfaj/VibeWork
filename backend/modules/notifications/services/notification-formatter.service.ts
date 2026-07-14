@@ -9,6 +9,7 @@ interface NotificationDocument {
   createdAt: Date
 }
 
+/** Stateless mapper (module object). */
 export const NotificationFormatterService = {
   formatResponse(doc: NotificationDocument): Notification {
     return {
@@ -20,11 +21,4 @@ export const NotificationFormatterService = {
       createdAt: doc.createdAt.toISOString(),
     }
   },
-}
-
-/**
- * @deprecated Use NotificationFormatterService.formatResponse() instead
- */
-export function formatNotificationResponse(doc: NotificationDocument): Notification {
-  return NotificationFormatterService.formatResponse(doc)
 }

@@ -1,3 +1,4 @@
+import { logger } from '../../../src/infra/logger'
 import { pubsub } from '../../../src/infra/pubsub'
 
 const TOPIC_NAME = 'notification-created'
@@ -10,10 +11,8 @@ interface NotificationDocument {
   createdAt: Date
 }
 
+/** Stateless domain publisher (module object). */
 export const NotificationPublisherService = {
-  /**
-   * Publishes a notification created event to Pub/Sub
-   */
   async publishCreated(notification: NotificationDocument): Promise<string> {
     const topic = pubsub.topic(TOPIC_NAME)
     const data = Buffer.from(
@@ -26,21 +25,11 @@ export const NotificationPublisherService = {
       })
     )
     const messageId = await topic.publishMessage({ data })
-    console.log(`[NotificationPublisherService] Published message ${messageId} to ${TOPIC_NAME}`)
+    logger.info('published notification-created', {
+      action: 'NotificationPublisherService.publishCreated',
+      topic: TOPIC_NAME,
+      messageId,
+    })
     return messageId
   },
-}
-
-/**
- * @deprecated Use NotificationPublisherService class instead
- */
-export const NotificationPublisher = NotificationPublisherService
-
-/**
- * @deprecated Use NotificationPublisherService.publishCreated() instead
- */
-export async function publishNotificationCreated(
-  notification: NotificationDocument
-): Promise<string> {
-  return NotificationPublisherService.publishCreated(notification)
 }

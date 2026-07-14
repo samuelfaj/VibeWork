@@ -15,6 +15,19 @@ vi.mock('../../../src/infra/pubsub', () => ({
   },
 }))
 
+vi.mock('../../../src/infra/idempotency', () => ({
+  claimIdempotencyKey: vi.fn().mockResolvedValue(true),
+}))
+
+vi.mock('../../../src/infra/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}))
+
 const mockSendEmail = vi.fn().mockResolvedValue(undefined)
 vi.mock('./email.service', () => ({
   createEmailService: () => ({
@@ -199,7 +212,7 @@ describe('NotificationSubscriberService', () => {
     })
   })
 
-  describe('start', () => {
+  describe('start / stop', () => {
     it('should start subscriber and listen on subscription', async () => {
       const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
@@ -211,9 +224,7 @@ describe('NotificationSubscriberService', () => {
 
       await NotificationSubscriberService.stop()
     })
-  })
 
-  describe('stop', () => {
     it('should stop subscriber and cleanup', async () => {
       const { NotificationSubscriberService } = await import('./notification-subscriber.service')
 
@@ -223,25 +234,14 @@ describe('NotificationSubscriberService', () => {
       expect(mockRemoveAllListeners).toHaveBeenCalled()
       expect(mockClose).toHaveBeenCalled()
     })
-  })
 
-  describe('backward compatibility', () => {
-    it('deprecated functions should work', async () => {
-      const { isValidPayload, startNotificationSubscriber, stopNotificationSubscriber } =
+    it('boot helpers startNotificationSubscriber / stopNotificationSubscriber work', async () => {
+      const { startNotificationSubscriber, stopNotificationSubscriber } =
         await import('./notification-subscriber.service')
-
-      expect(
-        isValidPayload({
-          id: 'test',
-          userId: 'user',
-          type: 'email',
-          message: 'msg',
-          createdAt: '2024-01-01',
-        })
-      ).toBe(true)
 
       await startNotificationSubscriber()
       await stopNotificationSubscriber()
+      expect(mockSubscription).toHaveBeenCalled()
     })
   })
 })

@@ -3,8 +3,12 @@
   "globalDependencies": [".env*", "tsconfig.json"],
   "tasks": {
     "build": {
+      "dependsOn": ["^build", "build:types"],
+      "outputs": ["dist/**", "dist-types/**"]
+    },
+    "build:types": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist-types/**"]
     },
     "test": {
       "cache": false
@@ -13,7 +17,7 @@
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build:types"],
       "outputs": []
     },
     "test:integration": {

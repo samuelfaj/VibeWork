@@ -291,7 +291,7 @@ Revisores verificam:
 
 ### Arquivos de Documentação
 
-- **CLAUDE.md**: Documentação específica do projeto
+- **AGENTS.md**: Documentação específica do projeto
 - **README.md**: Guia de começar
 - **docs/**: Guias abrangentes
 - **Comentários inline**: Apenas lógica complexa

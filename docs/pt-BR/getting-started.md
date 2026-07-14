@@ -41,7 +41,7 @@ Este comando instala dependências para todos os workspaces:
 - `/frontend`
 - `/shared/contract`
 - `/e2e/playwright`
-- `/e2e/stagehand`
+- `/e2e/playwright`
 
 ## Passo 3: Configurar Variáveis de Ambiente
 
@@ -387,7 +387,7 @@ Uma vez que a configuração estiver completa:
 - Confira o [Guia de Arquitetura](./architecture.md) para design do sistema
 - Revise [Configuração do Backend](./backend/setup.md) para configuração específica
 - Revise [Configuração do Frontend](./frontend/setup.md) para setup específico
-- Verifique arquivos CLAUDE.md em cada pacote para documentação detalhada
+- Verifique arquivos AGENTS.md em cada pacote para documentação detalhada
 - Revise testes para exemplos de uso
 
 ---

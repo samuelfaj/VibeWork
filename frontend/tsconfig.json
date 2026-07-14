@@ -13,7 +13,8 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@vibework/backend/app": ["../backend/dist-types/src/app.d.ts"]
     }
   },
   "include": ["src"],

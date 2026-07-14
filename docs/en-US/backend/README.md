@@ -47,12 +47,12 @@ backend/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   ├── schema/
-│   │   └── CLAUDE.md
+│   │   └── AGENTS.md
 │   └── notifications/        # Notifications system
 │       ├── routes/
 │       ├── services/
 │       ├── models/
-│       └── CLAUDE.md
+│       └── AGENTS.md
 ├── tests/                    # Test utilities
 ├── dist/                     # Build output
 ├── package.json
@@ -61,7 +61,7 @@ backend/
 ├── vitest.integration.config.ts
 ├── drizzle.config.ts         # ORM config
 ├── Dockerfile                # Container config
-└── CLAUDE.md                 # Original documentation
+└── AGENTS.md                 # Original documentation
 ```
 
 ## Technology Stack
@@ -435,10 +435,10 @@ See [Infrastructure Guide](../infrastructure.md) and [Deployment Guide](../deplo
 
 ## Documentation References
 
-- **Original**: `backend/CLAUDE.md`
+- **Original**: `AGENTS.md`
 - **Modules**:
-  - `backend/modules/users/CLAUDE.md` - Authentication
-  - `backend/modules/notifications/CLAUDE.md` - Notifications
+  - `AGENTS.md` - Authentication
+  - `AGENTS.md` - Notifications
 
 ## Getting Help
 
@@ -446,7 +446,7 @@ See [Infrastructure Guide](../infrastructure.md) and [Deployment Guide](../deplo
 - [API Reference](./api-reference.md) - Endpoint details
 - [Testing Guide](./testing.md) - Test examples
 - [Architecture Overview](../architecture.md) - System design
-- CLAUDE.md files in each module for detailed documentation
+- AGENTS.md files in each module for detailed documentation
 
 ---
 

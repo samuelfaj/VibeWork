@@ -101,6 +101,7 @@ async function seed() {
           email: userData.email,
           name: userData.name,
           emailVerified: userData.emailVerified,
+          role: userData.role,
           image: userData.image,
         })
         console.log(`Created user: ${userData.email}`)

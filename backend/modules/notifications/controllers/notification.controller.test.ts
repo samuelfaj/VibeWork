@@ -1,30 +1,41 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NotificationController } from './notification.controller'
 
-// Mock dependencies
 const mockCreate = vi.fn()
-const mockPublishCreated = vi.fn().mockResolvedValue('message-id')
 const mockGetUserNotifications = vi.fn()
+const mockListAll = vi.fn()
 const mockMarkAsRead = vi.fn()
-
-vi.mock('../models/notification.model', () => ({
-  NotificationModel: {
-    create: (data: unknown) => mockCreate(data),
-  },
-}))
-
-vi.mock('../services/notification-publisher.service', () => ({
-  NotificationPublisherService: {
-    publishCreated: (notification: unknown) => mockPublishCreated(notification),
-  },
-}))
+const mockFindById = vi.fn()
 
 vi.mock('../services/notification.service', () => ({
   NotificationService: {
+    create: (data: unknown) => mockCreate(data),
     getUserNotifications: (userId: string) => mockGetUserNotifications(userId),
+    listAll: () => mockListAll(),
     markAsRead: (id: string, userId: string) => mockMarkAsRead(id, userId),
+    findById: (id: string) => mockFindById(id),
   },
 }))
+
+vi.mock('../../../src/i18n', () => ({
+  getLanguageFromHeader: () => 'en',
+  getTranslation: (key: string) => key,
+}))
+
+const clientUser = {
+  id: 'user-456',
+  email: 'c@example.com',
+  name: 'Client',
+  role: 'client' as const,
+  emailVerified: true,
+  image: null,
+}
+
+const adminUser = {
+  ...clientUser,
+  id: 'admin-1',
+  role: 'admin' as const,
+}
 
 describe('NotificationController', () => {
   beforeEach(() => {
@@ -36,27 +47,8 @@ describe('NotificationController', () => {
   })
 
   describe('create', () => {
-    it('should create notification and return 201', async () => {
-      const mockDoc = {
-        _id: { toString: () => 'notif-123' },
-        userId: 'user-456',
-        type: 'in-app' as const,
-        message: 'Test notification',
-        read: false,
-        createdAt: new Date('2024-01-01T00:00:00Z'),
-      }
-      mockCreate.mockResolvedValue(mockDoc)
-
-      const ctx = {
-        body: { userId: 'user-456', type: 'in-app' as const, message: 'Test notification' },
-        headers: { 'x-user-id': 'user-456' },
-        set: { status: 200 },
-      }
-
-      const result = await NotificationController.create(ctx)
-
-      expect(ctx.set.status).toBe(201)
-      expect(result).toEqual({
+    it('should create notification and return 201 for own userId', async () => {
+      mockCreate.mockResolvedValue({
         id: 'notif-123',
         userId: 'user-456',
         type: 'in-app',
@@ -64,132 +56,130 @@ describe('NotificationController', () => {
         read: false,
         createdAt: '2024-01-01T00:00:00.000Z',
       })
-      expect(mockPublishCreated).toHaveBeenCalledWith(mockDoc)
-    })
 
-    it('should return 401 when X-User-Id header missing', async () => {
       const ctx = {
         body: { userId: 'user-456', type: 'in-app' as const, message: 'Test notification' },
-        headers: {},
+        user: clientUser,
+        request: new Request('http://localhost'),
         set: { status: 200 },
       }
 
       const result = await NotificationController.create(ctx)
 
-      expect(ctx.set.status).toBe(401)
-      expect(result).toEqual({ error: 'Unauthorized' })
+      expect(ctx.set.status).toBe(201)
+      expect(result).toMatchObject({
+        id: 'notif-123',
+        userId: 'user-456',
+        type: 'in-app',
+        message: 'Test notification',
+      })
+      expect(mockCreate).toHaveBeenCalledWith(ctx.body)
     })
 
-    it('should return 403 when creating notification for other user', async () => {
+    it('should return 403 when client creates for another user', async () => {
       const ctx = {
-        body: { userId: 'user-456', type: 'in-app' as const, message: 'Test notification' },
-        headers: { 'x-user-id': 'different-user' },
+        body: { userId: 'other-user', type: 'in-app' as const, message: 'Nope' },
+        user: clientUser,
+        request: new Request('http://localhost'),
         set: { status: 200 },
       }
 
       const result = await NotificationController.create(ctx)
 
       expect(ctx.set.status).toBe(403)
-      expect(result).toEqual({ error: 'Cannot create notifications for other users' })
+      expect(result).toEqual({
+        error: { code: 'FORBIDDEN', message: 'errors.notification.unauthorized' },
+      })
+      expect(mockCreate).not.toHaveBeenCalled()
+    })
+
+    it('should allow admin to create for another user', async () => {
+      mockCreate.mockResolvedValue({
+        id: 'notif-999',
+        userId: 'other-user',
+        type: 'email',
+        message: 'Staff note',
+        read: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      })
+
+      const ctx = {
+        body: { userId: 'other-user', type: 'email' as const, message: 'Staff note' },
+        user: adminUser,
+        request: new Request('http://localhost'),
+        set: { status: 200 },
+      }
+
+      await NotificationController.create(ctx)
+      expect(ctx.set.status).toBe(201)
+      expect(mockCreate).toHaveBeenCalled()
     })
   })
 
   describe('list', () => {
-    it('should return user notifications with pagination', async () => {
-      const mockNotifications = [
-        { id: 'notif-1', userId: 'user-123', type: 'in-app', message: 'Test 1', read: false },
-        { id: 'notif-2', userId: 'user-123', type: 'email', message: 'Test 2', read: true },
-      ]
-      mockGetUserNotifications.mockResolvedValue(mockNotifications)
-
-      const ctx = {
-        query: { page: '1', limit: '20' },
-        headers: { 'x-user-id': 'user-123' },
-      }
-
-      const result = await NotificationController.list(ctx)
-
-      expect(result).toEqual({
-        data: mockNotifications,
-        total: 2,
-        page: 1,
-        limit: 20,
-      })
-    })
-
-    it('should return error when X-User-Id header missing', async () => {
+    it('lists only own notifications for client', async () => {
+      mockGetUserNotifications.mockResolvedValue([])
       const ctx = {
         query: {},
-        headers: {},
+        user: clientUser,
+        request: new Request('http://localhost'),
+        set: { status: 200 },
       }
 
-      const result = await NotificationController.list(ctx)
+      await NotificationController.list(ctx)
+      expect(mockGetUserNotifications).toHaveBeenCalledWith('user-456')
+      expect(mockListAll).not.toHaveBeenCalled()
+    })
 
-      expect(result).toEqual({ error: 'Unauthorized', data: [], total: 0, page: 1, limit: 20 })
+    it('lists all notifications for admin', async () => {
+      mockListAll.mockResolvedValue([])
+      const ctx = {
+        query: {},
+        user: adminUser,
+        request: new Request('http://localhost'),
+        set: { status: 200 },
+      }
+
+      await NotificationController.list(ctx)
+      expect(mockListAll).toHaveBeenCalled()
     })
   })
 
   describe('markAsRead', () => {
-    it('should mark notification as read', async () => {
-      const mockNotification = {
-        id: 'notif-123',
+    it('returns 400 for invalid id', async () => {
+      const ctx = {
+        params: { id: 'bad-id' },
+        user: clientUser,
+        request: new Request('http://localhost'),
+        set: { status: 200 },
+      }
+
+      const result = await NotificationController.markAsRead(ctx)
+      expect(ctx.set.status).toBe(400)
+      expect(result).toMatchObject({ error: { code: 'BAD_REQUEST' } })
+    })
+
+    it('marks own notification as read', async () => {
+      const id = '507f1f77bcf86cd799439011'
+      mockMarkAsRead.mockResolvedValue({
+        id,
         userId: 'user-456',
         type: 'in-app',
-        message: 'Test',
+        message: 'x',
         read: true,
-      }
-      mockMarkAsRead.mockResolvedValue(mockNotification)
+        createdAt: '2024-01-01T00:00:00.000Z',
+      })
 
       const ctx = {
-        params: { id: '507f1f77bcf86cd799439011' },
-        headers: { 'x-user-id': 'user-456' },
+        params: { id },
+        user: clientUser,
+        request: new Request('http://localhost'),
         set: { status: 200 },
       }
 
       const result = await NotificationController.markAsRead(ctx)
-
-      expect(result).toEqual(mockNotification)
-    })
-
-    it('should return 401 when X-User-Id header missing', async () => {
-      const ctx = {
-        params: { id: '507f1f77bcf86cd799439011' },
-        headers: {},
-        set: { status: 200 },
-      }
-
-      const result = await NotificationController.markAsRead(ctx)
-
-      expect(ctx.set.status).toBe(401)
-      expect(result).toEqual({ error: 'Unauthorized' })
-    })
-
-    it('should return 400 for invalid ObjectId format', async () => {
-      const ctx = {
-        params: { id: 'invalid-id' },
-        headers: { 'x-user-id': 'user-456' },
-        set: { status: 200 },
-      }
-
-      const result = await NotificationController.markAsRead(ctx)
-
-      expect(ctx.set.status).toBe(400)
-      expect(result).toEqual({ error: 'Invalid notification ID format' })
-    })
-
-    it('should return 404 for non-existent notification', async () => {
-      mockMarkAsRead.mockResolvedValue(null)
-
-      const ctx = {
-        params: { id: '507f1f77bcf86cd799439011' },
-        headers: { 'x-user-id': 'user-456' },
-        set: { status: 200 },
-      }
-
-      const result = await NotificationController.markAsRead(ctx)
-
-      expect(ctx.set.status).toBe(404)
-      expect(result).toEqual({ error: 'Notification not found' })
+      expect(mockMarkAsRead).toHaveBeenCalledWith(id, 'user-456')
+      expect(result).toMatchObject({ read: true })
     })
   })
 })

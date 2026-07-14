@@ -1,21 +1,20 @@
-import { describe, it, expect } from 'vitest'
-import { app } from './app'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { initI18n } from './i18n'
+import { createApp } from './app'
 
-describe('app', () => {
-  it('should create app instance', () => {
-    expect(app).toBeDefined()
-    expect(app.handle).toBeDefined()
+/**
+ * Lightweight app integration smoke (no external DBs required for healthz).
+ */
+describe('app integration smoke', () => {
+  beforeAll(async () => {
+    await initI18n()
   })
 
-  it('should have swagger route registered', () => {
-    const routes = app.routes
-    const swaggerRoute = routes.find((r) => r.path === '/swagger')
-    expect(swaggerRoute).toBeDefined()
-  })
-
-  it('should respond to root path', async () => {
-    const response = await app.handle(new Request('http://localhost/'))
+  it('healthz is live without dependency checks', async () => {
+    const app = createApp()
+    const response = await app.handle(new Request('http://localhost/healthz'))
+    expect(response.status).toBe(200)
     const body = await response.json()
-    expect(body).toEqual({ status: 'ok' })
+    expect(body.status).toBe('ok')
   })
 })

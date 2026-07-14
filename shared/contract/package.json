@@ -18,10 +18,10 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "elysia": "latest"
+    "elysia": "^1.4.29"
   },
   "devDependencies": {
-    "typescript": "latest",
-    "vitest": "latest"
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.10"
   }
 }

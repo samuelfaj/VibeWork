@@ -291,7 +291,7 @@ Reviewers check:
 
 ### Documentation Files
 
-- **CLAUDE.md**: Project-specific documentation
+- **AGENTS.md**: Project-specific documentation
 - **README.md**: Getting started guide
 - **docs/**: Comprehensive guides
 - **Inline comments**: Complex logic only

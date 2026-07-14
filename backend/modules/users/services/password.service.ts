@@ -7,6 +7,7 @@ const ARGON2_OPTIONS = {
   parallelism: 4,
 }
 
+/** Stateless crypto helpers (module object). */
 export const PasswordService = {
   async hash(password: string): Promise<string> {
     if (!password) {
@@ -25,18 +26,4 @@ export const PasswordService = {
       return false
     }
   },
-}
-
-/**
- * @deprecated Use PasswordService.hash() instead
- */
-export async function hashPassword(password: string): Promise<string> {
-  return PasswordService.hash(password)
-}
-
-/**
- * @deprecated Use PasswordService.verify() instead
- */
-export async function verifyPassword(hashValue: string, password: string): Promise<boolean> {
-  return PasswordService.verify(hashValue, password)
 }

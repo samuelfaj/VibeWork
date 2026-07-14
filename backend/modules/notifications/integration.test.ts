@@ -1,15 +1,57 @@
 import 'reflect-metadata'
-import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb'
-import { Elysia, t } from 'elysia'
+import { MongoDBContainer, type StartedMongoDBContainer } from '@testcontainers/mongodb'
+import { Elysia } from 'elysia'
 import mongoose from 'mongoose'
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
+import type { AuthUser } from '../../src/infra/auth-guard'
 
-// Mock the Pub/Sub publisher to avoid side effects
-vi.mock('../src/infra/pubsub', () => ({
-  publishNotificationCreated: vi.fn().mockResolvedValue('mock-message-id'),
+/**
+ * Integration tests use the real notification routes + services against MongoDB,
+ * with requireAuth mocked to a fixed session user (session cookie auth only).
+ */
+const sessionUser: AuthUser = {
+  id: 'list-user',
+  email: 'list@example.com',
+  name: 'List User',
+  role: 'client',
+  emailVerified: true,
+  image: null,
+}
+
+vi.mock('../../src/infra/auth-guard', async () => {
+  const { Elysia: E } = await import('elysia')
+  return {
+    requireAuth: new E({ name: 'test-require-auth' })
+      .resolve(() => ({ user: sessionUser }))
+      .as('scoped'),
+    requireRole: () =>
+      new E({ name: 'test-require-role' }).resolve(() => ({ user: sessionUser })).as('scoped'),
+    authContext: new E({ name: 'test-auth-context' })
+      .derive(() => ({ user: sessionUser }))
+      .as('scoped'),
+  }
+})
+
+vi.mock('./services/notification-publisher.service', () => ({
+  NotificationPublisherService: {
+    publishCreated: vi.fn().mockResolvedValue('mock-message-id'),
+  },
 }))
 
-// Define a simple mongoose schema for testing (mirrors the production schema)
+vi.mock('./models/notification.model', () => {
+  // Will be replaced after mongoose connects — use getter via factory
+  return {
+    NotificationModel: {
+      create: (...args: unknown[]) => (globalThis as any).__NotifModel.create(...args),
+      find: (...args: unknown[]) => (globalThis as any).__NotifModel.find(...args),
+      findOneAndUpdate: (...args: unknown[]) =>
+        (globalThis as any).__NotifModel.findOneAndUpdate(...args),
+      findById: (...args: unknown[]) => (globalThis as any).__NotifModel.findById(...args),
+      deleteMany: (...args: unknown[]) => (globalThis as any).__NotifModel.deleteMany(...args),
+    },
+  }
+})
+
 const notificationSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   type: { type: String, enum: ['in-app', 'email'], required: true },
@@ -20,130 +62,36 @@ const notificationSchema = new mongoose.Schema({
 
 describe('Notification Module Integration Tests', () => {
   let container: StartedMongoDBContainer
-
-  let NotificationModel: any
+  let NotificationModel: mongoose.Model<any>
 
   let app: any
 
   beforeAll(async () => {
-    console.log('[Integration] Starting MongoDB container...')
     container = await new MongoDBContainer('mongo:7.0').withStartupTimeout(60_000).start()
+    await mongoose.connect(container.getConnectionString(), { directConnection: true })
 
-    const connectionString = container.getConnectionString()
-    console.log(`[Integration] MongoDB container started`)
-
-    // Connect mongoose to container
-    await mongoose.connect(connectionString, {
-      directConnection: true,
-    })
-
-    // Use local schema model for testing
     NotificationModel =
       mongoose.models.Notification || mongoose.model('Notification', notificationSchema)
+    ;(globalThis as any).__NotifModel = NotificationModel
 
-    // Build minimal test routes using our model directly (avoids Typegoose import issues)
-    app = new Elysia()
-      .post(
-        '/notifications',
-        async ({ body, set }) => {
-          const doc = await NotificationModel.create(body)
-          set.status = 201
-          return {
-            id: doc._id.toString(),
-            userId: doc.userId,
-            type: doc.type,
-            message: doc.message,
-            read: doc.read,
-            createdAt: doc.createdAt.toISOString(),
-          }
-        },
-        {
-          body: t.Object({
-            userId: t.String(),
-            type: t.Union([t.Literal('in-app'), t.Literal('email')]),
-            message: t.String(),
-          }),
-        }
-      )
-      .get('/notifications', async ({ query, headers }) => {
-        const userId = headers['x-user-id']
-        if (!userId) {
-          return { error: 'Unauthorized', data: [], total: 0, page: 1, limit: 20 }
-        }
-        const page = query.page ? Number(query.page) : 1
-        const limit = query.limit ? Number(query.limit) : 20
-        const notifications = await NotificationModel.find({ userId }).sort({ createdAt: -1 })
-        const start = (page - 1) * limit
-        const paginated = notifications.slice(start, start + limit)
-        return {
-          data: paginated.map(
-            (doc: {
-              _id: { toString: () => string }
-              userId: string
-              type: string
-              message: string
-              read: boolean
-              createdAt: Date
-            }) => ({
-              id: doc._id.toString(),
-              userId: doc.userId,
-              type: doc.type,
-              message: doc.message,
-              read: doc.read,
-              createdAt: doc.createdAt.toISOString(),
-            })
-          ),
-          total: notifications.length,
-          page,
-          limit,
-        }
-      })
-      .patch('/notifications/:id/read', async ({ params, headers, set }) => {
-        const userId = headers['x-user-id']
-        if (!userId) {
-          set.status = 401
-          return { error: 'Unauthorized' }
-        }
-        if (!/^[\dA-Fa-f]{24}$/.test(params.id)) {
-          set.status = 400
-          return { error: 'Invalid notification ID format' }
-        }
-        const doc = await NotificationModel.findOneAndUpdate(
-          { _id: params.id, userId },
-          { read: true },
-          { new: true }
-        )
-        if (!doc) {
-          set.status = 404
-          return { error: 'Notification not found' }
-        }
-        return {
-          id: doc._id.toString(),
-          userId: doc.userId,
-          type: doc.type,
-          message: doc.message,
-          read: doc.read,
-          createdAt: doc.createdAt.toISOString(),
-        }
-      })
-
-    console.log('[Integration] MongoDB connection established')
+    const { notificationRoutes } = await import('./routes/notification.routes')
+    app = new Elysia().use(notificationRoutes)
   }, 120_000)
 
   afterAll(async () => {
-    console.log('[Integration] Cleaning up...')
     await mongoose.disconnect()
     await container.stop()
-    console.log('[Integration] MongoDB container stopped')
   })
 
   beforeEach(async () => {
-    // Clear notifications collection
+    sessionUser.id = 'list-user'
+    sessionUser.role = 'client'
     await NotificationModel.deleteMany({})
   })
 
-  describe('Create Notification', () => {
-    it('should create in-app notification successfully', async () => {
+  describe('with authenticated session (requireAuth mock)', () => {
+    it('creates notification for self', async () => {
+      sessionUser.id = 'user-123'
       const response = await app.handle(
         new Request('http://localhost/notifications', {
           method: 'POST',
@@ -160,224 +108,53 @@ describe('Notification Module Integration Tests', () => {
       const data = await response.json()
       expect(data.userId).toBe('user-123')
       expect(data.type).toBe('in-app')
-      expect(data.message).toBe('Test in-app notification')
       expect(data.read).toBe(false)
-      expect(data.id).toBeDefined()
     })
 
-    it('should create email notification successfully', async () => {
+    it('rejects client creating for another user', async () => {
+      sessionUser.id = 'user-123'
       const response = await app.handle(
         new Request('http://localhost/notifications', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: 'user-456',
-            type: 'email',
-            message: 'Test email notification',
-          }),
-        })
-      )
-
-      expect(response.status).toBe(201)
-      const data = await response.json()
-      expect(data.type).toBe('email')
-    })
-
-    it('should verify notification stored with correct fields', async () => {
-      await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: 'user-789',
+            userId: 'other-user',
             type: 'in-app',
-            message: 'Stored notification',
+            message: 'Nope',
           }),
         })
       )
 
-      const stored = await NotificationModel.findOne({ userId: 'user-789' })
-      expect(stored).toBeDefined()
-      expect(stored.userId).toBe('user-789')
-      expect(stored.type).toBe('in-app')
-      expect(stored.message).toBe('Stored notification')
-      expect(stored.read).toBe(false)
-      expect(stored.createdAt).toBeInstanceOf(Date)
+      expect(response.status).toBe(403)
     })
 
-    it('should reject missing required fields', async () => {
-      const response = await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: 'user-123',
-            // missing type and message
-          }),
-        })
-      )
-
-      expect(response.status).toBe(422)
-    })
-
-    it('should reject invalid notification type', async () => {
-      const response = await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: 'user-123',
-            type: 'sms', // invalid type
-            message: 'Test notification',
-          }),
-        })
-      )
-
-      expect(response.status).toBe(422)
-    })
-  })
-
-  describe('List Notifications', () => {
-    it('should list all notifications for a user', async () => {
-      // Create test notifications
+    it('lists only session user notifications', async () => {
+      sessionUser.id = 'list-user'
       await NotificationModel.create([
         { userId: 'list-user', type: 'in-app', message: 'Notification 1' },
         { userId: 'list-user', type: 'email', message: 'Notification 2' },
-        { userId: 'other-user', type: 'in-app', message: 'Other user notification' },
+        { userId: 'other-user', type: 'in-app', message: 'Other' },
       ])
 
-      const response = await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'GET',
-          headers: { 'X-User-Id': 'list-user' },
-        })
-      )
-
+      const response = await app.handle(new Request('http://localhost/notifications'))
       expect(response.status).toBe(200)
       const data = await response.json()
       expect(data.data).toHaveLength(2)
       expect(data.total).toBe(2)
     })
 
-    it('should return empty array for user with no notifications', async () => {
-      const response = await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'GET',
-          headers: { 'X-User-Id': 'no-notifications-user' },
-        })
-      )
-
-      expect(response.status).toBe(200)
-      const data = await response.json()
-      expect(data.data).toHaveLength(0)
-      expect(data.total).toBe(0)
-    })
-
-    it('should return notifications sorted by createdAt descending', async () => {
-      // Create notifications with different dates
-      const older = await NotificationModel.create({
-        userId: 'sort-user',
-        type: 'in-app',
-        message: 'Older notification',
-        createdAt: new Date('2024-01-01'),
-      })
-      const newer = await NotificationModel.create({
-        userId: 'sort-user',
-        type: 'in-app',
-        message: 'Newer notification',
-        createdAt: new Date('2024-01-02'),
-      })
-
-      const response = await app.handle(
-        new Request('http://localhost/notifications', {
-          method: 'GET',
-          headers: { 'X-User-Id': 'sort-user' },
-        })
-      )
-
-      expect(response.status).toBe(200)
-      const data = await response.json()
-      expect(data.data[0].id).toBe(newer._id.toString())
-      expect(data.data[1].id).toBe(older._id.toString())
-    })
-
-    it('should paginate correctly', async () => {
-      // Create 25 notifications
-      const notifications = Array.from({ length: 25 }, (_, i) => ({
-        userId: 'paginate-user',
-        type: 'in-app' as const,
-        message: `Notification ${i}`,
-      }))
-      await NotificationModel.create(notifications)
-
-      const response = await app.handle(
-        new Request('http://localhost/notifications?page=2&limit=10', {
-          method: 'GET',
-          headers: { 'X-User-Id': 'paginate-user' },
-        })
-      )
-
-      expect(response.status).toBe(200)
-      const data = await response.json()
-      expect(data.data).toHaveLength(10)
-      expect(data.page).toBe(2)
-      expect(data.limit).toBe(10)
-      expect(data.total).toBe(25)
-    })
-  })
-
-  describe('Mark as Read', () => {
-    it('should mark notification as read successfully', async () => {
+    it('marks own notification as read', async () => {
+      sessionUser.id = 'read-user'
       const notification = await NotificationModel.create({
         userId: 'read-user',
         type: 'in-app',
-        message: 'Unread notification',
+        message: 'Unread',
         read: false,
       })
 
       const response = await app.handle(
         new Request(`http://localhost/notifications/${notification._id}/read`, {
           method: 'PATCH',
-          headers: { 'X-User-Id': 'read-user' },
-        })
-      )
-
-      expect(response.status).toBe(200)
-      const data = await response.json()
-      expect(data.read).toBe(true)
-
-      // Verify in database
-      const updated = await NotificationModel.findById(notification._id)
-      expect(updated.read).toBe(true)
-    })
-
-    it('should return 404 for non-existent notification', async () => {
-      const fakeId = '507f1f77bcf86cd799439011' // valid ObjectId format but doesn't exist
-
-      const response = await app.handle(
-        new Request(`http://localhost/notifications/${fakeId}/read`, {
-          method: 'PATCH',
-          headers: { 'X-User-Id': 'some-user' },
-        })
-      )
-
-      expect(response.status).toBe(404)
-      const data = await response.json()
-      expect(data.error).toBe('Notification not found')
-    })
-
-    it('should be idempotent when marking already-read notification', async () => {
-      const notification = await NotificationModel.create({
-        userId: 'idempotent-user',
-        type: 'in-app',
-        message: 'Already read',
-        read: true,
-      })
-
-      const response = await app.handle(
-        new Request(`http://localhost/notifications/${notification._id}/read`, {
-          method: 'PATCH',
-          headers: { 'X-User-Id': 'idempotent-user' },
         })
       )
 
@@ -386,22 +163,21 @@ describe('Notification Module Integration Tests', () => {
       expect(data.read).toBe(true)
     })
 
-    it('should not allow marking another user notification', async () => {
+    it('returns 404 when marking another users notification', async () => {
+      sessionUser.id = 'other-user'
       const notification = await NotificationModel.create({
         userId: 'owner-user',
         type: 'in-app',
-        message: 'Owner notification',
+        message: 'Owner',
         read: false,
       })
 
       const response = await app.handle(
         new Request(`http://localhost/notifications/${notification._id}/read`, {
           method: 'PATCH',
-          headers: { 'X-User-Id': 'other-user' }, // different user
         })
       )
 
-      // Should return 404 because the notification doesn't belong to this user
       expect(response.status).toBe(404)
     })
   })

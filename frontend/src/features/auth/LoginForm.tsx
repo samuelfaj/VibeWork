@@ -1,25 +1,27 @@
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import { Form, Input, Button, Alert, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLogin } from './hooks'
 
-const { Text, Link } = Typography
-
-interface LoginFormProps {
-  onSwitchToSignup?: () => void
-}
+const { Text } = Typography
 
 interface LoginFormValues {
   email: string
   password: string
 }
 
-export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
+export function LoginForm() {
   const { t } = useTranslation()
   const login = useLogin()
+  const navigate = useNavigate()
 
   const handleSubmit = (values: LoginFormValues) => {
-    login.mutate(values)
+    login.mutate(values, {
+      onSuccess: () => {
+        void navigate('/notifications')
+      },
+    })
   }
 
   return (
@@ -37,7 +39,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
           { type: 'email', message: t('auth.errors.emailInvalid') },
         ]}
       >
-        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} />
+        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} data-testid="login-email" />
       </Form.Item>
 
       <Form.Item
@@ -45,7 +47,11 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
         label={t('auth.password')}
         rules={[{ required: true, message: t('auth.errors.passwordRequired') }]}
       >
-        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.password')} />
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder={t('auth.password')}
+          data-testid="login-password"
+        />
       </Form.Item>
 
       {login.isError && (
@@ -55,17 +61,21 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
       )}
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={login.isPending} block>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={login.isPending}
+          block
+          data-testid="login-submit"
+        >
           {t('auth.submit')}
         </Button>
       </Form.Item>
 
-      {onSwitchToSignup && (
-        <div style={{ textAlign: 'center' }}>
-          <Text>{t('auth.noAccount')} </Text>
-          <Link onClick={onSwitchToSignup}>{t('auth.signup')}</Link>
-        </div>
-      )}
+      <div style={{ textAlign: 'center' }}>
+        <Text>{t('auth.noAccount')} </Text>
+        <Link to="/signup">{t('auth.signup')}</Link>
+      </div>
     </Form>
   )
 }

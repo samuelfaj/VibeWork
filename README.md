@@ -147,7 +147,7 @@ bun run build                  # Build all packages
 bun run clean                  # Clean artifacts
 ```
 
-See [CLAUDE.md](./CLAUDE.md) for detailed command reference.
+**AI agents & contributors:** follow **[AGENTS.md](./AGENTS.md)** (canonical rules, commands, Definition of Done).
 
 ## 📚 Documentation Map
 
@@ -186,13 +186,11 @@ See [CLAUDE.md](./CLAUDE.md) for detailed command reference.
 - **[Deployment Guide](./docs/en-US/deployment.md)** - Production deployment & CI/CD
 - **[Contributing Guide](./docs/en-US/contributing.md)** - Code standards & workflow
 
-### Original Module Documentation (CLAUDE.md)
+### Agent / architecture (single source of truth)
 
-- **[backend/CLAUDE.md](./backend/CLAUDE.md)** - Backend overview & commands
-- **[frontend/CLAUDE.md](./frontend/CLAUDE.md)** - Frontend overview
-- **[backend/modules/users/CLAUDE.md](./backend/modules/users/CLAUDE.md)** - Users & authentication
-- **[backend/modules/notifications/CLAUDE.md](./backend/modules/notifications/CLAUDE.md)** - Notifications system
-- **[shared/contract/CLAUDE.md](./shared/contract/CLAUDE.md)** - Shared contracts
+- **[AGENTS.md](./AGENTS.md)** — architecture, slice workflow, banlist, DoD
+- **[FEATURE_MAP.md](./FEATURE_MAP.md)** — live product slice inventory (generated)
+- **[docs/agents/](./docs/agents/)** — task playbooks for AI agents
 
 ## 🎯 Architecture
 
@@ -283,14 +281,14 @@ MIT License - see LICENSE file for details
 - Check [documentation](./docs/en-US/)
 - Review existing [issues](https://github.com/yourorg/VibeWork/issues)
 - Start [discussion](https://github.com/yourorg/VibeWork/discussions)
-- See [CLAUDE.md](./CLAUDE.md) for original project documentation
+- See [AGENTS.md](./AGENTS.md) for architecture and agent rules
 
 ### Português (Brasil)
 
 - Consulte a [documentação](./docs/pt-BR/)
 - Revise [problemas existentes](https://github.com/yourorg/VibeWork/issues)
 - Inicie uma [discussão](https://github.com/yourorg/VibeWork/discussions)
-- Veja [CLAUDE.md](./CLAUDE.md) para documentação original do projeto
+- Veja [AGENTS.md](./AGENTS.md) para regras de arquitetura e agentes
 
 ## 🔗 Resources
 

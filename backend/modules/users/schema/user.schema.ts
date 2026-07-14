@@ -1,4 +1,7 @@
 import { mysqlTable, varchar, text, timestamp, boolean } from 'drizzle-orm/mysql-core'
+import type { UserRole } from '@vibe-code/contract'
+
+export const USER_ROLES = ['client', 'manager', 'admin'] as const satisfies readonly UserRole[]
 
 export const user = mysqlTable('user', {
   id: varchar('id', { length: 36 }).primaryKey(),
@@ -6,6 +9,7 @@ export const user = mysqlTable('user', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
+  role: varchar('role', { length: 32 }).$type<UserRole>().default('client').notNull(),
   createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { fsp: 3 })
     .defaultNow()

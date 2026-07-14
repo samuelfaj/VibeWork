@@ -7,6 +7,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Prefer emitted App types; fall back to source for vite transform of type-only imports
+      '@vibework/backend/app': path.resolve(__dirname, '../backend/dist-types/src/app.d.ts'),
     },
   },
   server: {
@@ -15,7 +17,19 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        cookieDomainRewrite: 'localhost',
+      },
+      '/users': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/notifications': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
       },
     },
+  },
+  optimizeDeps: {
+    exclude: ['@vibework/backend'],
   },
 })

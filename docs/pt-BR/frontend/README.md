@@ -45,7 +45,7 @@ frontend/
 ├── public/                   # Arquivos estáticos
 ├── vite.config.ts            # Config de build
 ├── playwright.config.ts      # Config de testes E2E
-└── CLAUDE.md                 # Documentação original
+└── AGENTS.md                 # Documentação original
 ```
 
 ## Stack de Tecnologia
@@ -505,7 +505,7 @@ node --version
 
 ## Referências de Documentação
 
-- **Original**: `frontend/CLAUDE.md`
+- **Original**: `AGENTS.md`
 - **Componentes**: Veja `frontend/src/`
 - **Testes**: Veja workspace `e2e/`
 

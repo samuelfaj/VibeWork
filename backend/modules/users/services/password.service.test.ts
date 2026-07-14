@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PasswordService, hashPassword, verifyPassword } from './password.service'
+import { PasswordService } from './password.service'
 
 describe('PasswordService', () => {
   describe('hash', () => {
@@ -41,19 +41,6 @@ describe('PasswordService', () => {
       const hash = await PasswordService.hash('secret123')
       const result = await PasswordService.verify(hash, '')
       expect(result).toBe(false)
-    })
-  })
-
-  describe('backward compatibility (deprecated functions)', () => {
-    it('hashPassword works', async () => {
-      const hash = await hashPassword('secret123')
-      expect(hash).toMatch(/^\$argon2/)
-    })
-
-    it('verifyPassword works', async () => {
-      const hash = await hashPassword('secret123')
-      const result = await verifyPassword(hash, 'secret123')
-      expect(result).toBe(true)
     })
   })
 })

@@ -1,4 +1,5 @@
-import { MySqlContainer, StartedMySqlContainer } from '@testcontainers/mysql'
+import type { StartedMySqlContainer } from '@testcontainers/mysql'
+import { MySqlContainer } from '@testcontainers/mysql'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
@@ -42,6 +43,7 @@ describe('User Module Integration Tests', () => {
         email VARCHAR(255) NOT NULL UNIQUE,
         email_verified BOOLEAN NOT NULL DEFAULT false,
         image TEXT,
+        role VARCHAR(32) NOT NULL DEFAULT 'client',
         created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
       )

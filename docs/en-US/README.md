@@ -87,20 +87,20 @@ VibeWork/
 │   ├── modules/
 │   │   ├── users/             # Auth & user management
 │   │   └── notifications/     # Notification system
-│   └── CLAUDE.md              # Backend documentation
+│   └── AGENTS.md              # Backend documentation
 ├── frontend/                   # React + Vite application
 │   ├── src/
 │   │   ├── features/          # Feature modules
 │   │   ├── lib/               # API client & utilities
 │   │   └── i18n/              # Translations
-│   └── CLAUDE.md              # Frontend documentation
+│   └── AGENTS.md              # Frontend documentation
 ├── shared/
 │   └── contract/              # Shared TypeBox schemas
 ├── infra/                     # Terraform IaC (GCP)
 ├── e2e/                       # Playwright tests
 ├── docs/                      # Documentation (this directory)
 ├── docker-compose.yml         # Local development services
-└── CLAUDE.md                  # Root project documentation
+└── AGENTS.md                  # Root project documentation
 ```
 
 ## Key Concepts
@@ -184,13 +184,13 @@ This documentation is organized by audience:
 
 ## Additional Resources
 
-- **Root CLAUDE.md** - Original project documentation
-- **Module CLAUDE.md Files** - Detailed module documentation:
-  - `backend/CLAUDE.md` - Backend overview
-  - `frontend/CLAUDE.md` - Frontend overview
-  - `backend/modules/users/CLAUDE.md` - Authentication
-  - `backend/modules/notifications/CLAUDE.md` - Notifications
-  - `shared/contract/CLAUDE.md` - Contract schemas
+- **Root AGENTS.md** - Original project documentation
+- **Module AGENTS.md Files** - Detailed module documentation:
+  - `AGENTS.md` - Backend overview
+  - `AGENTS.md` - Frontend overview
+  - `AGENTS.md` - Authentication
+  - `AGENTS.md` - Notifications
+  - `AGENTS.md` - Contract schemas
 - **Configuration Files**:
   - `.env.example` - Environment variables
   - `docker-compose.yml` - Local development
@@ -200,7 +200,7 @@ This documentation is organized by audience:
 ## Getting Help
 
 - Check the relevant guide in the documentation
-- Review existing CLAUDE.md files for detailed information
+- Review existing AGENTS.md files for detailed information
 - Check GitHub issues for known problems
 - Review test files for usage examples
 - See [Contributing Guide](./contributing.md) for communication channels

@@ -1,26 +1,32 @@
-import { MailOutlined, LockOutlined } from '@ant-design/icons'
+import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Form, Input, Button, Alert, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSignup } from './hooks'
 
-const { Text, Link } = Typography
-
-interface SignupFormProps {
-  onSwitchToLogin?: () => void
-}
+const { Text } = Typography
 
 interface SignupFormValues {
+  name: string
   email: string
   password: string
   confirmPassword: string
 }
 
-export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
+export function SignupForm() {
   const { t } = useTranslation()
   const signup = useSignup()
+  const navigate = useNavigate()
 
   const handleSubmit = (values: SignupFormValues) => {
-    signup.mutate({ email: values.email, password: values.password })
+    signup.mutate(
+      { email: values.email, password: values.password, name: values.name },
+      {
+        onSuccess: () => {
+          void navigate('/notifications')
+        },
+      }
+    )
   }
 
   return (
@@ -31,6 +37,14 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
       requiredMark={false}
     >
       <Form.Item
+        name="name"
+        label={t('auth.name')}
+        rules={[{ required: true, message: t('auth.errors.nameRequired') }]}
+      >
+        <Input prefix={<UserOutlined />} placeholder={t('auth.name')} data-testid="signup-name" />
+      </Form.Item>
+
+      <Form.Item
         name="email"
         label={t('auth.email')}
         rules={[
@@ -38,7 +52,7 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
           { type: 'email', message: t('auth.errors.emailInvalid') },
         ]}
       >
-        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} />
+        <Input prefix={<MailOutlined />} placeholder={t('auth.email')} data-testid="signup-email" />
       </Form.Item>
 
       <Form.Item
@@ -49,7 +63,11 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
           { min: 8, message: t('auth.errors.passwordTooShort') },
         ]}
       >
-        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.password')} />
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder={t('auth.password')}
+          data-testid="signup-password"
+        />
       </Form.Item>
 
       <Form.Item
@@ -68,7 +86,11 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
           }),
         ]}
       >
-        <Input.Password prefix={<LockOutlined />} placeholder={t('auth.confirmPassword')} />
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder={t('auth.confirmPassword')}
+          data-testid="signup-confirm-password"
+        />
       </Form.Item>
 
       {signup.isError && (
@@ -78,17 +100,21 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
       )}
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={signup.isPending} block>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={signup.isPending}
+          block
+          data-testid="signup-submit"
+        >
           {t('auth.submit')}
         </Button>
       </Form.Item>
 
-      {onSwitchToLogin && (
-        <div style={{ textAlign: 'center' }}>
-          <Text>{t('auth.hasAccount')} </Text>
-          <Link onClick={onSwitchToLogin}>{t('auth.login')}</Link>
-        </div>
-      )}
+      <div style={{ textAlign: 'center' }}>
+        <Text>{t('auth.hasAccount')} </Text>
+        <Link to="/login">{t('auth.login')}</Link>
+      </div>
     </Form>
   )
 }

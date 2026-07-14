@@ -87,13 +87,13 @@ VibeWork/
 │   ├── modules/
 │   │   ├── users/             # Autenticação e usuários
 │   │   └── notifications/     # Sistema de notificações
-│   └── CLAUDE.md              # Documentação do backend
+│   └── AGENTS.md              # Documentação do backend
 ├── frontend/                   # Aplicação React + Vite
 │   ├── src/
 │   │   ├── features/          # Módulos de features
 │   │   ├── lib/               # Utilidades
 │   │   └── i18n/              # Traduções
-│   └── CLAUDE.md              # Documentação do frontend
+│   └── AGENTS.md              # Documentação do frontend
 ├── shared/
 │   └── contract/              # Esquemas TypeBox compartilhados
 ├── infra/                     # Terraform IaC (GCP)
@@ -102,7 +102,7 @@ VibeWork/
 │   ├── en-US/                 # Documentação em inglês
 │   └── pt-BR/                 # Documentação em português
 ├── docker-compose.yml         # Serviços locais
-└── CLAUDE.md                  # Documentação raiz
+└── AGENTS.md                  # Documentação raiz
 ```
 
 ## ⚡ Comandos Comuns
@@ -152,20 +152,20 @@ Notificações e operações assíncronas usam Google Cloud Pub/Sub com subscrib
 
 ## 📖 Documentação Adicional
 
-Cada pacote tem sua própria documentação CLAUDE.md com detalhes específicos:
+Cada pacote tem sua própria documentação AGENTS.md com detalhes específicos:
 
-- `backend/CLAUDE.md` - Visão geral do backend
-- `frontend/CLAUDE.md` - Visão geral do frontend
-- `backend/modules/users/CLAUDE.md` - Autenticação
-- `backend/modules/notifications/CLAUDE.md` - Sistema de notificações
-- `shared/contract/CLAUDE.md` - Esquemas de contrato
+- `AGENTS.md` - Visão geral do backend
+- `AGENTS.md` - Visão geral do frontend
+- `AGENTS.md` - Autenticação
+- `AGENTS.md` - Sistema de notificações
+- `AGENTS.md` - Esquemas de contrato
 
 ## 🆘 Precisa de Ajuda?
 
 - Confira o [Guia de Início](./getting-started.md) para configuração
 - Revise a [Visão Geral da Arquitetura](./architecture.md) para entender o design
 - Consulte os guias específicos de [Backend](./backend/) ou [Frontend](./frontend/)
-- Verifique os arquivos CLAUDE.md em cada pacote para documentação detalhada
+- Verifique os arquivos AGENTS.md em cada pacote para documentação detalhada
 - Veja o [Guia de Contribuição](./contributing.md) para convenções de código
 
 ---

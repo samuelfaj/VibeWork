@@ -1,71 +1,44 @@
+/**
+ * GOLDEN PATH — Playwright E2E (canonical for agents).
+ * Copy this file when adding feature E2E. Prefer getByTestId over text/CSS.
+ */
 import { test, expect } from '@playwright/test'
-import { generateTestUser, signUp, signIn, signOut } from '../fixtures/auth'
+import { generateTestUser, signUp, signIn, signOut, expectAuthenticated } from '../fixtures/auth'
 
-test.describe('Auth Flow', () => {
-  test('user can sign up successfully', async ({ page }) => {
+test.describe('Auth (golden path)', () => {
+  test('unauthenticated user is redirected to login', async ({ page }) => {
+    await signOut(page)
+    await page.goto('/notifications')
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByTestId('login-email')).toBeVisible()
+  })
+
+  test('user can sign up and reach notifications', async ({ page }) => {
     const user = generateTestUser()
-
     await signUp(page, user)
-
-    // Wait for form submission to complete
-    await page.waitForTimeout(1000)
-
-    // Verify no error alert is visible
-    const alert = page.locator('[role="alert"]')
-    await expect(alert).not.toBeVisible()
-
-    // Verify submit button is not in loading state
-    const submitButton = page.locator('form button[type="submit"]')
-    await expect(submitButton).not.toBeDisabled()
+    await expectAuthenticated(page)
+    await expect(page.getByTestId('notifications-page')).toBeVisible()
   })
 
   test('user can sign in after signup', async ({ page }) => {
     const user = generateTestUser()
-
-    // First sign up
     await signUp(page, user)
-    await page.waitForTimeout(1000)
+    await expectAuthenticated(page)
 
-    // Clear session to sign out
     await signOut(page)
-
-    // Now sign in with the same user
     await signIn(page, user)
-    await page.waitForTimeout(1000)
-
-    // Verify no error alert is visible
-    const alert = page.locator('[role="alert"]')
-    await expect(alert).not.toBeVisible()
+    await expectAuthenticated(page)
   })
 
   test('shows error for invalid credentials', async ({ page }) => {
-    const user = {
+    await signOut(page)
+    await signIn(page, {
       email: 'nonexistent@e2e.local',
       password: 'WrongPassword123!',
-    }
+      name: 'Nope',
+    })
 
-    await signIn(page, user)
-
-    // Wait for error to appear
-    await page.waitForTimeout(1000)
-
-    // Verify error alert is visible
-    const alert = page.locator('[role="alert"]')
-    await expect(alert).toBeVisible()
-  })
-
-  test('unauthenticated user sees auth form', async ({ page }) => {
-    // Clear any existing session
-    await signOut(page)
-
-    await page.goto('/')
-
-    // Verify we see an auth form (either login or signup)
-    const form = page.locator('form')
-    await expect(form).toBeVisible()
-
-    // Verify we see either login or signup heading
-    const heading = page.locator('h2')
-    await expect(heading).toBeVisible()
+    await expect(page.locator('[role="alert"]')).toBeVisible({ timeout: 10_000 })
+    await expect(page).toHaveURL(/\/login/)
   })
 })

@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  NotificationFormatterService,
-  formatNotificationResponse,
-} from './notification-formatter.service'
+import { NotificationFormatterService } from './notification-formatter.service'
 
 describe('NotificationFormatterService', () => {
   describe('formatResponse', () => {
@@ -47,30 +44,6 @@ describe('NotificationFormatterService', () => {
       }
 
       const result = NotificationFormatterService.formatResponse(doc)
-
-      expect(result).toEqual({
-        id: 'abc123',
-        userId: 'user-456',
-        type: 'in-app',
-        message: 'Hello world',
-        read: true,
-        createdAt: '2025-06-15T08:30:00.000Z',
-      })
-    })
-  })
-
-  describe('formatNotificationResponse (deprecated)', () => {
-    it('should work for backward compatibility', () => {
-      const doc = {
-        _id: { toString: () => 'abc123' },
-        userId: 'user-456',
-        type: 'in-app' as const,
-        message: 'Hello world',
-        read: true,
-        createdAt: new Date('2025-06-15T08:30:00Z'),
-      }
-
-      const result = formatNotificationResponse(doc)
 
       expect(result).toEqual({
         id: 'abc123',
