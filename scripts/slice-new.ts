@@ -4,31 +4,29 @@
  *
  *   bun run slice:new <name>
  *   bun run slice:new billing
- *   bun run slice:new notes --mongo
  *
  * ALWAYS:
  *   - contract + tests
- *   - backend module (MySQL schema by default)
+ *   - backend module (MySQL schema — only store)
  *   - frontend feature
  *   - i18n en/pt-BR/es
  *   - e2e stub
  *   - wire backend/src/app.ts + frontend/src/App.tsx
  *
- * Platform modules (health, pubsub, infra) are NOT created here.
+ * Platform modules (health, infra) are NOT created here.
+ * No Mongo / Redis / Pub/Sub / controllers.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = join(import.meta.dir, '..')
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
-const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith('--')))
-const useMongo = flags.has('--mongo')
 const name = args[0]?.trim().toLowerCase()
 
-const PLATFORM = new Set(['health', 'pubsub', 'infra', 'auth', 'users'])
+const PLATFORM = new Set(['health', 'infra', 'auth', 'users'])
 
 if (!name || !/^[a-z][a-z0-9-]*$/.test(name)) {
-  console.error('Usage: bun run slice:new <name> [--mongo]')
+  console.error('Usage: bun run slice:new <name>')
   console.error('  name: kebab-case product domain, e.g. billing, projects')
   process.exit(1)
 }
@@ -131,12 +129,11 @@ if (!indexContent.includes(exportLine)) {
 // ─── Backend module ─────────────────────────────────────────────────────────
 const modRoot = join(root, 'backend/modules', name)
 
-if (!useMongo) {
-  write(
-    join(modRoot, 'schema', `${name}.schema.ts`),
-    `import { mysqlTable, varchar, timestamp } from 'drizzle-orm/mysql-core'
+write(
+  join(modRoot, 'schema', `${name}.schema.ts`),
+  `import { mysqlTable, varchar, timestamp } from 'drizzle-orm/mysql-core'
 
-/** SLOT: drizzle schema — MySQL is the default store for new domains. */
+/** SLOT: drizzle schema — MySQL is the only store. */
 export const ${camel}Table = mysqlTable('${name.replaceAll('-', '_')}', {
   id: varchar('id', { length: 36 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -150,25 +147,7 @@ export const ${camel}Table = mysqlTable('${name.replaceAll('-', '_')}', {
 export type ${pascal}Row = typeof ${camel}Table.$inferSelect
 export type New${pascal}Row = typeof ${camel}Table.$inferInsert
 `
-  )
-} else {
-  write(
-    join(modRoot, 'models', `${name}.model.ts`),
-    `import { prop, getModelForClass } from '@typegoose/typegoose'
-
-/** SLOT: typegoose model — only because slice was created with --mongo. */
-class ${pascal}Entity {
-  @prop({ required: true, type: String })
-  name!: string
-
-  @prop({ default: () => new Date(), type: Date })
-  createdAt!: Date
-}
-
-export const ${pascal}Model = getModelForClass(${pascal}Entity)
-`
-  )
-}
+)
 
 write(
   join(modRoot, 'services', `${name}.service.ts`),
@@ -177,17 +156,17 @@ write(
 /**
  * SLOT: service — business rules only (no HTTP, no Elysia Context).
  * PATTERN: module object (export const XService = { methods }).
- * DO-NOT-TOUCH: no class, no static methods, no \`new\`, no request types.
- * See AGENTS.md § Service patterns. Golden: NotificationService / UserService.
+ * DO-NOT-TOUCH: no class, no static methods, no \`new\`, no controllers.
+ * Golden: NotificationService / UserService.
  */
 export const ${pascal}Service = {
   async list(): Promise<${pascal}[]> {
-    // TODO: load from schema/model
+    // TODO: load from schema (Drizzle)
     return []
   },
 
   async create(input: Create${pascal}Input): Promise<${pascal}> {
-    // TODO: persist (+ publish domain events here if needed)
+    // TODO: persist with Drizzle
     return {
       id: crypto.randomUUID(),
       name: input.name,
@@ -219,33 +198,6 @@ describe('${pascal}Service', () => {
 )
 
 write(
-  join(modRoot, 'controllers', `${name}.controller.ts`),
-  `import type { Create${pascal}Input } from '@vibe-code/contract'
-import type { AuthUser } from '../../../src/infra/auth-guard'
-import type { HttpSet } from '../../../src/infra/http'
-import { ${pascal}Service } from '../services/${name}.service'
-
-/**
- * SLOT: controller — map HTTP ↔ service only (module object).
- * Authz + status + i18n errors here; business rules in ${pascal}Service.
- * DO-NOT-TOUCH: do not call schema/model from controller when service exists.
- */
-export const ${pascal}Controller = {
-  async list(_ctx: { user: AuthUser }) {
-    const data = await ${pascal}Service.list()
-    return { data, total: data.length }
-  },
-
-  async create(ctx: { body: Create${pascal}Input; user: AuthUser; set: HttpSet }) {
-    const item = await ${pascal}Service.create(ctx.body)
-    ctx.set.status = 201
-    return item
-  },
-}
-`
-)
-
-write(
   join(modRoot, 'routes', `${name}.routes.ts`),
   `import {
   Create${pascal}Schema,
@@ -255,20 +207,31 @@ write(
 } from '@vibe-code/contract'
 import { Elysia } from 'elysia'
 import { requireAuth } from '../../../src/infra/auth-guard'
-import { ${pascal}Controller } from '../controllers/${name}.controller'
+import { ${pascal}Service } from '../services/${name}.service'
 
-/** DO-NOT-TOUCH: requireAuth wiring — user is non-null after this plugin. */
+/** DO-NOT-TOUCH: requireAuth — user is non-null. Routes call service directly. */
 export const ${camel}Routes = new Elysia({ prefix: '/${name}' })
   .use(requireAuth)
-  .get('/', ({ user }) => ${pascal}Controller.list({ user }), {
-    response: {
-      200: ${pascal}ListResponseSchema,
-      401: ErrorBodySchema,
+  .get(
+    '/',
+    async () => {
+      const data = await ${pascal}Service.list()
+      return { data, total: data.length }
     },
-  })
+    {
+      response: {
+        200: ${pascal}ListResponseSchema,
+        401: ErrorBodySchema,
+      },
+    }
+  )
   .post(
     '/',
-    ({ body, user, set }) => ${pascal}Controller.create({ body, user, set }),
+    async ({ body, set }) => {
+      const item = await ${pascal}Service.create(body)
+      set.status = 201
+      return item
+    },
     {
       body: Create${pascal}Schema,
       response: {
@@ -339,7 +302,6 @@ import { ${camel}Routes } from './routes/${name}.routes'
 export const ${camel}Module = new Elysia().use(${camel}Routes)
 
 export { ${pascal}Service } from './services/${name}.service'
-export { ${pascal}Controller } from './controllers/${name}.controller'
 `
 )
 
@@ -531,14 +493,14 @@ patchFile(join(root, 'frontend/src/App.tsx'), (src) => {
 })
 
 console.log(`
-✅ Slice "${name}" scaffolded${useMongo ? ' (Mongo models)' : ' (MySQL schema)'}.
+✅ Slice "${name}" scaffolded (MySQL schema).
 
 Agent next steps (in order):
-  1. Implement service + schema/model (SLOT) — module objects only (AGENTS.md § Service patterns)
+  1. Implement service + schema (SLOT) — module objects; routes → service (no controllers)
   2. bun run --filter @vibe-code/contract build
   3. bun run --filter @vibework/backend build:types
   4. Point FE hooks at api.${camel} via unwrapEden
   5. bun run feature:done ${name}
 
-See AGENTS.md — golden path: notifications · service pattern: UserService / NotificationService
+See AGENTS.md — golden path: notifications
 `)

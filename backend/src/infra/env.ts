@@ -2,10 +2,7 @@ import { logger } from './logger'
 
 const PRODUCTION = 'production'
 
-/**
- * Fail fast on misconfigured production/runtime.
- * Call once at process boot before listening or running workers.
- */
+/** Fail fast on misconfigured production. Call once at process boot. */
 export function validateEnv(env: NodeJS.ProcessEnv = process.env): void {
   const nodeEnv = env.NODE_ENV ?? 'development'
   const missing: string[] = []
@@ -20,7 +17,6 @@ export function validateEnv(env: NodeJS.ProcessEnv = process.env): void {
       if (!env[key]?.trim()) missing.push(key)
     }
 
-    // Cookie/CORS must be explicit in production
     if (!env.FRONTEND_URL?.trim() && !env.CORS_ORIGINS?.trim()) {
       missing.push('FRONTEND_URL|CORS_ORIGINS')
     }
@@ -32,9 +28,5 @@ export function validateEnv(env: NodeJS.ProcessEnv = process.env): void {
     throw new Error(message)
   }
 
-  logger.info('environment validated', {
-    action: 'validateEnv',
-    nodeEnv,
-    processMode: env.PROCESS_MODE ?? 'api',
-  })
+  logger.info('environment validated', { action: 'validateEnv', nodeEnv })
 }

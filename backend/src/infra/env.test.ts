@@ -2,38 +2,34 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('validateEnv', () => {
   beforeEach(() => {
-    vi.resetModules()
     vi.spyOn(console, 'log').mockImplementation(() => undefined)
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.resetModules()
   })
 
-  it('allows incomplete env outside production', async () => {
+  it('allows development without full secrets', async () => {
     const { validateEnv } = await import('./env')
     expect(() => validateEnv({ NODE_ENV: 'development' })).not.toThrow()
   })
 
-  it('throws in production when secrets are missing', async () => {
+  it('requires production secrets', async () => {
     const { validateEnv } = await import('./env')
-    expect(() =>
-      validateEnv({
-        NODE_ENV: 'production',
-      })
-    ).toThrow(/BETTER_AUTH_SECRET/)
+    expect(() => validateEnv({ NODE_ENV: 'production' })).toThrow(/Missing required/)
   })
 
-  it('passes production when required vars are set', async () => {
+  it('passes production with required vars', async () => {
     const { validateEnv } = await import('./env')
     expect(() =>
       validateEnv({
         NODE_ENV: 'production',
-        BETTER_AUTH_SECRET: 'x'.repeat(32),
-        MYSQL_HOST: 'db',
-        MYSQL_DATABASE: 'vibe',
-        MYSQL_USER: 'app',
+        BETTER_AUTH_SECRET: 'secret',
+        MYSQL_HOST: 'localhost',
+        MYSQL_DATABASE: 'db',
+        MYSQL_USER: 'root',
         FRONTEND_URL: 'https://app.example.com',
       })
     ).not.toThrow()

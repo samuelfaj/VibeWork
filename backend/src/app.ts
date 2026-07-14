@@ -3,7 +3,6 @@ import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
 import { healthModule } from '../modules/health'
 import { notificationsModule } from '../modules/notifications'
-import { pubsubModule } from '../modules/pubsub'
 import { usersModule } from '../modules/users'
 import { getTranslation, getLanguageFromHeader } from './i18n'
 import { i18nMiddleware } from './i18n/middleware'
@@ -23,9 +22,7 @@ const corsOrigins = (
   .map((origin) => origin.trim())
   .filter(Boolean)
 
-/**
- * Builds the HTTP application. Callers must init i18n/mongo before serving traffic.
- */
+/** Builds the HTTP app. One process, MySQL only. */
 export function createApp() {
   const baseApp = new Elysia()
     .use(requestContext)
@@ -66,7 +63,6 @@ export function createApp() {
     .use(healthModule)
     .use(usersModule)
     .use(notificationsModule)
-    .use(pubsubModule)
     .get('/', () => ({ status: 'ok' }))
 }
 

@@ -1,9 +1,5 @@
 import { Elysia } from 'elysia'
-import {
-  checkMySqlConnection,
-  checkMongoConnection,
-  checkRedisConnection,
-} from '../../../src/infra'
+import { checkMySqlConnection } from '../../../src/infra'
 
 export interface CheckResult {
   status: 'ok' | 'fail'
@@ -12,11 +8,8 @@ export interface CheckResult {
 
 export interface ReadyzResponse {
   status: 'ok' | 'fail'
-  mode: string
   checks: {
     mysql: CheckResult
-    mongodb: CheckResult
-    redis: CheckResult
   }
 }
 
@@ -43,38 +36,14 @@ async function runCheck(checkFn: () => Promise<boolean>): Promise<CheckResult> {
   }
 }
 
-function processMode(): string {
-  return (process.env.PROCESS_MODE ?? 'api').toLowerCase()
-}
-
 export const healthRoutes = new Elysia({ prefix: '' })
-  // Liveness: process is up (no dependency checks)
-  .get('/healthz', () => ({ status: 'ok', mode: processMode() }))
-  // Readiness: dependencies required for this process mode
+  .get('/healthz', () => ({ status: 'ok' }))
   .get('/readyz', async ({ set }) => {
-    const mode = processMode()
-    const [mysql, mongodb, redis] = await Promise.all([
-      runCheck(checkMySqlConnection),
-      runCheck(checkMongoConnection),
-      runCheck(checkRedisConnection),
-    ])
-
+    const mysql = await runCheck(checkMySqlConnection)
     const response: ReadyzResponse = {
-      status: 'ok',
-      mode,
-      checks: { mysql, mongodb, redis },
+      status: mysql.status === 'ok' ? 'ok' : 'fail',
+      checks: { mysql },
     }
-
-    // Worker needs mongo+redis for notification pull; API needs all three.
-    const requiredFail =
-      mode === 'worker'
-        ? mongodb.status === 'fail' || redis.status === 'fail'
-        : mysql.status === 'fail' || mongodb.status === 'fail' || redis.status === 'fail'
-
-    if (requiredFail) {
-      response.status = 'fail'
-      set.status = 503
-    }
-
+    if (response.status === 'fail') set.status = 503
     return response
   })

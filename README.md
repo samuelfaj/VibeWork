@@ -3,7 +3,7 @@
 ![VibeWork](https://github.com/samuelfaj/VibeWork/blob/main/logo.png?raw=true)
 
 Modular monolith (Bun + ElysiaJS) and feature-based React SPA.  
-One product, one deploy, built for small teams and AI coding agents.
+**2 people + AI agents.** One product, one process, one database.
 
 ![Bun](https://img.shields.io/badge/Bun-1.2.8%2B-orange)
 ![React](https://img.shields.io/badge/React-18.2-blue)
@@ -15,7 +15,7 @@ One product, one deploy, built for small teams and AI coding agents.
 | **English**            | [docs/en-US/README.md](docs/en-US/README.md) |
 | **Português (Brasil)** | [docs/pt-BR/README.md](docs/pt-BR/README.md) |
 
-**AI agents:** read **[AGENTS.md](AGENTS.md)** first. It overrides any other doc on architecture and workflow.
+**AI agents:** read **[AGENTS.md](AGENTS.md)** first. It overrides any other doc.
 
 ---
 
@@ -24,31 +24,30 @@ One product, one deploy, built for small teams and AI coding agents.
 ```bash
 bun install
 cp .env.example .env
-docker compose up -d          # MySQL, MongoDB, Redis, Pub/Sub emulator
-bun run dev                   # backend + frontend (Turborepo)
+docker compose --profile infra up -d   # MySQL only
+bun run --filter @vibework/backend db:migrate
+bun run dev                            # API + frontend
 ```
 
-| URL                           | Service                  |
-| ----------------------------- | ------------------------ |
-| http://localhost:5173         | Frontend (Vite)          |
-| http://localhost:3000         | Backend API              |
-| http://localhost:3000/swagger | OpenAPI (non-production) |
+| URL                           | Service       |
+| ----------------------------- | ------------- |
+| http://localhost:5173         | Frontend      |
+| http://localhost:3000         | Backend API   |
+| http://localhost:3000/swagger | OpenAPI (dev) |
 
 ---
 
 ## Monorepo map
 
 ```
-backend/           Elysia API + worker (modules + infra kernel)
+backend/           Elysia HTTP API (modules + thin infra)
 frontend/          React SPA (features + lib)
-shared/contract/   TypeBox schemas (FE ↔ BE source of truth)
-e2e/playwright/    Canonical E2E (Playwright only)
-scripts/           Agent tooling: slice:new, feature:check, banlist…
-infra/             Terraform (GCP)
-docs/en-US|pt-BR   Human documentation
-docs/agents/       Agent playbooks (English)
+shared/contract/   TypeBox schemas (FE ↔ BE)
+e2e/playwright/    Playwright E2E only
+scripts/           slice:new, feature:check, banlist…
+infra/             Terraform (GCP) — optional later
+docs/              en-US + pt-BR human docs
 AGENTS.md          Canonical agent rules
-FEATURE_MAP.md     Generated inventory of product slices
 ```
 
 ---
@@ -56,47 +55,44 @@ FEATURE_MAP.md     Generated inventory of product slices
 ## Common commands
 
 ```bash
-bun run dev                 # all packages
-bun run test                # unit tests
-bun run test:integration    # testcontainers
-bun run test:e2e            # Playwright
+bun run dev
+bun run test
+bun run test:e2e
 bun run typecheck
-bun run lint
-bun run feature:check       # banlist + i18n + types + unit + BE coverage
-bun run slice:new <name>    # scaffold a product feature
-bun run feature:done <name> # Definition of Done for a slice
+bun run feature:check
+bun run slice:new <name>
+bun run feature:done <name>
 ```
 
 ---
 
-## Product slices today
+## Product slices
 
 | Domain        | Backend                 | Frontend                 | Contract          | E2E                     |
 | ------------- | ----------------------- | ------------------------ | ----------------- | ----------------------- |
 | Users / Auth  | `modules/users`         | `features/auth`          | `user.ts`         | `auth.spec.ts`          |
 | Notifications | `modules/notifications` | `features/notifications` | `notification.ts` | `notifications.spec.ts` |
 
-Platform (no product UI): `health`, `pubsub`, `backend/src/infra`.
+Platform: `health` + `backend/src/infra` (MySQL, auth, logger).
 
 ---
 
-## Stack
+## Stack (intentionally small)
 
-| Layer     | Tech                                             |
-| --------- | ------------------------------------------------ |
-| Runtime   | Bun, Turborepo workspaces                        |
-| API       | ElysiaJS + Eden Treaty                           |
-| Auth      | Better-Auth (session cookies)                    |
-| SQL       | MySQL + Drizzle                                  |
-| Documents | MongoDB + Typegoose (opt-in)                     |
-| Cache     | Redis (cache / rate-limit / idempotency only)    |
-| Events    | Google Cloud Pub/Sub                             |
-| UI        | React, Vite, TanStack Query, Ant Design, i18next |
-| Tests     | Vitest, Testcontainers, Playwright               |
-| Deploy    | Docker, Cloud Run, Terraform (GCP)               |
+| Layer   | Tech                                             |
+| ------- | ------------------------------------------------ |
+| Runtime | Bun, Turborepo                                   |
+| API     | ElysiaJS + Eden                                  |
+| Auth    | Better-Auth (cookies)                            |
+| Data    | **MySQL + Drizzle only**                         |
+| UI      | React, Vite, TanStack Query, Ant Design, i18next |
+| Tests   | Vitest, Playwright                               |
+| Deploy  | Docker / Cloud Run when needed                   |
+
+No Mongo. No Redis. No Pub/Sub. No worker process. No controllers.
 
 ---
 
-## License / contributing
+## Contributing
 
-See [docs/en-US/contributing.md](docs/en-US/contributing.md) or [docs/pt-BR/contributing.md](docs/pt-BR/contributing.md).
+[docs/en-US/contributing.md](docs/en-US/contributing.md) · [docs/pt-BR/contributing.md](docs/pt-BR/contributing.md)

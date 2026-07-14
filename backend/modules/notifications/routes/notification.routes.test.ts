@@ -5,6 +5,7 @@ const mockCreate = vi.fn()
 const mockGetUserNotifications = vi.fn()
 const mockListAll = vi.fn()
 const mockMarkAsRead = vi.fn()
+const mockFindById = vi.fn()
 
 const authUser = {
   id: 'user-456',
@@ -21,9 +22,6 @@ vi.mock('../../../src/infra/auth-guard', () => ({
     .as('scoped'),
   requireRole: () =>
     new Elysia({ name: 'mock-require-role' }).resolve(() => ({ user: authUser })).as('scoped'),
-  authContext: new Elysia({ name: 'mock-auth-context' })
-    .derive(() => ({ user: authUser }))
-    .as('scoped'),
 }))
 
 vi.mock('../services/notification.service', () => ({
@@ -32,7 +30,7 @@ vi.mock('../services/notification.service', () => ({
     getUserNotifications: (userId: string) => mockGetUserNotifications(userId),
     listAll: () => mockListAll(),
     markAsRead: (id: string, userId: string) => mockMarkAsRead(id, userId),
-    findById: vi.fn(),
+    findById: (id: string) => mockFindById(id),
   },
 }))
 
@@ -83,11 +81,25 @@ describe('Notification Routes', () => {
     expect(mockCreate).toHaveBeenCalled()
   })
 
+  it('POST /notifications forbids client creating for others', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/notifications', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          userId: 'other-user',
+          type: 'in-app',
+          message: 'nope',
+        }),
+      })
+    )
+    expect(response.status).toBe(403)
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
   it('GET /notifications lists own for client', async () => {
     mockGetUserNotifications.mockResolvedValue([])
-
     const response = await app.handle(new Request('http://localhost/notifications'))
-
     expect(response.status).toBe(200)
     const body = await response.json()
     expect(body.data).toEqual([])

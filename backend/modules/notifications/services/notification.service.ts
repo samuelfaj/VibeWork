@@ -1,39 +1,64 @@
-import type { Notification, CreateNotificationInput } from '@vibe-code/contract'
-import { NotificationModel } from '../models/notification.model'
-import { NotificationFormatterService } from './notification-formatter.service'
-import { NotificationPublisherService } from './notification-publisher.service'
+import { and, desc, eq } from 'drizzle-orm'
+import type { CreateNotificationInput, Notification } from '@vibe-code/contract'
+import { db } from '../../../src/infra/database/mysql'
+import { notifications, type NotificationRow } from '../schema/notification.schema'
+
+function toNotification(row: NotificationRow): Notification {
+  return {
+    id: row.id,
+    userId: row.userId,
+    type: row.type,
+    message: row.message,
+    read: row.read,
+    createdAt: row.createdAt.toISOString(),
+  }
+}
 
 /**
- * Stateless domain service (module object).
- * Controllers call this only — no direct Model access from HTTP layer when avoidable.
+ * Domain logic for notifications (module object).
+ * MySQL only — no pub/sub, no second database.
  */
 export const NotificationService = {
   async create(data: CreateNotificationInput): Promise<Notification> {
-    const doc = await NotificationModel.create(data)
-    await NotificationPublisherService.publishCreated(doc)
-    return NotificationFormatterService.formatResponse(doc)
+    const id = crypto.randomUUID()
+    await db.insert(notifications).values({
+      id,
+      userId: data.userId,
+      type: data.type,
+      message: data.message,
+      read: false,
+    })
+    const row = await NotificationService.findById(id)
+    if (!row) throw new Error('Failed to create notification')
+    return toNotification(row)
+  },
+
+  async findById(id: string): Promise<NotificationRow | null> {
+    const [row] = await db.select().from(notifications).where(eq(notifications.id, id)).limit(1)
+    return row ?? null
   },
 
   async getUserNotifications(userId: string): Promise<Notification[]> {
-    const docs = await NotificationModel.find({ userId }).sort({ createdAt: -1 })
-    return docs.map((doc) => NotificationFormatterService.formatResponse(doc))
+    const rows = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+    return rows.map(toNotification)
   },
 
   async listAll(): Promise<Notification[]> {
-    const docs = await NotificationModel.find({}).sort({ createdAt: -1 })
-    return docs.map((doc) => NotificationFormatterService.formatResponse(doc))
-  },
-
-  async findById(id: string) {
-    return NotificationModel.findById(id)
+    const rows = await db.select().from(notifications).orderBy(desc(notifications.createdAt))
+    return rows.map(toNotification)
   },
 
   async markAsRead(id: string, userId: string): Promise<Notification | null> {
-    const doc = await NotificationModel.findOneAndUpdate(
-      { _id: id, userId },
-      { read: true },
-      { new: true }
-    )
-    return doc ? NotificationFormatterService.formatResponse(doc) : null
+    await db
+      .update(notifications)
+      .set({ read: true })
+      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+    const row = await NotificationService.findById(id)
+    if (!row || row.userId !== userId) return null
+    return toNotification(row)
   },
 }

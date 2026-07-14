@@ -1,78 +1,82 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockCreate = vi.fn()
-const mockFind = vi.fn()
-const mockFindById = vi.fn()
-const mockFindOneAndUpdate = vi.fn()
-const mockPublishCreated = vi.fn().mockResolvedValue('msg-1')
+const mockInsert = vi.fn()
+const mockSelect = vi.fn()
+const mockUpdate = vi.fn()
+const mockFrom = vi.fn()
+const mockWhere = vi.fn()
+const mockOrderBy = vi.fn()
+const mockLimit = vi.fn()
+const mockSet = vi.fn()
 
-vi.mock('../models/notification.model', () => ({
-  NotificationModel: {
-    create: (data: unknown) => mockCreate(data),
-    find: (q: unknown) => ({
-      sort: () => mockFind(q),
-    }),
-    findById: (id: string) => mockFindById(id),
-    findOneAndUpdate: (...args: unknown[]) => mockFindOneAndUpdate(...args),
-  },
-}))
-
-vi.mock('./notification-publisher.service', () => ({
-  NotificationPublisherService: {
-    publishCreated: (doc: unknown) => mockPublishCreated(doc),
-  },
-}))
-
-vi.mock('./notification-formatter.service', () => ({
-  NotificationFormatterService: {
-    formatResponse: (doc: {
-      _id: { toString: () => string }
-      userId: string
-      type: string
-      message: string
-      read: boolean
-      createdAt: Date
-    }) => ({
-      id: doc._id.toString(),
-      userId: doc.userId,
-      type: doc.type,
-      message: doc.message,
-      read: doc.read,
-      createdAt: doc.createdAt.toISOString(),
-    }),
+vi.mock('../../../src/infra/database/mysql', () => ({
+  db: {
+    insert: (...args: unknown[]) => {
+      mockInsert(...args)
+      return { values: vi.fn().mockResolvedValue(undefined) }
+    },
+    select: (...args: unknown[]) => {
+      mockSelect(...args)
+      return {
+        from: (...a: unknown[]) => {
+          mockFrom(...a)
+          return {
+            where: (...w: unknown[]) => {
+              mockWhere(...w)
+              return {
+                limit: (...l: unknown[]) => mockLimit(...l),
+                orderBy: (...o: unknown[]) => mockOrderBy(...o),
+              }
+            },
+            orderBy: (...o: unknown[]) => mockOrderBy(...o),
+          }
+        },
+      }
+    },
+    update: (...args: unknown[]) => {
+      mockUpdate(...args)
+      return {
+        set: (...s: unknown[]) => {
+          mockSet(...s)
+          return { where: vi.fn().mockResolvedValue(undefined) }
+        },
+      }
+    },
   },
 }))
 
 describe('NotificationService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.resetModules()
   })
 
-  it('create persists, publishes, and formats', async () => {
-    const doc = {
-      _id: { toString: () => 'id-1' },
+  it('create inserts and returns formatted row', async () => {
+    const row = {
+      id: 'id-1',
       userId: 'u1',
-      type: 'in-app',
+      type: 'in-app' as const,
       message: 'hi',
       read: false,
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
     }
-    mockCreate.mockResolvedValue(doc)
+    mockLimit.mockResolvedValue([row])
     const { NotificationService } = await import('./notification.service')
     const result = await NotificationService.create({
       userId: 'u1',
       type: 'in-app',
       message: 'hi',
     })
-    expect(result.id).toBe('id-1')
+    expect(result.id).toBeTruthy()
     expect(result.message).toBe('hi')
-    expect(mockPublishCreated).toHaveBeenCalledWith(doc)
+    expect(result.createdAt).toBe('2024-01-01T00:00:00.000Z')
+    expect(mockInsert).toHaveBeenCalled()
   })
 
   it('getUserNotifications maps list', async () => {
-    mockFind.mockResolvedValue([
+    mockOrderBy.mockResolvedValue([
       {
-        _id: { toString: () => 'id-1' },
+        id: 'id-1',
         userId: 'u1',
         type: 'email',
         message: 'm',
@@ -86,18 +90,10 @@ describe('NotificationService', () => {
     expect(list[0]?.type).toBe('email')
   })
 
-  it('findById delegates to model', async () => {
-    mockFindById.mockResolvedValue({ userId: 'u1' })
-    const { NotificationService } = await import('./notification.service')
-    const doc = await NotificationService.findById('abc')
-    expect(doc).toEqual({ userId: 'u1' })
-    expect(mockFindById).toHaveBeenCalledWith('abc')
-  })
-
   it('markAsRead returns null when missing', async () => {
-    mockFindOneAndUpdate.mockResolvedValue(null)
+    mockLimit.mockResolvedValue([])
     const { NotificationService } = await import('./notification.service')
-    const result = await NotificationService.markAsRead('507f1f77bcf86cd799439011', 'u1')
+    const result = await NotificationService.markAsRead('missing', 'u1')
     expect(result).toBeNull()
   })
 })

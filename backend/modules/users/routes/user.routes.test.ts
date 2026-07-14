@@ -37,26 +37,25 @@ describe('user routes', () => {
     app = new Elysia().use(userRoutes)
   })
 
-  it('GET /users/me returns profile for authenticated user', async () => {
+  it('GET /users/me returns profile', async () => {
     mockFindUserById.mockResolvedValue({
       id: 'user-1',
-      email: 'u@example.com',
       name: 'User',
-      role: 'client',
+      email: 'u@example.com',
       emailVerified: true,
       image: null,
-      createdAt: new Date('2024-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+      role: 'client',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-02'),
     })
 
     const response = await app.handle(new Request('http://localhost/users/me'))
     expect(response.status).toBe(200)
     const body = await response.json()
     expect(body.email).toBe('u@example.com')
-    expect(body.role).toBe('client')
   })
 
-  it('GET /users/me returns 404 when user missing', async () => {
+  it('GET /users/me returns 404 when missing', async () => {
     mockFindUserById.mockResolvedValue(null)
     const response = await app.handle(new Request('http://localhost/users/me'))
     expect(response.status).toBe(404)

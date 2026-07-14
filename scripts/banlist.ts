@@ -91,8 +91,6 @@ const checks: { name: string; cmd: string[]; allowExit1?: boolean }[] = [
     ],
   },
   {
-    // Domain services must be module objects, not static classes.
-    // Allowed classes: Error subclasses, lifecycle workers (*Subscriber), email adapters (*EmailService).
     name: 'static domain service class (use module object export const XService = {…})',
     cmd: [
       'rg',
@@ -101,11 +99,21 @@ const checks: { name: string; cmd: string[]; allowExit1?: boolean }[] = [
       'backend/modules/**/services/**/*.ts',
       '--glob',
       '!**/*.test.ts',
-      '--glob',
-      '!**/*email*.ts',
-      '--glob',
-      '!**/*subscriber*.ts',
       'export\\s+class\\s+\\w+Service\\b',
+    ],
+  },
+  {
+    name: 'no Mongo/Redis/PubSub deps in backend product code',
+    cmd: [
+      'rg',
+      '-n',
+      '--glob',
+      'backend/**/*.{ts,tsx}',
+      '--glob',
+      '!**/*.test.ts',
+      '--glob',
+      '!**/node_modules/**',
+      'mongoose|typegoose|ioredis|@google-cloud/pubsub|from [\'"].*mongodb|from [\'"].*redis',
     ],
   },
 ]

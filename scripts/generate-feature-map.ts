@@ -7,7 +7,7 @@ import { join } from 'node:path'
 
 const root = join(import.meta.dir, '..')
 
-const PLATFORM_MODULES = new Set(['health', 'pubsub'])
+const PLATFORM_MODULES = new Set(['health'])
 
 function listDirs(path: string): string[] {
   if (!existsSync(path)) return []

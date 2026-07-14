@@ -19,7 +19,7 @@ if (!name || !/^[a-z][a-z0-9-]*$/.test(name)) {
   process.exit(1)
 }
 
-const PLATFORM = new Set(['health', 'pubsub'])
+const PLATFORM = new Set(['health'])
 if (PLATFORM.has(name)) {
   console.error(`"${name}" is a platform module, not a product slice.`)
   process.exit(1)

@@ -27,12 +27,11 @@ describe('app', () => {
     expect(body).toEqual({ status: 'ok' })
   })
 
-  it('should respond to healthz with mode', async () => {
+  it('should respond to healthz', async () => {
     const app = createApp()
     const response = await app.handle(new Request('http://localhost/healthz'))
     expect(response.status).toBe(200)
     const body = await response.json()
     expect(body.status).toBe('ok')
-    expect(typeof body.mode).toBe('string')
   })
 })
