@@ -2,4 +2,14 @@
 
 Local: **só MySQL no Docker Compose** (`docker compose --profile infra up -d`).
 
-Produção (quando precisar): Terraform em `infra/` mira Cloud Run + Cloud SQL (MySQL). Não adicione serviços opcionais na app até serem necessários.
+Produção (quando precisar): Terraform em `infra/`:
+
+```
+infra/
+  dev|staging|prod/   # Cloud SQL + Cloud Run
+  modules/
+    cloud-sql/
+    cloud-run/
+```
+
+Sem módulos Redis/Pub/Sub — a app não usa.

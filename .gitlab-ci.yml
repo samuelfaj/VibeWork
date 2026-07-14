@@ -1,6 +1,5 @@
 # =============================================================================
-# VibeWork GitLab CI/CD Pipeline
-# GCP: Cloud Run, Cloud SQL, Redis, Pub/Sub
+# VibeWork GitLab CI/CD — Cloud Run + Cloud SQL (MySQL)
 # =============================================================================
 
 stages:

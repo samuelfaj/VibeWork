@@ -1,11 +1,9 @@
-# =============================================================================
-# VibeWork Infrastructure - Production Environment
-# =============================================================================
+# VibeWork — Production (MySQL + Cloud Run only)
 
 locals {
   environment  = "prod"
   project_name = "vibe"
-  domain_name  = "vibework.app" # TODO: Update with actual domain
+  domain_name  = "vibework.app"
 
   common_labels = {
     environment = local.environment
@@ -13,10 +11,6 @@ locals {
     managed_by  = "terraform"
   }
 }
-
-# =============================================================================
-# Cloud SQL (MySQL) Module
-# =============================================================================
 
 module "cloud_sql" {
   source = "../modules/cloud-sql"
@@ -31,44 +25,9 @@ module "cloud_sql" {
 
   deletion_protection = true
   backup_enabled      = true
-
   authorized_networks = var.authorized_networks
-
-  common_labels = local.common_labels
+  common_labels       = local.common_labels
 }
-
-# =============================================================================
-# Redis (Memorystore) Module
-# =============================================================================
-
-module "redis" {
-  source = "../modules/redis"
-
-  project_name   = local.project_name
-  environment    = local.environment
-  gcp_region     = var.gcp_region
-  redis_tier     = "STANDARD_HA"
-  memory_size_gb = 5
-
-  common_labels = local.common_labels
-}
-
-# =============================================================================
-# Pub/Sub Module
-# =============================================================================
-
-module "pubsub" {
-  source = "../modules/pubsub"
-
-  project_name = local.project_name
-  environment  = local.environment
-
-  common_labels = local.common_labels
-}
-
-# =============================================================================
-# Cloud Run Backend Module
-# =============================================================================
 
 module "cloud_run" {
   source = "../modules/cloud-run"
@@ -78,33 +37,22 @@ module "cloud_run" {
   gcp_project_id = var.gcp_project_id
   gcp_region     = var.gcp_region
 
-  # Cloud Run configuration - Production
   backend_image = var.backend_image
   cpu_limit     = "2000m"
   memory_limit  = "2Gi"
   min_instances = 2
   max_instances = 20
 
-  # Production requires authentication
   allow_public_access = false
 
   environment_variables = {
-    DATABASE_HOST               = module.cloud_sql.public_ip
-    DATABASE_NAME               = module.cloud_sql.database_name
-    DATABASE_USER               = module.cloud_sql.database_user
-    REDIS_HOST                  = module.redis.host
-    REDIS_PORT                  = tostring(module.redis.port)
-    PUBSUB_NOTIFICATIONS_TOPIC  = module.pubsub.notifications_topic_id
-    PUBSUB_EVENTS_TOPIC         = module.pubsub.events_topic_id
-    FRONTEND_URL                = "https://${local.domain_name}"
-    API_URL                     = "https://api.${local.domain_name}"
+    MYSQL_HOST     = module.cloud_sql.public_ip
+    MYSQL_DATABASE = module.cloud_sql.database_name
+    MYSQL_USER     = module.cloud_sql.database_user
+    FRONTEND_URL   = "https://${local.domain_name}"
+    RUN_MIGRATIONS = "true"
   }
 
   common_labels = local.common_labels
-
-  depends_on = [
-    module.cloud_sql,
-    module.redis,
-    module.pubsub
-  ]
+  depends_on    = [module.cloud_sql]
 }

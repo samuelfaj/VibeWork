@@ -1,25 +1,9 @@
-# =============================================================================
-# Google Cloud Run Backend Service Module
-# =============================================================================
+# Cloud Run backend — HTTP API only (no Pub/Sub IAM)
 
-# Service Account for Cloud Run
 resource "google_service_account" "backend" {
   account_id   = "${var.project_name}-${var.environment}-backend"
   display_name = "${var.project_name} ${var.environment} Backend Service Account"
-  description  = "Service account for Cloud Run backend service"
-}
-
-# IAM roles for service account
-resource "google_project_iam_member" "backend_pubsub_publisher" {
-  project = var.gcp_project_id
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${google_service_account.backend.email}"
-}
-
-resource "google_project_iam_member" "backend_pubsub_subscriber" {
-  project = var.gcp_project_id
-  role    = "roles/pubsub.subscriber"
-  member  = "serviceAccount:${google_service_account.backend.email}"
+  description  = "Service account for Cloud Run backend"
 }
 
 resource "google_project_iam_member" "backend_cloudsql_client" {
@@ -27,10 +11,6 @@ resource "google_project_iam_member" "backend_cloudsql_client" {
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.backend.email}"
 }
-
-# =============================================================================
-# Cloud Run Service
-# =============================================================================
 
 resource "google_cloud_run_v2_service" "backend" {
   name     = "${var.project_name}-${var.environment}-backend"
@@ -59,7 +39,6 @@ resource "google_cloud_run_v2_service" "backend" {
         cpu_idle = var.environment != "prod"
       }
 
-      # Environment variables
       env {
         name  = "NODE_ENV"
         value = var.environment == "prod" ? "production" : "development"
@@ -70,7 +49,6 @@ resource "google_cloud_run_v2_service" "backend" {
         value = tostring(var.container_port)
       }
 
-      # Additional environment variables from module input
       dynamic "env" {
         for_each = var.environment_variables
         content {
@@ -81,7 +59,7 @@ resource "google_cloud_run_v2_service" "backend" {
 
       startup_probe {
         http_get {
-          path = "/health"
+          path = "/healthz"
           port = var.container_port
         }
         initial_delay_seconds = 10
@@ -92,7 +70,7 @@ resource "google_cloud_run_v2_service" "backend" {
 
       liveness_probe {
         http_get {
-          path = "/health"
+          path = "/healthz"
           port = var.container_port
         }
         initial_delay_seconds = 15
@@ -111,7 +89,6 @@ resource "google_cloud_run_v2_service" "backend" {
   }
 }
 
-# IAM for Cloud Run - Public access
 resource "google_cloud_run_v2_service_iam_member" "public_access" {
   count = var.allow_public_access ? 1 : 0
 
